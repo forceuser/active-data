@@ -1,0 +1,55 @@
+{
+  "name": "live-data",
+  "version": "1.0.0",
+  "description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "eslint . && webpack --hide-modules --config ./webpack/test.config.js && nyc --reporter=lcov faucet ./test/build/index.js; nyc report",
+    "fix": "eslint --fix .",
+	"build": "webpack --config ./webpack/build.config.js"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/forceuser/live-data.git"
+  },
+  "keywords": [
+    "live data",
+    "react",
+    "reactjs",
+    "reactive",
+    "data manager",
+    "data binding",
+    "observable",
+    "model",
+    "state",
+    "managment"
+  ],
+  "author": "Vitaly Dub",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/forceuser/live-data/issues"
+  },
+  "homepage": "https://github.com/forceuser/live-data#readme",
+  "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-eslint": "7.2.0",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-istanbul": "^4.1.1",
+    "babel-polyfill": "^6.23.0",
+    "babel-preset-es2015": "^6.24.0",
+    "eslint": "3.18.0",
+    "eslint-plugin-ava": "4.2.0",
+    "eslint-plugin-babel": "4.1.1",
+    "eslint-plugin-import": "2.2.0",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-xo": "1.0.0",
+    "faucet": "0.0.1",
+    "mocha": "^3.4.1",
+    "nyc": "^10.3.2",
+    "sinon": "^2.2.0",
+    "tape": "^4.6.3",
+    "uglifyjs-webpack-plugin": "^0.4.1",
+    "webpack": "^2.5.1"
+  }
+}
