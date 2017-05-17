@@ -62,6 +62,8 @@ test("Create autorun function and unregister", t => {
 	const m = new Manager();
 	const d = m.makeObservable(createTestData());
 	d.a = 7;
+	d.z = {};
+	d.z.x = 11;
 	const autorun = sinon.spy(() => {
 		console.log(d.a + d.b + d.a);
 	});
@@ -79,6 +81,9 @@ test("Create autorun function and unregister", t => {
 	d.b = 2;
 	m.run();
 	t.equal(m.autorun.length, 1);
+	t.equal(autorun.callCount, 2);
+	unregister();
+	t.equal(m.autorun.length, 0);
 	t.equal(autorun.callCount, 2);
 	unregister();
 	t.equal(m.autorun.length, 0);

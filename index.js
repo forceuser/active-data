@@ -38,7 +38,7 @@ export class Manager {
 
 					const val = obj[key];
 					if (val === Object(val)) {
-						return this.observable(val);
+						return this.makeObservable(val);
 					}
 					return val;
 				},
@@ -111,8 +111,7 @@ export class Manager {
 			try {
 				let context;
 				if (this) {
-					const observable = manager.observables.get(this);
-					context = observable ? observable : this;
+					context = manager.observables.get(this);
 				}
 				else {
 					context = manager;
