@@ -21,27 +21,27 @@ npm i active-data
 import ad from "active-data";
 
 ad.setOptions({
-	immediateAutorun: true // make recalculations for each change
+    immediateAutorun: true // make recalculations for each change
 });
 
 const data = ad.makeObservable({
-	welcomeMessage: "Hello,",
-	firstName: "Luke",
-	lastName: "Skywalker"
+    welcomeMessage: "Hello,",
+    firstName: "Luke",
+    lastName: "Skywalker"
 });
 
 data.makeComputed(ad, "fullName", self => `${self.firstName} ${self.lastName}`);
 
 ad.makeAutorun(() => {
-	console.log(data.welcomeMessage + " " data.fullName);
+    console.log(data.welcomeMessage + " " data.fullName);
 });
 // "Hello, Luke Skywalker" will be printed immediately (can be configured)
 
 data.firstName = "Leia"; // will print "Hello, Leia Skywalker"
 
 ad.run(() => {// group changes and run autorun only at the end
-	data.firstName = "Anakin";
-	data.welcomeMessage = "Welcome to dark side,"
+    data.firstName = "Anakin";
+    data.welcomeMessage = "Welcome to dark side,"
 });
 // will print "Welcome to dark side, Anakin Skywalker"
 
