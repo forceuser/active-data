@@ -34,6 +34,9 @@
 		"url": "https://github.com/forceuser/active-data/issues"
 	},
 	"homepage": "https://github.com/forceuser/active-data#readme",
+	"dependencies": {
+
+	},
 	"devDependencies": {
 		"babel-core": "^6.24.0",
 		"babel-eslint": "7.2.0",
