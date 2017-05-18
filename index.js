@@ -1,10 +1,15 @@
 export class Manager {
-	constructor () {
+	constructor (options) {
 		this.isObservableSymbol = Symbol("isObservable");
 		this.observables = new WeakMap();
 		this.cache = new WeakMap();
+		this.options = {immediateAutorun: false};
 		this.callStack = [];
 		this.autorun = [];
+		this.setOptions(options);
+	}
+	setOptions (options = {}) {
+		this.options = Object.assign(this.options, options);
 	}
 	makeObservable (dataSource) {
 		if (!dataSource) {
@@ -55,12 +60,7 @@ export class Manager {
 						if (callStacks) {
 							callStacks.forEach((callStack) => {
 								callStack.reverse().some(({obj, call}) => {
-									const cacheByObject = this.cache.get(obj);
-									let record;
-									if (cacheByObject) {
-										record = cacheByObject.get(call);
-									}
-
+									const record = this.cache.get(obj).get(call);
 									if (!record || !record.valid) {
 										return true;
 									}
@@ -72,7 +72,14 @@ export class Manager {
 						}
 
 						toUpdate.delete(key);
-						this.runDeferred();
+						if (!this.inRunSection) {
+							if (this.options.immediateAutorun) {
+								this.run();
+							}
+							else {
+								this.runDeferred();
+							}
+						}
 					}
 					return true;
 				}
@@ -135,12 +142,17 @@ export class Manager {
 		});
 		return obj;
 	}
-	makeAutorun (call, runDeferred = true) {
+	makeAutorun (call, run = true) {
 		const manager = this;
 		const updatable = this.makeUpdatable(this, call);
 		manager.autorun.push(updatable);
-		if (runDeferred) {
-			manager.runDeferred();
+		if (run) {
+			if (this.options.immediateAutorun) {
+				manager.run();
+			}
+			else {
+				manager.runDeferred();
+			}
 		}
 		return function unregister () {
 			const idx = manager.autorun.indexOf(updatable);
@@ -153,19 +165,31 @@ export class Manager {
 		return obj[this.isObservableSymbol] === true;
 	}
 	run (action) {
-		if (typeof action === "function") {
-			action();
-		}
-		this.runScheduled = false;
-		this.autorun.forEach(updatable => updatable());
-		typeof this.onAfterRun === "function" && this.onAfterRun();
-	}
-	runDeferred (action) {
-		if (!this.runScheduled) {
-			this.runScheduled = setTimeout(() => this.run());
+		this.inRunSection = true;
+		try {
 			if (typeof action === "function") {
 				action();
 			}
+			this.runScheduled = false;
+			this.autorun.forEach(updatable => updatable());
+			typeof this.onAfterRun === "function" && this.onAfterRun();
+		}
+		finally {
+			this.inRunSection = false;
+		}
+	}
+	runDeferred (action) {
+		this.inRunSection = true;
+		try {
+			if (!this.runScheduled) {
+				this.runScheduled = setTimeout(() => this.run());
+			}
+			if (typeof action === "function") {
+				action();
+			}
+		}
+		finally {
+			this.inRunSection = false;
 		}
 	}
 }
