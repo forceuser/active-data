@@ -57,7 +57,7 @@ Chrome | Edge | Firefox | Internet Explorer | Opera | Safari
 
 #### Servers/runtimes
 
-Supported on **Node.js** version **6** or higher
+Supported on **Node.js** version **6** and higher
 
 #### Proxy compatibility tables
 
