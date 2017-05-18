@@ -9,7 +9,9 @@ module.exports = {
 		path: path.resolve(__dirname, "../test/build"),
 		filename: "index.js"
 	},
-	target: "node",
+	node: {
+		fs: "empty"
+	},
 	devtool: "source-map",
 	module: {
 		rules: [{
