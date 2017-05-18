@@ -19,6 +19,7 @@ npm i active-data
 ## Example
 ```js
 import ad from "active-data";
+
 ad.setOptions({
 	immediateAutorun: true // make recalculations for each change
 });
