@@ -8,3 +8,4 @@
 jspm.config.js
 gruntfile.js
 .eslintrc.js
+release.js

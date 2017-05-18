@@ -5,15 +5,10 @@ module.exports = {
     },
     "plugins": [
         "babel",
-        "ava",
-        "xo",
-        "promise",
         "import"
     ],
     "extends": [
         "eslint:recommended",
-        "plugin:ava/recommended",
-        "plugin:xo/recommended"
     ],
     "env": {
         "browser": true,
@@ -110,11 +105,6 @@ module.exports = {
         "prefer-template": 0,
         "prefer-arrow-callback": 1,
 
-		"xo/no-abusive-eslint-disable": [0],
-		"xo/filename-case": ["error", {"case": "kebabCase"}],
-		"xo/throw-new-error": ["error"],
-		"xo/catch-error-name": ["error", {"name": "error"}],
-        "xo/explicit-length-check": [0],
 		//======================================================================
         "babel/new-cap": [2, {
             "newIsCap": true,
@@ -123,7 +113,6 @@ module.exports = {
         "babel/object-curly-spacing": [2, "never"],
         "object-shorthand": 1,
         //======================================================================
-        "promise/param-names": 2,
         // disabled because of https://github.com/benmosher/eslint-plugin-import/issues/268
         // "import/default": 2,
         "import/export": 2,
