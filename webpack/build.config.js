@@ -4,12 +4,13 @@ const webpack = require("webpack");
 const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = {
-	entry: [
-		path.resolve(__dirname, "../index.js")
-	],
+	entry: {
+		"active-data": path.resolve(__dirname, "../index.js"),
+    	"active-data.min": path.resolve(__dirname, "../index.js")
+	},
 	output: {
 		path: path.resolve(__dirname, "../build"),
-		filename: "index.js"
+		filename: "[name].js"
 	},
 	devtool: "source-map",
 	module: {
@@ -31,6 +32,8 @@ module.exports = {
 	},
 	plugins: [
 		new UglifyJSPlugin({
+			include: /\.min\.js$/,
+      		minimize: true,
 			sourceMap: true,
 			compress: {
 				warnings: false,

@@ -1,5 +1,5 @@
 # active-data
-Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects
+Reactive data manager, inspired by MobX. Automatically detects associated data and performs updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects
 
 <a href="https://travis-ci.org/forceuser/active-data" target="_blank">![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)</a>
 <a href="https://codecov.io/gh/forceuser/active-data" target="_blank">![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)</a>
