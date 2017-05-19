@@ -1,4 +1,4 @@
-import ad from "active-data";
+const ad = require("active-data");
 
 ad.setOptions({
 	immediateAutorun: true // make recalculations for each change
