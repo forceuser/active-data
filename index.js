@@ -1,4 +1,14 @@
+/**
+ * Менеджер для
+ *
+ * @example
+ */
 export class Manager {
+	/**
+	* @constructor
+	*
+	* @param {Object} [options]
+	*/
 	constructor (options) {
 		this.isObservableSymbol = Symbol("isObservable");
 		this.observables = new WeakMap();
@@ -11,6 +21,12 @@ export class Manager {
 	setOptions (options = {}) {
 		this.options = Object.assign(this.options, options);
 	}
+	/**
+	* Оборачивет источник данных и возвращает объект доступ к свойствам которого будет остлеживатся
+	* Все дочерние объекты и массивы также будут оборачиватся при доступе к ним
+	* @param {(Object|Array)} dataSource источник данных
+	* @return {Observale} отслеживаемый объект
+	*/
 	makeObservable (dataSource) {
 		if (!dataSource) {
 			return dataSource;
@@ -88,6 +104,11 @@ export class Manager {
 		}
 		return observable;
 	}
+	/**
+	* Создает функцию
+	* @param {Observable} obj
+	* @param {Function} call
+	*/
 	makeUpdatable (obj, call) {
 		const manager = this;
 		return function () {
@@ -135,6 +156,12 @@ export class Manager {
 			}
 		};
 	}
+	/**
+	* Создает функцию
+	* @param {Observable} obj
+	* @param {String} key
+	* @param {Function} call
+	*/
 	makeComputed (obj, key, call) {
 		Object.defineProperty(obj, key, {
 			enumerable: true,
@@ -142,6 +169,11 @@ export class Manager {
 		});
 		return obj;
 	}
+	/**
+	* Создает функцию автозапускаемую при изменении используемых в ней данных
+	* @param {Function} call
+	* @param {Boolean} run
+	*/
 	makeAutorun (call, run = true) {
 		const manager = this;
 		const updatable = this.makeUpdatable(this, call);
@@ -161,9 +193,17 @@ export class Manager {
 			}
 		};
 	}
+	/**
+	* Проверяет является ли объект наблюдаемым
+	* @param {(Observable|Object|Array)} obj
+	*/
 	isObservable (obj) {
 		return obj[this.isObservableSymbol] === true;
 	}
+	/**
+	* Запускает все автозапускаемые функции которые помечены как невалидные
+	* @param {Function} [action] Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+	*/
 	run (action) {
 		this.inRunSection = true;
 		try {
@@ -178,11 +218,17 @@ export class Manager {
 			this.inRunSection = false;
 		}
 	}
-	runDeferred (action) {
+	/**
+	* Запускает все автозапускаемые функции которые помечены как невалидные
+	* В отличии от run запускает их не сразу а по таймауту
+	* @param {Function} [action] Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+	* @param {number} [timeout=0] Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+	*/
+	runDeferred (action, timeout = 0) {
 		this.inRunSection = true;
 		try {
 			if (!this.runScheduled) {
-				this.runScheduled = setTimeout(() => this.run());
+				this.runScheduled = setTimeout(() => this.run(), timeout);
 			}
 			if (typeof action === "function") {
 				action();
@@ -194,6 +240,10 @@ export class Manager {
 	}
 }
 
+/**
+* Экспортируемый по умолчанию экземпляр Manager
+* @instance
+*/
 Manager.default = new Manager();
 Manager.default.Manager = Manager;
 
