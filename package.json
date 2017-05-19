@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "build/active-data.js",
 	"scripts": {
@@ -57,5 +57,6 @@
 		"tape": "^4.6.3",
 		"uglifyjs-webpack-plugin": "^0.4.1",
 		"webpack": "^2.5.1"
-	}
+	},
+	"tonicExampleFilename": "tonic-example.js"
 }
