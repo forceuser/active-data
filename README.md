@@ -13,7 +13,8 @@ npm i active-data
 #### Or just use CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.1/active-data.min.js"></script>
+<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.1/active-data.min.js">
+</script>
 ```
 
 ## Example
