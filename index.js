@@ -195,5 +195,6 @@ export class Manager {
 }
 
 Manager.default = new Manager();
+Manager.default.Manager = Manager;
 
 export default Manager.default;

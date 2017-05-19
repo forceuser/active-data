@@ -11,7 +11,6 @@ if (
 	shell.exec("npm test").code === 0 &&
 	shell.exec("npm run build").code === 0
 ) {
-	console.log("tested and builded");
 	pkg = JSON.parse(fs.readFileSync("./package.json", "utf8"));
 	const oldVersion = pkg.version;
 	pkg.version = semver.inc(pkg.version, "patch");
