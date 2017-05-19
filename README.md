@@ -40,11 +40,11 @@ ad.makeAutorun(() => {
 
 data.firstName = "Leia"; // will print "Hello, Leia Skywalker"
 
-ad.run(() => {// group changes and run autorun only at the end
+ad.run(() => {
+    // group changes and run autorun function only at the end
     data.firstName = "Anakin";
     data.welcomeMessage = "Welcome to dark side,"
 });
-
 ```
 
 ## Compatibility
