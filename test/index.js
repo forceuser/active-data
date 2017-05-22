@@ -66,6 +66,23 @@ test("Create computed property", t => {
 	d.x = "x1";
 	d.y = "y1";
 	console.log(d.comp1);
+
+	const comp2 = sinon.spy(self => self.arr.filter(i => !i));
+	const comp3 = sinon.spy(self => self.arr.filter(i => !i));
+	m.makeComputed(d, "comp2", comp2);
+	m.makeComputed(d, "comp3", comp3);
+	console.log(d.comp2);
+	console.log(d.comp3);
+	t.equal(comp2.callCount, 1);
+	d.arr = d.arr.concat([true, false, false]);
+	console.log(d.comp2);
+	t.equal(comp2.callCount, 2);
+	d.arr.push(true);
+	console.log(d.comp2);
+	t.equal(comp2.callCount, 3);
+	console.log(d.comp2);
+	t.equal(comp2.callCount, 3);
+	t.equal(d.comp2.length, 2);
 	t.end();
 });
 
