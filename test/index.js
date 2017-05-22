@@ -19,7 +19,8 @@ function createTestData () {
 					}
 				}
 			}
-		}
+		},
+		arr: []
 	};
 }
 
@@ -49,6 +50,7 @@ test("Create observable", t => {
 	const d4 = m.makeObservable(null);
 	t.equal(d4, null);
 	t.ok(m.isObservable(d.d.d1.d11.d111));
+	t.notOk(m.isObservable(d.arr.map));
 	t.end();
 });
 
@@ -94,7 +96,7 @@ test("Create autorun function and unregister", t => {
 		console.log(d.a + d.b + d.a);
 	});
 	t.equal(m.autorun.length, 0);
-	const unregister = m.makeAutorun(autorun);
+	const {unregister} = m.makeAutorun(autorun);
 	t.equal(m.autorun.length, 1);
 	t.equal(autorun.callCount, 0);
 	m.run();

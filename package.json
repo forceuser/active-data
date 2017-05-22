@@ -1,10 +1,10 @@
 {
 	"name": "active-data",
-	"version": "1.0.7",
+	"version": "1.0.13",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "build/active-data.js",
-	"engines" : {
-		"node" : ">=6.0.0"
+	"engines": {
+		"node": ">=6.0.0"
 	},
 	"scripts": {
 		"test": "eslint . && webpack --hide-modules --config ./webpack/test.config.js && nyc --reporter=lcov node ./test/build/index.js | faucet && nyc report",

@@ -26,23 +26,23 @@ export class Manager {
 					if (key === this.isObservableSymbol) {
 						return true;
 					}
-
 					if (this.callStack.length) {
 						const callStack = [...this.callStack];
 						const context = callStack[callStack.length - 1];
-						if (!context.keys.includes(key)) {
-							context.keys.push(key);
-							let callStacks = toUpdate.get(key);
-							if (!callStacks) {
-								callStacks = [];
-								toUpdate.set(key, callStacks);
-							}
-							callStacks.push(callStack);
+
+						let callStacks = toUpdate.get(key);
+						if (!callStacks) {
+							callStacks = new Map();
+							toUpdate.set(key, callStacks);
+							callStacks.set(context.call, callStack);
+						}
+						if (!callStacks.has(context.call)) {
+							callStacks.set(context.call, callStack);
 						}
 					}
 
 					const val = obj[key];
-					if (val === Object(val)) {
+					if (val === Object(val) && typeof val !== "function") {
 						return this.makeObservable(val);
 					}
 					return val;
@@ -53,7 +53,7 @@ export class Manager {
 					}
 
 
-					if (val !== obj[key]) {
+					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
 						obj[key] = val;
 						const callStacks = toUpdate.get(key);
 
@@ -114,7 +114,7 @@ export class Manager {
 				return record.value;
 			}
 			record.computing = true;
-			manager.callStack.push({obj, call, keys: []});
+			manager.callStack.push({obj, call});
 			try {
 				let context;
 				if (this) {
@@ -154,11 +154,14 @@ export class Manager {
 				manager.runDeferred();
 			}
 		}
-		return function unregister () {
-			const idx = manager.autorun.indexOf(updatable);
-			if (idx >= 0) {
-				manager.autorun.splice(idx, 1);
-			}
+		return {
+			unregister () {
+				const idx = manager.autorun.indexOf(updatable);
+				if (idx >= 0) {
+					manager.autorun.splice(idx, 1);
+				}
+			},
+			autorun: updatable
 		};
 	}
 	isObservable (obj) {
