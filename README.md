@@ -7,13 +7,17 @@ Tiny and convenient reactive data manager, inspired by MobX. Automatically detec
 #### Install as npm package
 
 ```shell
-npm i active-data
+npm i active-data --save
 ```
+
+#### Or simply download \*.js file
+
+v1.0.17 minified: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.0.17/active-data.min.js)
 
 #### Or just use CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.16/active-data.min.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.17/active-data.min.js">
 </script>
 ```
 
