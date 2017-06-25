@@ -16,9 +16,7 @@
 		"major-release": "npm test && npm build && va-release --version major"
 	},
 	"va-release": {
-		"assets": [
-			"build/**/*"
-		],
+		"assets": "build/**/*",
 		"files": [
 			{
 				"cwd": "templates/",
