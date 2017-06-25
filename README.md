@@ -1,4 +1,4 @@
-# active-data | [![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data) [![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data) [![dependency Status](https://img.shields.io/npm/v/active-data.svg)](https://www.npmjs.com/package/active-data)
+# active-data | [![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data) [![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data) [![npm repository](https://img.shields.io/npm/v/active-data.svg)](https://www.npmjs.com/package/active-data)
 
 Tiny and convenient reactive data manager, inspired by MobX. Automatically detects associated data and performs updates to your views or everything dependent on that data when it changes. Implemented with javascript Proxy objects
 
@@ -13,7 +13,7 @@ npm i active-data
 #### Or just use CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.1/active-data.min.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/releases/download/1.0.15/active-data.min.js">
 </script>
 ```
 
