@@ -24,8 +24,8 @@ active-data@1.0.25 minified file: [active-data.min.js](https://github.com/forceu
 And then use **activeData** as global variable
 ```html
 <script>
-	const data = activeData.makeObservable({c: 1});
-	activeData.makeAutorun(() => {document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`});
+    const data = activeData.makeObservable({c: 1});
+    activeData.makeAutorun(() => {document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`});
 </script>
 ```
 ## [Documentation](./DOCUMENTATION.md)
