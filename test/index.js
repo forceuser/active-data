@@ -230,3 +230,32 @@ test("Immediate autorun option", t => {
 	});
 	t.equal(autorun.callCount, 3);
 });
+
+test("Test disabled autorun", t => {
+	const m = new Manager({immediateAutorun: true, enabled: false});
+	const d = m.makeObservable(createTestData());
+	const autorun = sinon.spy(() => {
+		console.log(d.a + d.b);
+	});
+	m.makeAutorun(autorun);
+	d.a = 3123;
+	m.run();
+	t.equal(autorun.callCount, 0);
+	t.end();
+});
+
+test("Test disabled autorun - deferred", t => {
+	t.timeoutAfter(3000);
+	const m = new Manager({enabled: false});
+	const d = m.makeObservable(createTestData());
+	const autorun = sinon.spy(() => {
+		console.log(d.a + d.b);
+	});
+	m.makeAutorun(autorun);
+	d.a = 3123;
+	m.runDeferred();
+	setTimeout(() => {
+		t.equal(autorun.callCount, 0);
+		t.end();
+	}, 100);
+});

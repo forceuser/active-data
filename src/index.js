@@ -3,7 +3,10 @@ export class Manager {
 		this.isObservableSymbol = Symbol("isObservable");
 		this.observables = new WeakMap();
 		this.cache = new WeakMap();
-		this.options = {immediateAutorun: false};
+		this.options = {
+			enabled: true,
+			immediateAutorun: false
+		};
 		this.callStack = [];
 		this.autorun = [];
 		this.setOptions(options);
@@ -168,6 +171,9 @@ export class Manager {
 		return obj[this.isObservableSymbol] === true;
 	}
 	run (action) {
+		if (!this.options.enabled) {
+			return;
+		}
 		this.inRunSection = true;
 		try {
 			if (typeof action === "function") {
@@ -182,6 +188,9 @@ export class Manager {
 		}
 	}
 	runDeferred (action) {
+		if (!this.options.enabled) {
+			return;
+		}
 		this.inRunSection = true;
 		try {
 			if (!this.runScheduled) {
