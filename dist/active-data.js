@@ -96,7 +96,10 @@ var Manager = function () {
 		this.isObservableSymbol = Symbol("isObservable");
 		this.observables = new WeakMap();
 		this.cache = new WeakMap();
-		this.options = { immediateAutorun: false };
+		this.options = {
+			enabled: true,
+			immediateAutorun: false
+		};
 		this.callStack = [];
 		this.autorun = [];
 		this.setOptions(options);
@@ -279,6 +282,9 @@ var Manager = function () {
 	}, {
 		key: "run",
 		value: function run(action) {
+			if (!this.options.enabled) {
+				return;
+			}
 			this.inRunSection = true;
 			try {
 				if (typeof action === "function") {
@@ -298,6 +304,9 @@ var Manager = function () {
 		value: function runDeferred(action) {
 			var _this2 = this;
 
+			if (!this.options.enabled) {
+				return;
+			}
 			this.inRunSection = true;
 			try {
 				if (!this.runScheduled) {
