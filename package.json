@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "1.0.23",
+	"version": "1.0.24",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
 	"engines": {
@@ -55,7 +55,7 @@
 	"homepage": "https://github.com/forceuser/active-data#readme",
 	"dependencies": {
 		"documentation": "^4.0.0-rc.1",
-		"va-release": "^1.0.4"
+		"va-release": "^1.0.6"
 	},
 	"devDependencies": {
 		"babel-core": "^6.24.0",
