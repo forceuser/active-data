@@ -12,12 +12,12 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-1.0.19 minified: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.0.19/active-data.min.js)
+{{version}} minified: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.min.js)
 
 #### Or just use CDN
 
 ```html
-<script src="//gitcdn.xyz/repo/forceuser/active-data/1.0.19/dist/active-data.min.js">
+<script src="//gitcdn.xyz/repo/forceuser/active-data/{{version}}/dist/active-data.min.js">
 </script>
 ```
 
