@@ -25,7 +25,9 @@ And then use **activeData** as global variable
 ```html
 <script>
     const data = activeData.makeObservable({c: 1});
-    activeData.makeAutorun(() => {document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`});
+    activeData.makeAutorun(() => {
+		document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
+	});
 </script>
 ```
 ## [Documentation](./DOCUMENTATION.md)
