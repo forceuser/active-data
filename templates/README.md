@@ -17,8 +17,13 @@ npm i active-data --save
 #### Or just use CDN
 
 ```html
-<script src="//gitcdn.xyz/repo/forceuser/active-data/{{version}}/dist/active-data.min.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/{{version}}/dist/active-data.min.js">
 </script>
+
+<script>
+    const data = activeData.makeObservable({val: "observable data"});
+</script>
+
 ```
 
 ## Example
