@@ -1,7 +1,6 @@
 import test from "tape";
 import sinon from "sinon";
-import liveData from "../index";
-import {Manager} from "../index";
+import {Manager} from "../src/index";
 
 function createTestData () {
 	return {

@@ -5,8 +5,8 @@ const UglifyJSPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = {
 	entry: {
-		"active-data": path.resolve(__dirname, "../cjs-entry.js"),
-    	"active-data.min": path.resolve(__dirname, "../cjs-entry.js")
+		"active-data": path.resolve(__dirname, "../src/cjs-entry.js"),
+    	"active-data.min": path.resolve(__dirname, "../src/cjs-entry.js")
 	},
 	output: {
 		path: path.resolve(__dirname, "../dist"),

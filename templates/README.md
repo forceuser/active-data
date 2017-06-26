@@ -12,19 +12,22 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-{{version}} minified: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.min.js)
+active-data@{{version}} minified file: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.min.js)
 
-#### Or just use CDN
+#### Or just load from CDN
 
 ```html
 <script src="//cdn.rawgit.com/forceuser/active-data/{{version}}/dist/active-data.min.js">
 </script>
+```
 
+And then use **activeData** as global variable
+```html
 <script>
     const data = activeData.makeObservable({val: "observable data"});
 </script>
-
 ```
+## [Documentation](./DOCUMENTATION.md)
 
 ## Example
 ```js

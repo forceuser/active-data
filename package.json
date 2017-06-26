@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "1.0.22",
+	"version": "1.0.23",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
 	"engines": {
@@ -11,9 +11,10 @@
 		"fix": "eslint --fix .",
 		"coverage": "codecov",
 		"build": "webpack --config ./webpack/build.config.js",
-		"patch-release": "npm test && npm run build && va-release --version patch",
-		"minor-release": "npm test && npm run build && va-release --version minor",
-		"major-release": "npm test && npm run build && va-release --version major"
+		"documentation": "documentation build src/index.js -f md > DOCUMENTATION.md",
+		"patch-release": "npm test && npm run build && npm run documentation && va-release --version patch",
+		"minor-release": "npm test && npm run build && npm run documentation && va-release --version minor",
+		"major-release": "npm test && npm run build && npm run documentation && va-release --version major"
 	},
 	"va-release": {
 		"assets": "dist/**/*",
@@ -53,6 +54,7 @@
 	},
 	"homepage": "https://github.com/forceuser/active-data#readme",
 	"dependencies": {
+		"documentation": "^4.0.0-rc.1",
 		"va-release": "^1.0.4"
 	},
 	"devDependencies": {
