@@ -9,7 +9,7 @@ module.exports = {
     	"active-data.min": path.resolve(__dirname, "../cjs-entry.js")
 	},
 	output: {
-		path: path.resolve(__dirname, "../build"),
+		path: path.resolve(__dirname, "../dist"),
 		filename: "[name].js",
 		library: "[name].js",
 		libraryTarget: "umd"
