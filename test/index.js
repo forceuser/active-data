@@ -102,36 +102,36 @@ test("Computed property lazyness", t => {
 	t.end();
 });
 
-test("Create autorun function and unregister", t => {
+test("Create reaction function and unregister", t => {
 	const m = new Manager();
 	const d = m.makeObservable(createTestData());
 	d.a = 7;
 	d.z = {};
 	d.z.x = 11;
-	const autorun = sinon.spy(() => {
+	const reaction = sinon.spy(() => {
 		console.log(d.a + d.b + d.a);
 	});
-	t.equal(m.autorun.length, 0);
-	const {unregister} = m.makeAutorun(autorun);
-	t.equal(m.autorun.length, 1);
-	t.equal(autorun.callCount, 0);
+	t.equal(m.reactions.length, 0);
+	const {unregister} = m.makeReaction(reaction);
+	t.equal(m.reactions.length, 1);
+	t.equal(reaction.callCount, 0);
 	m.run();
-	t.equal(m.autorun.length, 1);
-	t.equal(autorun.callCount, 1);
+	t.equal(m.reactions.length, 1);
+	t.equal(reaction.callCount, 1);
 	m.run();
-	t.equal(m.autorun.length, 1);
-	t.equal(autorun.callCount, 1);
+	t.equal(m.reactions.length, 1);
+	t.equal(reaction.callCount, 1);
 	d.a = 3;
 	d.b = 2;
 	m.run();
-	t.equal(m.autorun.length, 1);
-	t.equal(autorun.callCount, 2);
+	t.equal(m.reactions.length, 1);
+	t.equal(reaction.callCount, 2);
 	unregister();
-	t.equal(m.autorun.length, 0);
-	t.equal(autorun.callCount, 2);
+	t.equal(m.reactions.length, 0);
+	t.equal(reaction.callCount, 2);
 	unregister();
-	t.equal(m.autorun.length, 0);
-	t.equal(autorun.callCount, 2);
+	t.equal(m.reactions.length, 0);
+	t.equal(reaction.callCount, 2);
 	t.end();
 });
 
@@ -167,14 +167,14 @@ test("Changing observable inside computed property", t => {
 	t.end();
 });
 
-test("Changing observable inside autorun function", t => {
+test("Changing observable inside reaction function", t => {
 	const m = new Manager();
 	const d = m.makeObservable(createTestData());
 	t.comment("│    changing to the new value");
-	m.makeAutorun(() => d.a = 3, false);
+	m.makeReaction(() => d.a = 3, false);
 	t.throws(() => m.run());
 	t.comment("│    changing to the same value");
-	m.makeAutorun(() => d.b = 2, false);
+	m.makeReaction(() => d.b = 2, false);
 	t.throws(() => m.run());
 	t.end();
 });
@@ -184,7 +184,7 @@ test("Autorun on data change", t => {
 	const m = new Manager();
 	const d = m.makeObservable(createTestData());
 	let runCount = 0;
-	m.makeAutorun(() => {
+	m.makeReaction(() => {
 		console.log(d.a + d.b);
 		if (runCount === 0) {
 			t.comment(`│    check initial value`);
@@ -204,58 +204,58 @@ test("Autorun on data change", t => {
 	setTimeout(() => d.a = 3, 100);
 });
 
-test("Immediate autorun option", t => {
+test("Immediate reaction option", t => {
 	t.timeoutAfter(3000);
-	const m = new Manager({immediateAutorun: true});
+	const m = new Manager({immediateReaction: true});
 	const d = m.makeObservable(createTestData());
-	const autorun = sinon.spy(() => {
+	const reaction = sinon.spy(() => {
 		console.log(d.a + d.b);
 	});
-	m.makeAutorun(autorun, true);
-	t.equal(autorun.callCount, 1);
+	m.makeReaction(reaction, true);
+	t.equal(reaction.callCount, 1);
 	d.a = 12;
-	t.equal(autorun.callCount, 2);
+	t.equal(reaction.callCount, 2);
 	m.run(() => {
 		d.a = 13;
 		d.b = 14;
 	});
-	t.equal(autorun.callCount, 3);
+	t.equal(reaction.callCount, 3);
 	m.onAfterRun = () => {
-		t.equal(autorun.callCount, 4);
+		t.equal(reaction.callCount, 4);
 		t.end();
 	};
 	m.runDeferred(() => {
 		d.a = 15;
 		d.b = 16;
 	});
-	t.equal(autorun.callCount, 3);
+	t.equal(reaction.callCount, 3);
 });
 
-test("Test disabled autorun", t => {
-	const m = new Manager({immediateAutorun: true, enabled: false});
+test("Test disabled reaction", t => {
+	const m = new Manager({immediateReaction: true, enabled: false});
 	const d = m.makeObservable(createTestData());
-	const autorun = sinon.spy(() => {
+	const reaction = sinon.spy(() => {
 		console.log(d.a + d.b);
 	});
-	m.makeAutorun(autorun);
+	m.makeReaction(reaction);
 	d.a = 3123;
 	m.run();
-	t.equal(autorun.callCount, 0);
+	t.equal(reaction.callCount, 0);
 	t.end();
 });
 
-test("Test disabled autorun - deferred", t => {
+test("Test disabled reaction - deferred", t => {
 	t.timeoutAfter(3000);
 	const m = new Manager({enabled: false});
 	const d = m.makeObservable(createTestData());
-	const autorun = sinon.spy(() => {
+	const reaction = sinon.spy(() => {
 		console.log(d.a + d.b);
 	});
-	m.makeAutorun(autorun);
+	m.makeReaction(reaction);
 	d.a = 3123;
 	m.runDeferred();
 	setTimeout(() => {
-		t.equal(autorun.callCount, 0);
+		t.equal(reaction.callCount, 0);
 		t.end();
 	}, 100);
 });

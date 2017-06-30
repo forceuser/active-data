@@ -89,6 +89,12 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/**
+* Реактивный менеджер данных, следящий за изменениями данных и выполняющий действия в ответ на эти изменения
+* Отслеживание происходит лениво, данные обновляются только когда они требуются
+*
+* @param {ManagerOptions} [options] Настройки менеджера
+*/
 var Manager = function () {
 	function Manager(options) {
 		_classCallCheck(this, Manager);
@@ -98,12 +104,18 @@ var Manager = function () {
 		this.cache = new WeakMap();
 		this.options = {
 			enabled: true,
-			immediateAutorun: false
+			immediateReaction: false
 		};
 		this.callStack = [];
-		this.autorun = [];
+		this.reactions = [];
 		this.setOptions(options);
 	}
+	/**
+ * Динамически устанавливает настройки работы менеджера данных
+ *
+ * @param {ManagerOptions} [options] Настройки менеджера
+ */
+
 
 	_createClass(Manager, [{
 		key: "setOptions",
@@ -112,6 +124,14 @@ var Manager = function () {
 
 			this.options = Object.assign(this.options, options);
 		}
+		/**
+  * Оборачивет источник данных и возвращает объект доступ к свойствам которого будет остлеживатся
+  * Все дочерние объекты и массивы также будут оборачиватся при доступе к ним
+  *
+  * @param {(Object|Array)} dataSource источник данных
+  * @return {Observale} отслеживаемый объект
+  */
+
 	}, {
 		key: "makeObservable",
 		value: function makeObservable(dataSource) {
@@ -154,7 +174,7 @@ var Manager = function () {
 					},
 					set: function set(obj, key, val, receiver) {
 						if (_this.callStack && _this.callStack.length) {
-							throw new Error("Changing observable objects is restricted inside computed properties and autorun functions!");
+							throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
 						}
 
 						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
@@ -179,7 +199,7 @@ var Manager = function () {
 
 							toUpdate.delete(key);
 							if (!_this.inRunSection) {
-								if (_this.options.immediateAutorun) {
+								if (_this.options.immediateReaction) {
 									_this.run();
 								} else {
 									_this.runDeferred();
@@ -193,6 +213,14 @@ var Manager = function () {
 			}
 			return observable;
 		}
+		/**
+  * Создает функцию {@link UpdatableFunction}
+  *
+  * @param {Object} obj целефой объект
+  * @param {Function} call
+  * @return {UpdatableFunction}
+  */
+
 	}, {
 		key: "makeUpdatable",
 		value: function makeUpdatable(obj, call) {
@@ -239,25 +267,40 @@ var Manager = function () {
 				}
 			};
 		}
+		/**
+  * Создает функцию
+  *
+  * @param {Observable} obj
+  * @param {String} key
+  * @param {Function} call
+  */
+
 	}, {
 		key: "makeComputed",
 		value: function makeComputed(obj, key, call) {
 			Object.defineProperty(obj, key, {
 				enumerable: true,
-				get: this.makeUpdatable(obj, call, obj)
+				get: this.makeUpdatable(obj, call)
 			});
 			return obj;
 		}
+		/**
+  * Создает {@link UpdatableFunction} и помещает ее в список для проверки на валидность при изменении данных. Менеджер автозапускает эту функцию если ее результат стал невалидным
+  *
+  * @param {Function} call
+  * @param {Boolean} run
+  */
+
 	}, {
-		key: "makeAutorun",
-		value: function makeAutorun(call) {
+		key: "makeReaction",
+		value: function makeReaction(call) {
 			var run = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
 			var manager = this;
 			var updatable = this.makeUpdatable(this, call);
-			manager.autorun.push(updatable);
+			manager.reactions.push(updatable);
 			if (run) {
-				if (this.options.immediateAutorun) {
+				if (this.options.immediateReaction) {
 					manager.run();
 				} else {
 					manager.runDeferred();
@@ -265,20 +308,33 @@ var Manager = function () {
 			}
 			return {
 				unregister: function unregister() {
-					var idx = manager.autorun.indexOf(updatable);
+					var idx = manager.reactions.indexOf(updatable);
 					if (idx >= 0) {
-						manager.autorun.splice(idx, 1);
+						manager.reactions.splice(idx, 1);
 					}
 				},
 
-				autorun: updatable
+				reaction: updatable
 			};
 		}
+
+		/**
+  * Проверяет является ли объект наблюдаемым
+  *
+  * @param {(Observable|Object|Array)} obj
+  */
+
 	}, {
 		key: "isObservable",
 		value: function isObservable(obj) {
 			return obj[this.isObservableSymbol] === true;
 		}
+		/**
+  * Запускает все автозапускаемые функции которые помечены как невалидные
+  *
+  * @param {Function} [action] Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+  */
+
 	}, {
 		key: "run",
 		value: function run(action) {
@@ -291,7 +347,7 @@ var Manager = function () {
 					action();
 				}
 				this.runScheduled = false;
-				this.autorun.forEach(function (updatable) {
+				this.reactions.forEach(function (updatable) {
 					return updatable();
 				});
 				typeof this.onAfterRun === "function" && this.onAfterRun();
@@ -299,6 +355,14 @@ var Manager = function () {
 				this.inRunSection = false;
 			}
 		}
+		/**
+  * Запускает все {@link UpdatableFunction} которые помечены как невалидные
+  * В отличии от run запускает их не сразу а по указанному таймауту
+  *
+  * @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
+  * @param {number} [timeout=0] Таймаут запуска реакции
+  */
+
 	}, {
 		key: "runDeferred",
 		value: function runDeferred(action) {
@@ -330,6 +394,28 @@ Manager.default = new Manager();
 Manager.default.Manager = Manager;
 
 /* harmony default export */ __webpack_exports__["default"] = (Manager.default);
+
+/**
+ * @typedef ManagerOptions
+ * @name ManagerOptions
+ * @type {object}
+ * @param {boolean} [immediateReaction=false] - Запускать реакции сразу после изменения данных (по умолчанию реакции выполняются по нулевому таймауту)
+ * @param {boolean} [enabled=true] - Активен ли менеджер данных
+ */
+
+/**
+ * @typedef Observable
+ * @name Observable
+ * @description Обьект или массив доступ к свойствам которого отслеживается
+ */
+
+/**
+ * @typedef UpdatableFunction
+ * @name UpdatableFunction
+ * @description Функция которая кеширует свое значение и хранит состояние валидности
+ *
+ * При изменении {@link Observable} данных которые были использованы при вычилении этой функции ее кеш инвалидируется
+ */
 
 /***/ }),
 /* 1 */

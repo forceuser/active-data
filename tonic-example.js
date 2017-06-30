@@ -1,7 +1,7 @@
 const ad = require("active-data");
 
 ad.setOptions({
-	immediateAutorun: true // make recalculations for each change
+	immediateReaction: true // make recalculations for each change
 });
 
 const data = ad.makeObservable({
@@ -12,7 +12,7 @@ const data = ad.makeObservable({
 
 ad.makeComputed(data, "fullName", self => `${self.firstName} ${self.lastName}`);
 
-ad.makeAutorun(() => {
+ad.makeReaction(() => {
 	console.log(data.welcomeMessage + " " + data.fullName);
 });
 // "Hello, Luke Skywalker" will be printed immediately (can be configured)
