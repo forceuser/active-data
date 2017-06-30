@@ -1785,18 +1785,6 @@ function spy(object, property, types) {
     return wrapMethod(object, property, descriptor);
 }
 
-function matchingFake(fakes, args, strict) {
-    if (!fakes) {
-        return undefined;
-    }
-
-    var matchingFakes = fakes.filter(function (fake) {
-        return fake.matches(args, strict);
-    });
-
-    return matchingFakes.pop();
-}
-
 function incrementCallCount() {
     this.called = true;
     this.callCount += 1;
@@ -1918,13 +1906,20 @@ var spyApi = {
     },
 
     invoke: function invoke(func, thisValue, args) {
-        var matching = matchingFake(this.fakes, args);
+        var matchings = this.matchingFakes(args);
+        var currentCallId = callId++;
         var exception, returnValue;
 
         incrementCallCount.call(this);
         push.call(this.thisValues, thisValue);
         push.call(this.args, args);
-        push.call(this.callIds, callId++);
+        push.call(this.callIds, currentCallId);
+        matchings.forEach(function (matching) {
+            incrementCallCount.call(matching);
+            push.call(matching.thisValues, thisValue);
+            push.call(matching.args, args);
+            push.call(matching.callIds, currentCallId);
+        });
 
         // Make call properties available from within the spied function:
         createCallProperties.call(this);
@@ -1932,11 +1927,7 @@ var spyApi = {
         try {
             this.invoking = true;
 
-            if (matching) {
-                returnValue = matching.invoke(func, thisValue, args);
-            } else {
-                returnValue = (this.func || func).apply(thisValue, args);
-            }
+            returnValue = (this.func || func).apply(thisValue, args);
 
             var thisCall = this.getCall(this.callCount - 1);
             if (thisCall.calledWithNew() && typeof returnValue !== "object") {
@@ -1950,6 +1941,11 @@ var spyApi = {
 
         push.call(this.exceptions, exception);
         push.call(this.returnValues, returnValue);
+        matchings.forEach(function (matching) {
+            push.call(matching.exceptions, exception);
+            push.call(matching.returnValues, returnValue);
+        });
+
         var err = new ErrorConstructor();
         // 1. Please do not get stack at this point. It may be so very slow, and not actually used
         // 2. PhantomJS does not serialize the stack trace until the error has been thrown:
@@ -1958,6 +1954,9 @@ var spyApi = {
             throw err;
         } catch (e) {/* empty */}
         push.call(this.errorsWithCallStack, err);
+        matchings.forEach(function (matching) {
+            push.call(matching.errorsWithCallStack, err);
+        });
 
         // Make return value and exception available in the calls:
         createCallProperties.call(this);
@@ -2035,10 +2034,10 @@ var spyApi = {
         var args = slice.call(arguments);
 
         if (this.fakes) {
-            var match = matchingFake(this.fakes, args, true);
+            var matching = this.matchingFakes(args, true).pop();
 
-            if (match) {
-                return match;
+            if (matching) {
+                return matching;
             }
         } else {
             this.fakes = [];
@@ -2070,6 +2069,12 @@ var spyApi = {
         createCallProperties.call(fake);
 
         return fake;
+    },
+
+    matchingFakes: function (args, strict) {
+        return (this.fakes || []).filter(function (fake) {
+            return fake.matches(args, strict);
+        });
     },
 
     matches: function (args, strict) {
@@ -2201,6 +2206,8 @@ var stubEntireObject = __webpack_require__(100);
 var stubDescriptor = __webpack_require__(99);
 var throwOnFalsyObject = __webpack_require__(47);
 
+var slice = Array.prototype.slice;
+
 function stub(object, property, descriptor) {
     throwOnFalsyObject.apply(null, arguments);
 
@@ -2275,7 +2282,13 @@ var uuid = 0;
 var proto = {
     create: function create(stubLength) {
         var functionStub = function () {
-            return getCurrentBehavior(functionStub).invoke(this, arguments);
+            var args = slice.call(arguments);
+            var matchings = functionStub.matchingFakes(args);
+
+            var fnStub = matchings.sort(function (a, b) {
+                return a.matchingArguments.length - b.matchingArguments.length;
+            }).pop() || functionStub;
+            return getCurrentBehavior(fnStub).invoke(this, arguments);
         };
 
         functionStub.id = "stub#" + uuid++;
