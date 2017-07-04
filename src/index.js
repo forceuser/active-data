@@ -26,11 +26,10 @@ export class Manager {
 		this.options = Object.assign(this.options, options);
 	}
 	/**
-	* Оборачивет источник данных и возвращает объект доступ к свойствам которого будет остлеживатся
-	* Все дочерние объекты и массивы также будут оборачиватся при доступе к ним
+	* Создает {@link Observable} объект для указанного источника данный
 	*
 	* @param {(Object|Array)} dataSource источник данных
-	* @return {Observale} отслеживаемый объект
+	* @return {Observable} отслеживаемый объект
 	*/
 	makeObservable (dataSource) {
 		if (!dataSource) {
@@ -68,7 +67,7 @@ export class Manager {
 					}
 					return val;
 				},
-				set: (obj, key, val, receiver) => {
+				set: (obj, key, val) => {
 					if (this.callStack && this.callStack.length) {
 						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
 					}
@@ -110,14 +109,18 @@ export class Manager {
 		return observable;
 	}
 	/**
-	* Создает функцию {@link UpdatableFunction}
+	* Создает {@link UpdatableFunction}
+	* Используется в основном для внутренних целей
 	*
-	* @param {Object} obj целефой объект
-	* @param {Function} call
+	* @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
+	* @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
 	* @return {UpdatableFunction}
 	*/
-	makeUpdatable (obj, call) {
+	makeUpdatable (call, obj = null) {
 		const manager = this;
+		if (obj == null) {
+			obj = manager;
+		}
 		return function () {
 			let cacheByObject = manager.cache.get(obj);
 			let record;
@@ -164,28 +167,38 @@ export class Manager {
 		};
 	}
 	/**
-	* Создает функцию
+	* Создает вычисляемое свойство объекта
 	*
-	* @param {Observable} obj
-	* @param {String} key
-	* @param {Function} call
+	* @param {Object} obj Объект для которого будет создано вычисляемое свойство
+	* @param {String} key Имя вычисляемого свойства свойства
+	* @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
+	* @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
 	*/
-	makeComputed (obj, key, call) {
+	makeComputed (obj, key, callOnGet, callOnSet) {
 		Object.defineProperty(obj, key, {
 			enumerable: true,
-			get: this.makeUpdatable(obj, call)
+			get: this.makeUpdatable(callOnGet, obj),
+			set: callOnSet
 		});
-		return obj;
 	}
 	/**
-	* Создает {@link UpdatableFunction} и помещает ее в список для проверки на валидность при изменении данных. Менеджер автозапускает эту функцию если ее результат стал невалидным
+	* Создает {@link UpdatableFunction} и помещает ее в список для проверки
+	* на валидность при изменении данных. Менеджер автозапускает эту
+	* функцию если ее результат стал невалидным
 	*
 	* @param {Function} call
+	*	Функция для которой будет создана {@link UpdatableFunction}
+	*	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
 	* @param {Boolean} run
+	*	Выполнить первый запуск реации после ее регистрации.
+	*	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
+	*	будет запускатся либо сразу либо по таймауту.
+	*	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
+	* @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
 	*/
 	makeReaction (call, run = true) {
 		const manager = this;
-		const updatable = this.makeUpdatable(this, call);
+		const updatable = this.makeUpdatable(call);
 		manager.reactions.push(updatable);
 		if (run) {
 			if (this.options.immediateReaction) {
@@ -217,7 +230,10 @@ export class Manager {
 	/**
 	* Запускает все автозапускаемые функции которые помечены как невалидные
 	*
-	* @param {Function} [action] Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+	* @param {Function} [action]
+	*	Действия выполняемые внутри вызова этой функции
+	* 	не будут вызывать неотложный запуск реакций.
+	* 	Реакции будут запущены только после выхода из функции action
 	*/
 	run (action) {
 		if (!this.options.enabled) {
@@ -238,10 +254,10 @@ export class Manager {
 	}
 	/**
 	* Запускает все {@link UpdatableFunction} которые помечены как невалидные
-	* В отличии от run запускает их не сразу а по указанному таймауту
+	* В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
 	*
 	* @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
-	* @param {number} [timeout=0] Таймаут запуска реакции
+	* @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
 	*/
 	runDeferred (action) {
 		if (!this.options.enabled) {
@@ -271,21 +287,34 @@ export default Manager.default;
 /**
  * @typedef ManagerOptions
  * @name ManagerOptions
- * @type {object}
- * @param {boolean} [immediateReaction=false] - Запускать реакции сразу после изменения данных (по умолчанию реакции выполняются по нулевому таймауту)
- * @param {boolean} [enabled=true] - Активен ли менеджер данных
+ * @type {Object}
+ * @property {Boolean} immediateReaction - Запускать реакции сразу после изменения данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
+ * @property {Boolean} enabled - Активен ли менеджер данных (по-умолчнию true)
  */
+
+ /**
+  * @typedef ReactionHandler
+  * @name ReactionHandler
+  * @type {Object}
+  * @property {Function} unregister - Удалить реакцию из списка зарегестрированных реакций
+  * @property {UpdatableFunction} reaction - Фунция реакции
+  */
 
  /**
   * @typedef Observable
   * @name Observable
-  * @description Обьект или массив доступ к свойствам которого отслеживается
+  * @description Обьект или массив доступ к свойствам которого отслеживается.
+  * При доступе к дочерним объектам или массивам также возвращается {@link Observable} объект
   */
 
 /**
  * @typedef UpdatableFunction
  * @name UpdatableFunction
- * @description Функция которая кеширует свое значение и хранит состояние валидности
+ * @description Функция которая кеширует результат своего выполнение и хранит состояние валидности результата
  *
  * При изменении {@link Observable} данных которые были использованы при вычилении этой функции ее кеш инвалидируется
+ *
+ * Внутри {@link UpdatableFunction} разрешено только чтение {@link Observable}, при записи будет брошено исключение
+ *
+ * Если внутри таких функций есть перекрестные ссылки то вычисление производится не будет, будет возвращено `undefined`
  */

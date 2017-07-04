@@ -12,6 +12,7 @@
     -   [run](#run)
     -   [runDeferred](#rundeferred)
 -   [ManagerOptions](#manageroptions)
+-   [ReactionHandler](#reactionhandler)
 -   [Observable](#observable)
 -   [UpdatableFunction](#updatablefunction)
 
@@ -34,44 +35,53 @@
 
 ### makeObservable
 
-Оборачивет источник данных и возвращает объект доступ к свойствам которого будет остлеживатся
-Все дочерние объекты и массивы также будут оборачиватся при доступе к ним
+Создает [Observable](#observable) объект для указанного источника данный
 
 **Parameters**
 
 -   `dataSource` **([Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array))** источник данных
 
-Returns **Observale** отслеживаемый объект
+Returns **[Observable](#observable)** отслеживаемый объект
 
 ### makeUpdatable
 
-Создает функцию [UpdatableFunction](#updatablefunction)
+Создает [UpdatableFunction](#updatablefunction)
+Используется в основном для внутренних целей
 
 **Parameters**
 
--   `obj` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** целефой объект
--   `call` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
+-   `call` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Функция для которой будет создана [UpdatableFunction](#updatablefunction)
+-   `obj` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Если `call` это метод объекта необходимо указать связанный объект (optional, default `null`)
 
 Returns **[UpdatableFunction](#updatablefunction)** 
 
 ### makeComputed
 
-Создает функцию
+Создает вычисляемое свойство объекта
 
 **Parameters**
 
--   `obj` **[Observable](#observable)** 
--   `key` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `call` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
+-   `obj` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** Объект для которого будет создано вычисляемое свойство
+-   `key` **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** Имя вычисляемого свойства свойства
+-   `callOnGet` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Функция которая будет вычислятся при доступе к свойству
+-   `callOnSet` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Функция которая будет выполнятся при установке значения свойства
 
 ### makeReaction
 
-Создает [UpdatableFunction](#updatablefunction) и помещает ее в список для проверки на валидность при изменении данных. Менеджер автозапускает эту функцию если ее результат стал невалидным
+Создает [UpdatableFunction](#updatablefunction) и помещает ее в список для проверки
+на валидность при изменении данных. Менеджер автозапускает эту
+функцию если ее результат стал невалидным
 
 **Parameters**
 
--   `call` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** 
--   `run` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)**  (optional, default `true`)
+-   `call` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Функция для которой будет создана [UpdatableFunction](#updatablefunction)
+    Она будет автозапускатся при изменении [Observable](#observable) данных использованых при ее вычислении
+-   `run` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Выполнить первый запуск реации после ее регистрации.
+    В зависимости от указанной опции [ManagerOptions.immediateReaction](ManagerOptions.immediateReaction)
+    будет запускатся либо сразу либо по таймауту.
+    Если [ManagerOptions.enabled](ManagerOptions.enabled) == false то реакция не будет выполнятся даже при установленном параметре run (optional, default `true`)
+
+Returns **[ReactionHandler](#reactionhandler)** Управляющий объект для зарегестрированной реакции
 
 ### isObservable
 
@@ -87,31 +97,45 @@ Returns **[UpdatableFunction](#updatablefunction)**
 
 **Parameters**
 
--   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Действия выполняемые внутри вызова этой функции не будут вызывать неотложный запуск автозапускаемых функций
+-   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Действия выполняемые внутри вызова этой функции
+    	не будут вызывать неотложный запуск реакций.
+    	Реакции будут запущены только после выхода из функции action
 
 ### runDeferred
 
 Запускает все [UpdatableFunction](#updatablefunction) которые помечены как невалидные
-В отличии от run запускает их не сразу а по указанному таймауту
+В отличии от метода [run](run) запускает их не сразу а по указанному таймауту
 
 **Parameters**
 
 -   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Изменения [Observable](#observable) выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
--   `timeout` **[number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Таймаут запуска реакции (optional, default `0`)
+-   `timeout` **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Таймаут запуска выполнения очереди зарегестрированых реакций (optional, default `0`)
 
 ## ManagerOptions
 
-**Parameters**
+**Properties**
 
--   `immediateReaction` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Запускать реакции сразу после изменения данных (по умолчанию реакции выполняются по нулевому таймауту) (optional, default `false`)
--   `enabled` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Активен ли менеджер данных (optional, default `true`)
+-   `immediateReaction` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Запускать реакции сразу после изменения данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
+-   `enabled` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Активен ли менеджер данных (по-умолчнию true)
+
+## ReactionHandler
+
+**Properties**
+
+-   `unregister` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** Удалить реакцию из списка зарегестрированных реакций
+-   `reaction` **[UpdatableFunction](#updatablefunction)** Фунция реакции
 
 ## Observable
 
-Обьект или массив доступ к свойствам которого отслеживается
+Обьект или массив доступ к свойствам которого отслеживается.
+При доступе к дочерним объектам или массивам также возвращается [Observable](#observable) объект
 
 ## UpdatableFunction
 
-Функция которая кеширует свое значение и хранит состояние валидности
+Функция которая кеширует результат своего выполнение и хранит состояние валидности результата
 
 При изменении [Observable](#observable) данных которые были использованы при вычилении этой функции ее кеш инвалидируется
+
+Внутри [UpdatableFunction](#updatablefunction) разрешено только чтение [Observable](#observable), при записи будет брошено исключение
+
+Если внутри таких функций есть перекрестные ссылки то вычисление производится не будет, будет возвращено `undefined`
