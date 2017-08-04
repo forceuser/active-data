@@ -35,7 +35,7 @@ module.exports = {
 		// STYLE
 		"indent": [2, "tab", {"SwitchCase": 1}],
 		"eol-last": 2,
-		"linebreak-style": ["error", "unix"],
+		// "linebreak-style": ["error", "unix"],
 
 		"quotes": ["error", "double", {"allowTemplateLiterals": true}],
         "semi": ["error", "always"],
