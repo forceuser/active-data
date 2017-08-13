@@ -259,3 +259,17 @@ test("Test disabled reaction - deferred", t => {
 		t.end();
 	}, 100);
 });
+
+test("Observable prototype", t => {
+	const m = new Manager({immediateReaction: true});
+	const src = {a: 1};
+	const srcWithProto = Object.create(src);
+	const protoObs = m.makeObservable(src);
+	const obs = m.makeObservable(srcWithProto);
+	const reaction = sinon.spy(() => console.log(obs.a));
+	m.makeReaction(reaction);
+	t.equal(reaction.callCount, 1);
+	protoObs.a = 111;
+	t.equal(reaction.callCount, 2);
+	t.end();
+});

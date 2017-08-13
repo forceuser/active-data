@@ -99,7 +99,9 @@ var Manager = function () {
 	function Manager(options) {
 		_classCallCheck(this, Manager);
 
-		this.isObservableSymbol = Symbol("isObservable");
+		this.$isObservableSymbol = Symbol("isObservable");
+		this.$registerRead = Symbol("registerRead");
+		this.$dataSource = Symbol("dataSource");
 		this.observables = new WeakMap();
 		this.cache = new WeakMap();
 		this.options = {
@@ -134,45 +136,64 @@ var Manager = function () {
 	}, {
 		key: "makeObservable",
 		value: function makeObservable(dataSource) {
-			var _this = this;
-
+			var manager = this;
 			if (!dataSource) {
 				return dataSource;
 			}
 			if (this.isObservable(dataSource)) {
 				return dataSource;
 			}
-			var observable = this.observables.get(dataSource);
+			var observable = manager.observables.get(dataSource);
 			if (!observable) {
 				var toUpdate = new Map();
+				var registerRead = function registerRead(callStack, context, obj, key) {
+					var callStacks = toUpdate.get(key);
+					if (!callStacks) {
+						callStacks = new Map();
+						toUpdate.set(key, callStacks);
+						callStacks.set(context.call, callStack);
+					}
+					if (!callStacks.has(context.call)) {
+						callStacks.set(context.call, callStack);
+					}
+					var proto = Object.getPrototypeOf(obj);
+					while (proto != null) {
+						var observableProto = manager.observables.get(proto);
+						if (observableProto != null) {
+							observableProto[manager.$registerRead](callStack, context, observableProto[manager.$dataSource], key);
+							break;
+						}
+						proto = Object.getPrototypeOf(proto);
+					}
+				};
+
 				observable = new Proxy(dataSource, {
 					get: function get(obj, key) {
-						if (key === _this.isObservableSymbol) {
+						if (key === manager.$isObservableSymbol) {
 							return true;
 						}
-						if (_this.callStack.length) {
-							var callStack = [].concat(_toConsumableArray(_this.callStack));
-							var context = callStack[callStack.length - 1];
+						if (key === manager.$dataSource) {
+							return dataSource;
+						}
 
-							var callStacks = toUpdate.get(key);
-							if (!callStacks) {
-								callStacks = new Map();
-								toUpdate.set(key, callStacks);
-								callStacks.set(context.call, callStack);
+						if (manager.callStack.length) {
+							if (key === manager.$registerRead) {
+								return registerRead;
 							}
-							if (!callStacks.has(context.call)) {
-								callStacks.set(context.call, callStack);
-							}
+
+							var callStack = [].concat(_toConsumableArray(manager.callStack));
+							var context = callStack[callStack.length - 1];
+							registerRead(callStack, context, obj, key);
 						}
 
 						var val = obj[key];
 						if (val === Object(val) && typeof val !== "function") {
-							return _this.makeObservable(val);
+							return manager.makeObservable(val);
 						}
 						return val;
 					},
 					set: function set(obj, key, val) {
-						if (_this.callStack && _this.callStack.length) {
+						if (manager.callStack && manager.callStack.length) {
 							throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
 						}
 
@@ -186,7 +207,7 @@ var Manager = function () {
 										var obj = _ref.obj,
 										    call = _ref.call;
 
-										var record = _this.cache.get(obj).get(call);
+										var record = manager.cache.get(obj).get(call);
 										if (!record || !record.valid) {
 											return true;
 										} else {
@@ -197,18 +218,18 @@ var Manager = function () {
 							}
 
 							toUpdate.delete(key);
-							if (!_this.inRunSection) {
-								if (_this.options.immediateReaction) {
-									_this.run();
+							if (!manager.inRunSection) {
+								if (manager.options.immediateReaction) {
+									manager.run();
 								} else {
-									_this.runDeferred();
+									manager.runDeferred();
 								}
 							}
 						}
 						return true;
 					}
 				});
-				this.observables.set(dataSource, observable);
+				manager.observables.set(dataSource, observable);
 			}
 			return observable;
 		}
@@ -342,7 +363,7 @@ var Manager = function () {
 	}, {
 		key: "isObservable",
 		value: function isObservable(obj) {
-			return obj[this.isObservableSymbol] === true;
+			return obj[this.$isObservableSymbol] === true;
 		}
 		/**
   * Запускает все автозапускаемые функции которые помечены как невалидные
@@ -384,7 +405,7 @@ var Manager = function () {
 	}, {
 		key: "runDeferred",
 		value: function runDeferred(action) {
-			var _this2 = this;
+			var _this = this;
 
 			if (!this.options.enabled) {
 				return;
@@ -393,7 +414,7 @@ var Manager = function () {
 			try {
 				if (!this.runScheduled) {
 					this.runScheduled = setTimeout(function () {
-						return _this2.run();
+						return _this.run();
 					});
 				}
 				if (typeof action === "function") {

@@ -6,7 +6,9 @@
 */
 export class Manager {
 	constructor (options) {
-		this.isObservableSymbol = Symbol("isObservable");
+		this.$isObservableSymbol = Symbol("isObservable");
+		this.$registerRead = Symbol("registerRead");
+		this.$dataSource = Symbol("dataSource");
 		this.observables = new WeakMap();
 		this.cache = new WeakMap();
 		this.options = {
@@ -32,43 +34,65 @@ export class Manager {
 	* @return {Observable} отслеживаемый объект
 	*/
 	makeObservable (dataSource) {
+		const manager = this;
 		if (!dataSource) {
 			return dataSource;
 		}
 		if (this.isObservable(dataSource)) {
 			return dataSource;
 		}
-		let observable = this.observables.get(dataSource);
+		let observable = manager.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
+			const registerRead = (callStack, context, obj, key) => {
+				let callStacks = toUpdate.get(key);
+				if (!callStacks) {
+					callStacks = new Map();
+					toUpdate.set(key, callStacks);
+					callStacks.set(context.call, callStack);
+				}
+				if (!callStacks.has(context.call)) {
+					callStacks.set(context.call, callStack);
+				}
+				let proto = Object.getPrototypeOf(obj);
+				while (proto != null) {
+					const observableProto = manager.observables.get(proto);
+					if (observableProto != null) {
+						observableProto[manager.$registerRead](callStack, context, observableProto[manager.$dataSource], key);
+						break;
+					}
+					proto = Object.getPrototypeOf(proto);
+				}
+			};
+
+
 			observable = new Proxy(dataSource, {
 				get: (obj, key) => {
-					if (key === this.isObservableSymbol) {
+					if (key === manager.$isObservableSymbol) {
 						return true;
 					}
-					if (this.callStack.length) {
-						const callStack = [...this.callStack];
-						const context = callStack[callStack.length - 1];
+					if (key === manager.$dataSource) {
+						return dataSource;
+					}
 
-						let callStacks = toUpdate.get(key);
-						if (!callStacks) {
-							callStacks = new Map();
-							toUpdate.set(key, callStacks);
-							callStacks.set(context.call, callStack);
+					if (manager.callStack.length) {
+						if (key === manager.$registerRead) {
+							return registerRead;
 						}
-						if (!callStacks.has(context.call)) {
-							callStacks.set(context.call, callStack);
-						}
+
+						const callStack = [...manager.callStack];
+						const context = callStack[callStack.length - 1];
+						registerRead(callStack, context, obj, key);
 					}
 
 					const val = obj[key];
 					if (val === Object(val) && typeof val !== "function") {
-						return this.makeObservable(val);
+						return manager.makeObservable(val);
 					}
 					return val;
 				},
 				set: (obj, key, val) => {
-					if (this.callStack && this.callStack.length) {
+					if (manager.callStack && manager.callStack.length) {
 						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
 					}
 
@@ -80,7 +104,7 @@ export class Manager {
 						if (callStacks) {
 							callStacks.forEach((callStack) => {
 								callStack.reverse().some(({obj, call}) => {
-									const record = this.cache.get(obj).get(call);
+									const record = manager.cache.get(obj).get(call);
 									if (!record || !record.valid) {
 										return true;
 									}
@@ -92,19 +116,19 @@ export class Manager {
 						}
 
 						toUpdate.delete(key);
-						if (!this.inRunSection) {
-							if (this.options.immediateReaction) {
-								this.run();
+						if (!manager.inRunSection) {
+							if (manager.options.immediateReaction) {
+								manager.run();
 							}
 							else {
-								this.runDeferred();
+								manager.runDeferred();
 							}
 						}
 					}
 					return true;
 				}
 			});
-			this.observables.set(dataSource, observable);
+			manager.observables.set(dataSource, observable);
 		}
 		return observable;
 	}
@@ -225,7 +249,7 @@ export class Manager {
 	* @param {(Observable|Object|Array)} obj
 	*/
 	isObservable (obj) {
-		return obj[this.isObservableSymbol] === true;
+		return obj[this.$isObservableSymbol] === true;
 	}
 	/**
 	* Запускает все автозапускаемые функции которые помечены как невалидные
