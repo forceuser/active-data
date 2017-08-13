@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+	<head>
+		<title>active-view demo</title>
+		<script src="./dist/active-data.js"></script>
+	</head>
+	<body>
+		<script>
+			const ad = activeData;
+			const src = {a: 1};
+			const srcWithProto = Object.create(src);
+			const protoObs = ad.makeObservable(src);
+			const obs = ad.makeObservable(srcWithProto);
+			ad.makeReaction(() => console.log(obs.a));
+			setTimeout(() => protoObs.a = 111, 2000);
+		</script>
+	</body>
+</html>
