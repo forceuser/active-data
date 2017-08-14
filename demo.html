@@ -6,13 +6,20 @@
 	</head>
 	<body>
 		<script>
-			const ad = activeData;
-			const src = {a: 1};
-			const srcWithProto = Object.create(src);
-			const protoObs = ad.makeObservable(src);
-			const obs = ad.makeObservable(srcWithProto);
-			ad.makeReaction(() => console.log(obs.a));
-			setTimeout(() => protoObs.a = 111, 2000);
+			const m = activeData;
+			m.setOptions({immediateReaction: true});
+			const d = m.makeObservable({a: 1, b: 2});
+			const comp = self => self.a + self.b;
+			m.makeComputed(d, "comp", comp);
+			const comp2 = self => self.comp + "comp 2";
+			const comp3 = self => self.comp + "comp 3";
+			m.makeComputed(d, "comp2", comp2);
+			m.makeComputed(d, "comp3", comp3);
+			const reaction1 = () => d.comp2 + "reaction 1";
+			const reaction2 = () => d.comp2 + "reaction 2";
+			m.makeReaction(reaction1);
+			m.makeReaction(reaction2);
+			d.a = 5123;
 		</script>
 	</body>
 </html>

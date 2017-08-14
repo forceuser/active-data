@@ -273,3 +273,44 @@ test("Observable prototype", t => {
 	t.equal(reaction.callCount, 2);
 	t.end();
 });
+
+test.skip("Observable prototype - overriden property - reaction", t => {
+	const m = new Manager({immediateReaction: true});
+	const src = {a: 1};
+	const srcWithProto = Object.create(src);
+	const protoObs = m.makeObservable(src);
+	const obs = m.makeObservable(srcWithProto);
+	const reaction = sinon.spy(() => console.log(obs.a));
+	m.makeReaction(reaction);
+	t.equal(reaction.callCount, 1);
+	protoObs.a = 111;
+	t.equal(reaction.callCount, 2);
+	obs.a = 222;
+	t.equal(reaction.callCount, 3);
+	protoObs.a = 333;
+	t.equal(reaction.callCount, 3);
+	const reaction2 = sinon.spy(() => console.log(obs.a + " " + protoObs.a));
+	m.makeReaction(reaction2);
+
+	t.end();
+});
+
+test("Forked call stack and invalidation", t => {
+	const m = new Manager({immediateReaction: true});
+	const d = m.makeObservable(createTestData());
+	const comp = sinon.spy(self => self.a + self.b);
+	m.makeComputed(d, "comp", comp);
+	const comp2 = sinon.spy(self => self.comp);
+	const comp3 = sinon.spy(self => self.comp);
+	m.makeComputed(d, "comp2", comp2);
+	m.makeComputed(d, "comp3", comp3);
+	const reaction1 = sinon.spy(() => d.comp2);
+	const reaction2 = sinon.spy(() => d.comp2);
+	m.makeReaction(reaction1);
+	m.makeReaction(reaction2);
+	t.equal(reaction1.callCount, 1);
+	d.a = 5123;
+	t.equal(reaction1.callCount, 2);
+	t.equal(reaction2.callCount, reaction1.callCount);
+	t.end();
+});

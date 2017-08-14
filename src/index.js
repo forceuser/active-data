@@ -44,23 +44,42 @@ export class Manager {
 		let observable = manager.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
-			const registerRead = (callStack, context, obj, key) => {
-				let callStacks = toUpdate.get(key);
-				if (!callStacks) {
-					callStacks = new Map();
-					toUpdate.set(key, callStacks);
-					callStacks.set(context.call, callStack);
+			const invalidateDeps = (record) => {
+				record.valid = false;
+				record.deps.forEach(record => invalidateDeps(record));
+				record.deps.clear();
+			};
+
+
+			const registerRead = (record, key, protoParents = [dataSource]) => {
+				let updates = toUpdate.get(key);
+				if (!updates) {
+					updates = {records: new Set(), parentData: new Map()};
+					toUpdate.set(key, updates);
 				}
-				if (!callStacks.has(context.call)) {
-					callStacks.set(context.call, callStack);
+
+				let parentData = updates.parentData.get(record);
+				if (!parentData) {
+					parentData = {protoParents, protoPos: new Set()};
+					updates.parentData.set(record, parentData);
 				}
-				let proto = Object.getPrototypeOf(obj);
+				else if (parentData.protoParents.length < protoParents.length) {
+					updates.protoParents = protoParents;
+				}
+
+				parentData.protoPos.add(protoParents.length - 1);
+
+				updates.records.add(record);
+
+				let proto = Object.getPrototypeOf(dataSource);
+				let _protoParents = [...protoParents];
 				while (proto != null) {
 					const observableProto = manager.observables.get(proto);
 					if (observableProto != null) {
-						observableProto[manager.$registerRead](callStack, context, observableProto[manager.$dataSource], key);
+						observableProto[manager.$registerRead](record, key, _protoParents);
 						break;
 					}
+					_protoParents.push(proto);
 					proto = Object.getPrototypeOf(proto);
 				}
 			};
@@ -71,18 +90,16 @@ export class Manager {
 					if (key === manager.$isObservableSymbol) {
 						return true;
 					}
-					if (key === manager.$dataSource) {
-						return dataSource;
-					}
+					// if (key === manager.$dataSource) {
+					// 	return dataSource;
+					// }
 
 					if (manager.callStack.length) {
 						if (key === manager.$registerRead) {
 							return registerRead;
 						}
 
-						const callStack = [...manager.callStack];
-						const context = callStack[callStack.length - 1];
-						registerRead(callStack, context, obj, key);
+						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
 					}
 
 					const val = obj[key];
@@ -99,19 +116,26 @@ export class Manager {
 
 					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
 						obj[key] = val;
-						const callStacks = toUpdate.get(key);
+						const updates = toUpdate.get(key);
 
-						if (callStacks) {
-							callStacks.forEach((callStack) => {
-								callStack.reverse().some(({obj, call}) => {
-									const record = manager.cache.get(obj).get(call);
-									if (!record || !record.valid) {
-										return true;
-									}
-									else {
-										record.valid = false;
-									}
-								});
+						if (updates) {
+							updates.records.forEach((record) => {
+								let parentData = updates.parentData.get(record);
+								if (parentData) {
+									// (.some((p, idx) => {
+									// 	return (p.hasOwnProperty(key) || obj === p) && ;
+									// }))
+									// let invalidate = true;
+									// const protoParents = parentData.protoParents;
+									// for (let i = 0; i < protoParents.length; i++) {
+									// 	if ()
+									// 	parentData.protoPos.has(idx)
+									// }
+
+
+									invalidateDeps(record);
+								}
+
 							});
 						}
 
@@ -157,19 +181,22 @@ export class Manager {
 			}
 
 			if (!record) {
-				record = {valid: false, value: undefined};
+				record = {valid: false, value: undefined, deps: new Set()};
 				cacheByObject.set(call, record);
 			}
 			if (record.computing) {
 				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
 				return undefined;
 			}
+			if (manager.callStack.length) {
+				record.deps.add(manager.callStack[manager.callStack.length - 1].record);
+			}
 
 			if (record.valid) {
 				return record.value;
 			}
 			record.computing = true;
-			manager.callStack.push({obj, call});
+			manager.callStack.push({obj, call, record});
 			try {
 				let context;
 				if (this) {

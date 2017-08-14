@@ -85,8 +85,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Manager", function() { return Manager; });
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
@@ -146,21 +144,28 @@ var Manager = function () {
 			var observable = manager.observables.get(dataSource);
 			if (!observable) {
 				var toUpdate = new Map();
-				var registerRead = function registerRead(callStack, context, obj, key) {
-					var callStacks = toUpdate.get(key);
-					if (!callStacks) {
-						callStacks = new Map();
-						toUpdate.set(key, callStacks);
-						callStacks.set(context.call, callStack);
+				var invalidateDeps = function invalidateDeps(record) {
+					record.valid = false;
+					record.deps.forEach(function (record) {
+						return invalidateDeps(record);
+					});
+					record.deps.clear();
+				};
+
+				var registerRead = function registerRead(record, obj, key) {
+					var records = toUpdate.get(key);
+					if (!records) {
+						records = new Set();
+						toUpdate.set(key, records);
 					}
-					if (!callStacks.has(context.call)) {
-						callStacks.set(context.call, callStack);
-					}
+
+					records.add(record);
+
 					var proto = Object.getPrototypeOf(obj);
 					while (proto != null) {
 						var observableProto = manager.observables.get(proto);
 						if (observableProto != null) {
-							observableProto[manager.$registerRead](callStack, context, observableProto[manager.$dataSource], key);
+							observableProto[manager.$registerRead](record, observableProto[manager.$dataSource], key);
 							break;
 						}
 						proto = Object.getPrototypeOf(proto);
@@ -181,9 +186,7 @@ var Manager = function () {
 								return registerRead;
 							}
 
-							var callStack = [].concat(_toConsumableArray(manager.callStack));
-							var context = callStack[callStack.length - 1];
-							registerRead(callStack, context, obj, key);
+							registerRead(manager.callStack[manager.callStack.length - 1].record, obj, key);
 						}
 
 						var val = obj[key];
@@ -199,21 +202,11 @@ var Manager = function () {
 
 						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
 							obj[key] = val;
-							var callStacks = toUpdate.get(key);
-
-							if (callStacks) {
-								callStacks.forEach(function (callStack) {
-									callStack.reverse().some(function (_ref) {
-										var obj = _ref.obj,
-										    call = _ref.call;
-
-										var record = manager.cache.get(obj).get(call);
-										if (!record || !record.valid) {
-											return true;
-										} else {
-											record.valid = false;
-										}
-									});
+							var records = toUpdate.get(key);
+							console.log("records", records);
+							if (records) {
+								records.forEach(function (record) {
+									return invalidateDeps(record);
 								});
 							}
 
@@ -262,19 +255,22 @@ var Manager = function () {
 				}
 
 				if (!record) {
-					record = { valid: false, value: undefined };
+					record = { valid: false, value: undefined, deps: new Set() };
 					cacheByObject.set(call, record);
 				}
 				if (record.computing) {
 					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
 					return undefined;
 				}
+				if (manager.callStack.length) {
+					record.deps.add(manager.callStack[manager.callStack.length - 1].record);
+				}
 
 				if (record.valid) {
 					return record.value;
 				}
 				record.computing = true;
-				manager.callStack.push({ obj: obj, call: call });
+				manager.callStack.push({ obj: obj, call: call, record: record });
 				try {
 					var context = void 0;
 					if (this) {
