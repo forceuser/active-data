@@ -7,19 +7,82 @@
 	<body>
 		<script>
 			const m = activeData;
-			m.setOptions({immediateReaction: true});
-			const d = m.makeObservable({a: 1, b: 2});
-			const comp = self => self.a + self.b;
-			m.makeComputed(d, "comp", comp);
-			const comp2 = self => self.comp + "comp 2";
-			const comp3 = self => self.comp + "comp 3";
-			m.makeComputed(d, "comp2", comp2);
-			m.makeComputed(d, "comp3", comp3);
-			const reaction1 = () => d.comp2 + "reaction 1";
-			const reaction2 = () => d.comp2 + "reaction 2";
-			m.makeReaction(reaction1);
-			m.makeReaction(reaction2);
-			d.a = 5123;
+			function test1 () {
+				m.setOptions({immediateReaction: true});
+				const d = m.makeObservable({a: 1, b: 2});
+				const comp = self => self.a + self.b;
+				m.makeComputed(d, "comp", comp);
+				const comp2 = self => self.comp + "comp 2";
+				const comp3 = self => self.comp + "comp 3";
+				m.makeComputed(d, "comp2", comp2);
+				m.makeComputed(d, "comp3", comp3);
+				const reaction1 = () => d.comp2 + "reaction 1";
+				const reaction2 = () => d.comp2 + "reaction 2";
+				m.makeReaction(reaction1);
+				m.makeReaction(reaction2);
+				d.a = 5123;
+			}
+
+			function test2 () {
+				m.setOptions({immediateReaction: true});
+				const srcProtoProto = {};
+				const srcProto = Object.create(srcProtoProto);
+				const src = Object.create(srcProto);
+				const $srcProtoProto = m.makeObservable(srcProtoProto);
+				const $srcProto = m.makeObservable(srcProto);
+				const $src = m.makeObservable(src);
+				srcProtoProto.a = 1;
+				// srcProto.a = 2;
+				src.a = 3;
+				function updatable () {
+					console.log(`${$srcProtoProto.a} ${$src.a}`);
+				}
+				m.makeReaction(updatable);
+
+				setTimeout(() => {
+					$srcProtoProto.a = 11;
+				}, 2000);
+
+			}
+
+			function test3 () {
+				m.setOptions({immediateReaction: true});
+				function makeLongPrototypeChain (maxlength = 1, res = []) {
+					if (res.length === maxlength) {
+						return res;
+					}
+					if (!res.length) {
+						res.push({n: 0});
+					}
+					else {
+						const obj = Object.create(res[res.length - 1]);
+						obj.n = res.length;
+						res.push(obj);
+					}
+					return makeLongPrototypeChain(maxlength, res);
+				}
+
+			 	chain = makeLongPrototypeChain(10);
+				chain[0].a = 0;
+				// chain[4].a = 4;
+
+				const observables = {};
+				[0, 3, 7].forEach(i => {
+					observables[i] = m.makeObservable(chain[i]);
+				});
+
+				function updatable () {
+					console.log("UPDATE --------------");
+					console.log(`${observables[7].a} ${observables[0].a}`);
+				}
+				m.makeReaction(updatable);
+				setTimeout(() => {
+					observables[3].a = 9;
+				}, 2000);
+
+			}
+
+			test3();
 		</script>
 	</body>
 </html>

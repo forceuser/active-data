@@ -85,6 +85,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Manager", function() { return Manager; });
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
@@ -152,20 +154,53 @@ var Manager = function () {
 					record.deps.clear();
 				};
 
-				var registerRead = function registerRead(record, obj, key) {
-					var records = toUpdate.get(key);
-					if (!records) {
-						records = new Set();
-						toUpdate.set(key, records);
+				var registerRead = function registerRead(record, key, protoParents) {
+					var updates = toUpdate.get(key);
+					if (!updates) {
+						updates = { records: new Set() };
+						toUpdate.set(key, updates);
+					}
+					updates.records.add(record);
+					var isRoot = !protoParents;
+					function initParentData() {
+						initParentData.initialized = true;
+						console.log("updates.parentData", updates, updates.parentData);
+						if (updates.parentData == null) {
+							updates.parentData = new Map();
+						}
+						var parentData = updates.parentData.get(record);
+						console.log("parentData REC", record, parentData);
+						if (parentData == null) {
+							parentData = { protoParents: protoParents, protoPos: new Set() };
+							parentData.protoPos.add(0);
+							updates.parentData.set(record, parentData);
+						} else if (parentData.protoParents.length < protoParents.length) {
+							parentData.protoParents = protoParents;
+						}
+						if (isRoot) {
+							parentData.protoPos.add(protoParents.length - 1);
+						}
+						console.log("regiter read", dataSource, key, JSON.stringify(parentData.protoParents), JSON.stringify(Array.from(parentData.protoPos)));
 					}
 
-					records.add(record);
+					var proto = Object.getPrototypeOf(dataSource);
 
-					var proto = Object.getPrototypeOf(obj);
+					if (!protoParents) {
+						protoParents = [dataSource];
+					} else {
+						initParentData();
+					}
+
+					var _protoParents = [].concat(_toConsumableArray(protoParents));
 					while (proto != null) {
 						var observableProto = manager.observables.get(proto);
+						_protoParents.push(proto);
 						if (observableProto != null) {
-							observableProto[manager.$registerRead](record, observableProto[manager.$dataSource], key);
+							// if (!initParentData.initialized) {
+							// 	initParentData();
+							// }
+							console.log("is observable proto");
+							observableProto[manager.$registerRead](record, key, [].concat(_toConsumableArray(_protoParents)));
 							break;
 						}
 						proto = Object.getPrototypeOf(proto);
@@ -177,16 +212,13 @@ var Manager = function () {
 						if (key === manager.$isObservableSymbol) {
 							return true;
 						}
-						if (key === manager.$dataSource) {
-							return dataSource;
-						}
 
 						if (manager.callStack.length) {
 							if (key === manager.$registerRead) {
 								return registerRead;
 							}
 
-							registerRead(manager.callStack[manager.callStack.length - 1].record, obj, key);
+							registerRead(manager.callStack[manager.callStack.length - 1].record, key);
 						}
 
 						var val = obj[key];
@@ -202,12 +234,36 @@ var Manager = function () {
 
 						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
 							obj[key] = val;
-							var records = toUpdate.get(key);
-							console.log("records", records);
-							if (records) {
-								records.forEach(function (record) {
-									return invalidateDeps(record);
-								});
+							var updates = toUpdate.get(key);
+							if (updates) {
+								if (updates.parentData) {
+									updates.records.forEach(function (record) {
+										var parentData = updates.parentData.get(record);
+										console.log("PARENT DATA", obj, key, JSON.stringify(parentData.protoParents), JSON.stringify(Array.from(parentData.protoPos.values())));
+										var invalidate = true;
+										var l = parentData.protoParents.length - 2;
+										// let d = parentData.protoParents.indexOf(obj);
+										for (var i = l; i >= 0; i--) {
+											console.log("go go", i, l);
+											if (parentData.protoPos.has(i)) {
+												break;
+											} else if (parentData.protoParents[i].hasOwnProperty(key)) {
+												invalidate = false;
+												console.log("+++++DO NOT INVALIDATE");
+												break;
+											}
+										}
+										if (invalidate) {
+											console.log("+++++INVALIDATE");
+											invalidateDeps(record);
+										}
+									});
+								} else {
+									console.log("+++++INVALIDATE BASIC");
+									updates.records.forEach(function (record) {
+										return invalidateDeps(record);
+									});
+								}
 							}
 
 							toUpdate.delete(key);
