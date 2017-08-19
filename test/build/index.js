@@ -10870,7 +10870,7 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Forked call stack and invalidation
 "use strict";
 var cov_7fzfwca28 = function () {
 	var path = "/home/forceuser/Projects/_VAPROJECTS/active-data/src/index.js",
-	    hash = "97039c6d0768e092b1c53e438d04a8923691ad6c",
+	    hash = "263221a32777e1c24d566afd3681c206f52c6ed1",
 	    global = new Function('return this')(),
 	    gcv = "__coverage__",
 	    coverageData = {
@@ -12468,31 +12468,31 @@ var cov_7fzfwca28 = function () {
 			},
 			"159": {
 				start: {
-					line: 350,
+					line: 352,
 					column: 2
 				},
 				end: {
-					line: 350,
-					column: 38
+					line: 352,
+					column: 83
 				}
 			},
 			"160": {
 				start: {
-					line: 355,
+					line: 357,
 					column: 0
 				},
 				end: {
-					line: 355,
+					line: 357,
 					column: 32
 				}
 			},
 			"161": {
 				start: {
-					line: 356,
+					line: 358,
 					column: 0
 				},
 				end: {
-					line: 356,
+					line: 358,
 					column: 34
 				}
 			}
@@ -12958,25 +12958,25 @@ var cov_7fzfwca28 = function () {
 				name: "(anonymous_19)",
 				decl: {
 					start: {
-						line: 349,
+						line: 351,
 						column: 1
-					},
-					end: {
-						line: 349,
-						column: 2
-					}
-				},
-				loc: {
-					start: {
-						line: 349,
-						column: 34
 					},
 					end: {
 						line: 351,
 						column: 2
 					}
 				},
-				line: 349
+				loc: {
+					start: {
+						line: 351,
+						column: 34
+					},
+					end: {
+						line: 353,
+						column: 2
+					}
+				},
+				line: 351
 			}
 		},
 		branchMap: {
@@ -14479,6 +14479,39 @@ var cov_7fzfwca28 = function () {
 					}
 				}],
 				line: 334
+			},
+			"46": {
+				loc: {
+					start: {
+						line: 352,
+						column: 9
+					},
+					end: {
+						line: 352,
+						column: 82
+					}
+				},
+				type: "cond-expr",
+				locations: [{
+					start: {
+						line: 352,
+						column: 41
+					},
+					end: {
+						line: 352,
+						column: 69
+					}
+				}, {
+					start: {
+						line: 352,
+						column: 72
+					},
+					end: {
+						line: 352,
+						column: 82
+					}
+				}],
+				line: 352
 			}
 		},
 		s: {
@@ -14713,7 +14746,8 @@ var cov_7fzfwca28 = function () {
 			"42": [0, 0],
 			"43": [0, 0],
 			"44": [0, 0],
-			"45": [0, 0]
+			"45": [0, 0],
+			"46": [0, 0]
 		},
 		_coverageSchema: "332fd63041d2c1bcb487cc26dd0d5f7d97098a6c"
 	},
@@ -15392,13 +15426,15 @@ class Manager {
  *
  * @param {Observable} observable
  *	{@link Observable} для которого необходимо получить исходный объект
- * @return {(Object|Array)} Исходный обьект на основе которого был создан {@link Observable}
+ * @return {(Object|Array)}
+ *	Исходный обьект на основе которого был создан {@link Observable},
+ *	если объект не является {@link Observable} возвращается переданный в параметре observable объект
  */
 	getObservableSource(observable) {
 		++cov_7fzfwca28.f[19];
 		++cov_7fzfwca28.s[159];
 
-		return observable[this.$dataSource];
+		return this.isObservable(observable) ? (++cov_7fzfwca28.b[46][0], observable[this.$dataSource]) : (++cov_7fzfwca28.b[46][1], observable);
 	}
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Manager;

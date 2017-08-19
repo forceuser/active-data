@@ -344,10 +344,12 @@ export class Manager {
 	*
 	* @param {Observable} observable
 	*	{@link Observable} для которого необходимо получить исходный объект
-	* @return {(Object|Array)} Исходный обьект на основе которого был создан {@link Observable}
+	* @return {(Object|Array)}
+	*	Исходный обьект на основе которого был создан {@link Observable},
+	*	если объект не является {@link Observable} возвращается переданный в параметре observable объект
 	*/
 	getObservableSource (observable) {
-		return observable[this.$dataSource];
+		return this.isObservable(observable) ? observable[this.$dataSource] : observable;
 	}
 }
 
