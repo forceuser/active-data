@@ -51,60 +51,47 @@ export class Manager {
 			};
 
 
-			const registerRead = (record, key, protoParents) => {
+			const registerRead = (record, key, prototypes) => {
+				// record stores Updateble state
 				let updates = toUpdate.get(key);
 				if (!updates) {
-					updates = {records: new Set()};
+					updates = {records: new Set(), recordMap: new WeakMap()};
 					toUpdate.set(key, updates);
 				}
 				updates.records.add(record);
-				const isRoot = !protoParents;
-				function initParentData () {
-					initParentData.initialized = true;
-					console.log("updates.parentData", updates, updates.parentData);
-					if (updates.parentData == null) {
-						updates.parentData = new Map();
+				let recordMapItem = updates.recordMap.get(record);
+				if (!recordMapItem) {
+					recordMapItem = {};
+					updates.recordMap.set(record, recordMapItem);
+				}
+				const isRoot = !prototypes;
+				if (isRoot) {
+					prototypes = [dataSource];
+					recordMapItem.root = true;
+				}
+				else {
+					const rootObj = prototypes[prototypes.length - 1];
+					if (!recordMapItem.prototypes) {
+						recordMapItem.prototypes = new Map();
 					}
-					let parentData = updates.parentData.get(record);
-					console.log("parentData REC", record, parentData);
-					if (parentData == null) {
-						parentData = {protoParents, protoPos: new Set()};
-						parentData.protoPos.add(0);
-						updates.parentData.set(record, parentData);
+					const _prototypes = recordMapItem.prototypes.get(rootObj);
+					if (_prototypes) {
+						return;
 					}
-					else if (parentData.protoParents.length < protoParents.length) {
-						parentData.protoParents = protoParents;
-					}
-					if (isRoot) {
-						parentData.protoPos.add(protoParents.length - 1);
-					}
-					console.log("regiter read", dataSource, key, JSON.stringify(parentData.protoParents), JSON.stringify(Array.from(parentData.protoPos)));
+					recordMapItem.prototypes.set(rootObj, prototypes);
 				}
 
 				let proto = Object.getPrototypeOf(dataSource);
-
-
-				if (!protoParents) {
-					protoParents = [dataSource];
-				}
-				else {
-					initParentData();
-				}
-
-				let _protoParents = [...protoParents];
-				while (proto != null) {
+				while (proto != null && proto != Object.prototype) {
 					const observableProto = manager.observables.get(proto);
-					_protoParents.push(proto);
-					if (observableProto != null) {
-						// if (!initParentData.initialized) {
-						// 	initParentData();
-						// }
-						console.log("is observable proto");
-						observableProto[manager.$registerRead](record, key, [..._protoParents]);
+					prototypes.unshift(proto);
+					if (observableProto != null && observableProto !== Object.prototype) {
+						observableProto[manager.$registerRead](record, key, prototypes);
 						break;
 					}
 					proto = Object.getPrototypeOf(proto);
 				}
+				console.log("prototypes", dataSource, prototypes);
 			};
 
 
@@ -118,7 +105,7 @@ export class Manager {
 						if (key === manager.$registerRead) {
 							return registerRead;
 						}
-
+						console.log("GET", obj, key);
 						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
 					}
 
@@ -133,43 +120,36 @@ export class Manager {
 						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
 					}
 
-
 					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
 						obj[key] = val;
 						const updates = toUpdate.get(key);
 						if (updates) {
-							if (updates.parentData) {
-								updates.records.forEach((record) => {
-									let parentData = updates.parentData.get(record);
-									console.log("PARENT DATA", obj, key,
-										JSON.stringify(parentData.protoParents),
-										JSON.stringify(Array.from(parentData.protoPos.values()))
-									);
-									let invalidate = true;
-									let l = parentData.protoParents.length - 2;
-									// let d = parentData.protoParents.indexOf(obj);
-									for (let i = l; i >= 0; i--) {
-										console.log("go go", i, l);
-										if (parentData.protoPos.has(i)) {
-											break;
+							updates.records.forEach((record) => {
+								const recordMapItem = updates.recordMap.get(record);
+								if (recordMapItem.root) {
+									console.log("INVALIDATE -- ROOT", obj, key);
+									invalidateDeps(record);
+								}
+								else if (recordMapItem.prototypes) {
+									const invalidateAll = Array.from(recordMapItem.prototypes.values())
+									.some((prototypes) => {
+										const idx = prototypes.indexOf(obj) + 1;
+										const l = prototypes.length;
+										let invalidate = true;
+										for (let i = idx; i < l; i++) {
+											if (prototypes[i].hasOwnProperty(key)) {
+												invalidate = false;
+												break;
+											}
 										}
-										else if (parentData.protoParents[i].hasOwnProperty(key)) {
-											invalidate = false;
-											console.log("+++++DO NOT INVALIDATE");
-											break;
-										}
-									}
-									if (invalidate) {
-										console.log("+++++INVALIDATE");
+										return invalidate;
+									});
+									if (invalidateAll) {
+										console.log("INVALIDATE -- PROTO", obj, key);
 										invalidateDeps(record);
 									}
-								});
-							}
-							else {
-								console.log("+++++INVALIDATE BASIC");
-								updates.records.forEach((record) => invalidateDeps(record));
-							}
-
+								}
+							});
 						}
 
 						toUpdate.delete(key);

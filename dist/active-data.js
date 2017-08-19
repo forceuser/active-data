@@ -82,23 +82,14 @@ return /******/ (function(modules) { // webpackBootstrap
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Manager", function() { return Manager; });
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
 * Реактивный менеджер данных, следящий за изменениями данных и выполняющий действия в ответ на эти изменения
 * Отслеживание происходит лениво, данные обновляются только когда они требуются
 *
 * @param {ManagerOptions} [options] Настройки менеджера
 */
-var Manager = function () {
-	function Manager(options) {
-		_classCallCheck(this, Manager);
-
+class Manager {
+	constructor (options) {
 		this.$isObservableSymbol = Symbol("isObservable");
 		this.$registerRead = Symbol("registerRead");
 		this.$dataSource = Symbol("dataSource");
@@ -113,373 +104,330 @@ var Manager = function () {
 		this.setOptions(options);
 	}
 	/**
- * Динамически устанавливает настройки работы менеджера данных
- *
- * @param {ManagerOptions} [options] Настройки менеджера
- */
-
-
-	_createClass(Manager, [{
-		key: "setOptions",
-		value: function setOptions() {
-			var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-			this.options = Object.assign(this.options, options);
+	* Динамически устанавливает настройки работы менеджера данных
+	*
+	* @param {ManagerOptions} [options] Настройки менеджера
+	*/
+	setOptions (options = {}) {
+		this.options = Object.assign(this.options, options);
+	}
+	/**
+	* Создает {@link Observable} объект для указанного источника данный
+	*
+	* @param {(Object|Array)} dataSource источник данных
+	* @return {Observable} отслеживаемый объект
+	*/
+	makeObservable (dataSource) {
+		const manager = this;
+		if (!dataSource) {
+			return dataSource;
 		}
-		/**
-  * Создает {@link Observable} объект для указанного источника данный
-  *
-  * @param {(Object|Array)} dataSource источник данных
-  * @return {Observable} отслеживаемый объект
-  */
+		if (this.isObservable(dataSource)) {
+			return dataSource;
+		}
+		let observable = manager.observables.get(dataSource);
+		if (!observable) {
+			const toUpdate = new Map();
+			const invalidateDeps = (record) => {
+				record.valid = false;
+				record.deps.forEach(record => invalidateDeps(record));
+				record.deps.clear();
+			};
 
-	}, {
-		key: "makeObservable",
-		value: function makeObservable(dataSource) {
-			var manager = this;
-			if (!dataSource) {
-				return dataSource;
-			}
-			if (this.isObservable(dataSource)) {
-				return dataSource;
-			}
-			var observable = manager.observables.get(dataSource);
-			if (!observable) {
-				var toUpdate = new Map();
-				var invalidateDeps = function invalidateDeps(record) {
-					record.valid = false;
-					record.deps.forEach(function (record) {
-						return invalidateDeps(record);
-					});
-					record.deps.clear();
-				};
 
-				var registerRead = function registerRead(record, key, protoParents) {
-					var updates = toUpdate.get(key);
-					if (!updates) {
-						updates = { records: new Set() };
-						toUpdate.set(key, updates);
+			const registerRead = (record, key, prototypes) => {
+				// record stores Updateble state
+				let updates = toUpdate.get(key);
+				if (!updates) {
+					updates = {records: new Set(), recordMap: new WeakMap()};
+					toUpdate.set(key, updates);
+				}
+				updates.records.add(record);
+				let recordMapItem = updates.recordMap.get(record);
+				if (!recordMapItem) {
+					recordMapItem = {};
+					updates.recordMap.set(record, recordMapItem);
+				}
+				const isRoot = !prototypes;
+				if (isRoot) {
+					prototypes = [dataSource];
+					recordMapItem.root = true;
+				}
+				else {
+					const rootObj = prototypes[prototypes.length - 1];
+					if (!recordMapItem.prototypes) {
+						recordMapItem.prototypes = new Map();
 					}
-					updates.records.add(record);
-					var isRoot = !protoParents;
-					function initParentData() {
-						initParentData.initialized = true;
-						console.log("updates.parentData", updates, updates.parentData);
-						if (updates.parentData == null) {
-							updates.parentData = new Map();
-						}
-						var parentData = updates.parentData.get(record);
-						console.log("parentData REC", record, parentData);
-						if (parentData == null) {
-							parentData = { protoParents: protoParents, protoPos: new Set() };
-							parentData.protoPos.add(0);
-							updates.parentData.set(record, parentData);
-						} else if (parentData.protoParents.length < protoParents.length) {
-							parentData.protoParents = protoParents;
-						}
-						if (isRoot) {
-							parentData.protoPos.add(protoParents.length - 1);
-						}
-						console.log("regiter read", dataSource, key, JSON.stringify(parentData.protoParents), JSON.stringify(Array.from(parentData.protoPos)));
+					const _prototypes = recordMapItem.prototypes.get(rootObj);
+					if (_prototypes) {
+						return;
 					}
+					recordMapItem.prototypes.set(rootObj, prototypes);
+				}
 
-					var proto = Object.getPrototypeOf(dataSource);
+				let proto = Object.getPrototypeOf(dataSource);
+				while (proto != null && proto != Object.prototype) {
+					const observableProto = manager.observables.get(proto);
+					prototypes.unshift(proto);
+					if (observableProto != null && observableProto !== Object.prototype) {
+						observableProto[manager.$registerRead](record, key, prototypes);
+						break;
+					}
+					proto = Object.getPrototypeOf(proto);
+				}
+				console.log("prototypes", dataSource, prototypes);
+			};
 
-					if (!protoParents) {
-						protoParents = [dataSource];
-					} else {
-						initParentData();
+
+			observable = new Proxy(dataSource, {
+				get: (obj, key) => {
+					if (key === manager.$isObservableSymbol) {
+						return true;
 					}
 
-					var _protoParents = [].concat(_toConsumableArray(protoParents));
-					while (proto != null) {
-						var observableProto = manager.observables.get(proto);
-						_protoParents.push(proto);
-						if (observableProto != null) {
-							// if (!initParentData.initialized) {
-							// 	initParentData();
-							// }
-							console.log("is observable proto");
-							observableProto[manager.$registerRead](record, key, [].concat(_toConsumableArray(_protoParents)));
-							break;
+					if (manager.callStack.length) {
+						if (key === manager.$registerRead) {
+							return registerRead;
 						}
-						proto = Object.getPrototypeOf(proto);
+						console.log("GET", obj, key);
+						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
 					}
-				};
 
-				observable = new Proxy(dataSource, {
-					get: function get(obj, key) {
-						if (key === manager.$isObservableSymbol) {
-							return true;
-						}
+					const val = obj[key];
+					if (val === Object(val) && typeof val !== "function") {
+						return manager.makeObservable(val);
+					}
+					return val;
+				},
+				set: (obj, key, val) => {
+					if (manager.callStack && manager.callStack.length) {
+						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
+					}
 
-						if (manager.callStack.length) {
-							if (key === manager.$registerRead) {
-								return registerRead;
-							}
-
-							registerRead(manager.callStack[manager.callStack.length - 1].record, key);
-						}
-
-						var val = obj[key];
-						if (val === Object(val) && typeof val !== "function") {
-							return manager.makeObservable(val);
-						}
-						return val;
-					},
-					set: function set(obj, key, val) {
-						if (manager.callStack && manager.callStack.length) {
-							throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
-						}
-
-						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
-							obj[key] = val;
-							var updates = toUpdate.get(key);
-							if (updates) {
-								if (updates.parentData) {
-									updates.records.forEach(function (record) {
-										var parentData = updates.parentData.get(record);
-										console.log("PARENT DATA", obj, key, JSON.stringify(parentData.protoParents), JSON.stringify(Array.from(parentData.protoPos.values())));
-										var invalidate = true;
-										var l = parentData.protoParents.length - 2;
-										// let d = parentData.protoParents.indexOf(obj);
-										for (var i = l; i >= 0; i--) {
-											console.log("go go", i, l);
-											if (parentData.protoPos.has(i)) {
-												break;
-											} else if (parentData.protoParents[i].hasOwnProperty(key)) {
+					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
+						obj[key] = val;
+						const updates = toUpdate.get(key);
+						if (updates) {
+							updates.records.forEach((record) => {
+								const recordMapItem = updates.recordMap.get(record);
+								if (recordMapItem.root) {
+									console.log("INVALIDATE -- ROOT", obj, key);
+									invalidateDeps(record);
+								}
+								else if (recordMapItem.prototypes) {
+									const invalidateAll = Array.from(recordMapItem.prototypes.values())
+									.some((prototypes) => {
+										const idx = prototypes.indexOf(obj) + 1;
+										const l = prototypes.length;
+										let invalidate = true;
+										for (let i = idx; i < l; i++) {
+											if (prototypes[i].hasOwnProperty(key)) {
 												invalidate = false;
-												console.log("+++++DO NOT INVALIDATE");
 												break;
 											}
 										}
-										if (invalidate) {
-											console.log("+++++INVALIDATE");
-											invalidateDeps(record);
-										}
+										return invalidate;
 									});
-								} else {
-									console.log("+++++INVALIDATE BASIC");
-									updates.records.forEach(function (record) {
-										return invalidateDeps(record);
-									});
+									if (invalidateAll) {
+										console.log("INVALIDATE -- PROTO", obj, key);
+										invalidateDeps(record);
+									}
 								}
-							}
+							});
+						}
 
-							toUpdate.delete(key);
-							if (!manager.inRunSection) {
-								if (manager.options.immediateReaction) {
-									manager.run();
-								} else {
-									manager.runDeferred();
-								}
+						toUpdate.delete(key);
+						if (!manager.inRunSection) {
+							if (manager.options.immediateReaction) {
+								manager.run();
+							}
+							else {
+								manager.runDeferred();
 							}
 						}
-						return true;
 					}
-				});
-				manager.observables.set(dataSource, observable);
-			}
-			return observable;
-		}
-		/**
-  * Создает {@link UpdatableFunction}
-  * Используется в основном для внутренних целей
-  *
-  * @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
-  * @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
-  * @return {UpdatableFunction}
-  */
-
-	}, {
-		key: "makeUpdatable",
-		value: function makeUpdatable(call) {
-			var obj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			var manager = this;
-			if (obj == null) {
-				obj = manager;
-			}
-			return function () {
-				var cacheByObject = manager.cache.get(obj);
-				var record = void 0;
-				if (cacheByObject) {
-					record = cacheByObject.get(call);
-				} else {
-					cacheByObject = new Map();
-					manager.cache.set(obj, cacheByObject);
+					return true;
 				}
-
-				if (!record) {
-					record = { valid: false, value: undefined, deps: new Set() };
-					cacheByObject.set(call, record);
-				}
-				if (record.computing) {
-					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
-					return undefined;
-				}
-				if (manager.callStack.length) {
-					record.deps.add(manager.callStack[manager.callStack.length - 1].record);
-				}
-
-				if (record.valid) {
-					return record.value;
-				}
-				record.computing = true;
-				manager.callStack.push({ obj: obj, call: call, record: record });
-				try {
-					var context = void 0;
-					if (this) {
-						context = manager.observables.get(this);
-					} else {
-						context = manager;
-					}
-
-					var value = call.call(context, context);
-					record.valid = true;
-					record.value = value;
-					return value;
-				} finally {
-					record.computing = false;
-					manager.callStack.pop();
-				}
-			};
-		}
-		/**
-  * Создает вычисляемое свойство объекта
-  *
-  * @param {Object} obj Объект для которого будет создано вычисляемое свойство
-  * @param {String} key Имя вычисляемого свойства свойства
-  * @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
-  * @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
-  */
-
-	}, {
-		key: "makeComputed",
-		value: function makeComputed(obj, key, callOnGet, callOnSet) {
-			Object.defineProperty(obj, key, {
-				enumerable: true,
-				get: this.makeUpdatable(callOnGet, obj),
-				set: callOnSet
 			});
+			manager.observables.set(dataSource, observable);
 		}
-		/**
-  * Создает {@link UpdatableFunction} и помещает ее в список для проверки
-  * на валидность при изменении данных. Менеджер автозапускает эту
-  * функцию если ее результат стал невалидным
-  *
-  * @param {Function} call
-  *	Функция для которой будет создана {@link UpdatableFunction}
-  *	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
-  * @param {Boolean} run
-  *	Выполнить первый запуск реации после ее регистрации.
-  *	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
-  *	будет запускатся либо сразу либо по таймауту.
-  *	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
-  * @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
-  */
-
-	}, {
-		key: "makeReaction",
-		value: function makeReaction(call) {
-			var run = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-			var manager = this;
-			var updatable = this.makeUpdatable(call);
-			manager.reactions.push(updatable);
-			if (run) {
-				if (this.options.immediateReaction) {
-					manager.run();
-				} else {
-					manager.runDeferred();
-				}
+		return observable;
+	}
+	/**
+	* Создает {@link UpdatableFunction}
+	* Используется в основном для внутренних целей
+	*
+	* @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
+	* @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
+	* @return {UpdatableFunction}
+	*/
+	makeUpdatable (call, obj = null) {
+		const manager = this;
+		if (obj == null) {
+			obj = manager;
+		}
+		return function () {
+			let cacheByObject = manager.cache.get(obj);
+			let record;
+			if (cacheByObject) {
+				record = cacheByObject.get(call);
 			}
-			return {
-				unregister: function unregister() {
-					var idx = manager.reactions.indexOf(updatable);
-					if (idx >= 0) {
-						manager.reactions.splice(idx, 1);
-					}
-				},
-
-				reaction: updatable
-			};
-		}
-
-		/**
-  * Проверяет является ли объект наблюдаемым
-  *
-  * @param {(Observable|Object|Array)} obj
-  */
-
-	}, {
-		key: "isObservable",
-		value: function isObservable(obj) {
-			return obj[this.$isObservableSymbol] === true;
-		}
-		/**
-  * Запускает все автозапускаемые функции которые помечены как невалидные
-  *
-  * @param {Function} [action]
-  *	Действия выполняемые внутри вызова этой функции
-  * 	не будут вызывать неотложный запуск реакций.
-  * 	Реакции будут запущены только после выхода из функции action
-  */
-
-	}, {
-		key: "run",
-		value: function run(action) {
-			if (!this.options.enabled) {
-				return;
+			else {
+				cacheByObject = new Map();
+				manager.cache.set(obj, cacheByObject);
 			}
-			this.inRunSection = true;
+
+			if (!record) {
+				record = {valid: false, value: undefined, deps: new Set()};
+				cacheByObject.set(call, record);
+			}
+			if (record.computing) {
+				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+				return undefined;
+			}
+			if (manager.callStack.length) {
+				record.deps.add(manager.callStack[manager.callStack.length - 1].record);
+			}
+
+			if (record.valid) {
+				return record.value;
+			}
+			record.computing = true;
+			manager.callStack.push({obj, call, record});
 			try {
-				if (typeof action === "function") {
-					action();
+				let context;
+				if (this) {
+					context = manager.observables.get(this);
 				}
-				this.runScheduled = false;
-				this.reactions.forEach(function (updatable) {
-					return updatable();
-				});
-				typeof this.onAfterRun === "function" && this.onAfterRun();
-			} finally {
-				this.inRunSection = false;
+				else {
+					context = manager;
+				}
+
+				const value = call.call(context, context);
+				record.valid = true;
+				record.value = value;
+				return value;
+			}
+			finally {
+				record.computing = false;
+				manager.callStack.pop();
+			}
+		};
+	}
+	/**
+	* Создает вычисляемое свойство объекта
+	*
+	* @param {Object} obj Объект для которого будет создано вычисляемое свойство
+	* @param {String} key Имя вычисляемого свойства свойства
+	* @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
+	* @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
+	*/
+	makeComputed (obj, key, callOnGet, callOnSet) {
+		Object.defineProperty(obj, key, {
+			enumerable: true,
+			get: this.makeUpdatable(callOnGet, obj),
+			set: callOnSet
+		});
+	}
+	/**
+	* Создает {@link UpdatableFunction} и помещает ее в список для проверки
+	* на валидность при изменении данных. Менеджер автозапускает эту
+	* функцию если ее результат стал невалидным
+	*
+	* @param {Function} call
+	*	Функция для которой будет создана {@link UpdatableFunction}
+	*	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
+	* @param {Boolean} run
+	*	Выполнить первый запуск реации после ее регистрации.
+	*	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
+	*	будет запускатся либо сразу либо по таймауту.
+	*	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
+	* @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
+	*/
+	makeReaction (call, run = true) {
+		const manager = this;
+		const updatable = this.makeUpdatable(call);
+		manager.reactions.push(updatable);
+		if (run) {
+			if (this.options.immediateReaction) {
+				manager.run();
+			}
+			else {
+				manager.runDeferred();
 			}
 		}
-		/**
-  * Запускает все {@link UpdatableFunction} которые помечены как невалидные
-  * В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
-  *
-  * @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
-  * @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
-  */
+		return {
+			unregister () {
+				const idx = manager.reactions.indexOf(updatable);
+				if (idx >= 0) {
+					manager.reactions.splice(idx, 1);
+				}
+			},
+			reaction: updatable
+		};
+	}
 
-	}, {
-		key: "runDeferred",
-		value: function runDeferred(action) {
-			var _this = this;
-
-			if (!this.options.enabled) {
-				return;
+	/**
+	* Проверяет является ли объект наблюдаемым
+	*
+	* @param {(Observable|Object|Array)} obj
+	*/
+	isObservable (obj) {
+		return obj[this.$isObservableSymbol] === true;
+	}
+	/**
+	* Запускает все автозапускаемые функции которые помечены как невалидные
+	*
+	* @param {Function} [action]
+	*	Действия выполняемые внутри вызова этой функции
+	* 	не будут вызывать неотложный запуск реакций.
+	* 	Реакции будут запущены только после выхода из функции action
+	*/
+	run (action) {
+		if (!this.options.enabled) {
+			return;
+		}
+		this.inRunSection = true;
+		try {
+			if (typeof action === "function") {
+				action();
 			}
-			this.inRunSection = true;
-			try {
-				if (!this.runScheduled) {
-					this.runScheduled = setTimeout(function () {
-						return _this.run();
-					});
-				}
-				if (typeof action === "function") {
-					action();
-				}
-			} finally {
-				this.inRunSection = false;
+			this.runScheduled = false;
+			this.reactions.forEach(updatable => updatable());
+			typeof this.onAfterRun === "function" && this.onAfterRun();
+		}
+		finally {
+			this.inRunSection = false;
+		}
+	}
+	/**
+	* Запускает все {@link UpdatableFunction} которые помечены как невалидные
+	* В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
+	*
+	* @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
+	* @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
+	*/
+	runDeferred (action) {
+		if (!this.options.enabled) {
+			return;
+		}
+		this.inRunSection = true;
+		try {
+			if (!this.runScheduled) {
+				this.runScheduled = setTimeout(() => this.run());
+			}
+			if (typeof action === "function") {
+				action();
 			}
 		}
-	}]);
+		finally {
+			this.inRunSection = false;
+		}
+	}
+}
+/* harmony export (immutable) */ __webpack_exports__["Manager"] = Manager;
 
-	return Manager;
-}();
+
 
 Manager.default = new Manager();
 Manager.default.Manager = Manager;
@@ -494,20 +442,20 @@ Manager.default.Manager = Manager;
  * @property {Boolean} enabled - Активен ли менеджер данных (по-умолчнию true)
  */
 
-/**
- * @typedef ReactionHandler
- * @name ReactionHandler
- * @type {Object}
- * @property {Function} unregister - Удалить реакцию из списка зарегестрированных реакций
- * @property {UpdatableFunction} reaction - Фунция реакции
- */
+ /**
+  * @typedef ReactionHandler
+  * @name ReactionHandler
+  * @type {Object}
+  * @property {Function} unregister - Удалить реакцию из списка зарегестрированных реакций
+  * @property {UpdatableFunction} reaction - Фунция реакции
+  */
 
-/**
- * @typedef Observable
- * @name Observable
- * @description Обьект или массив доступ к свойствам которого отслеживается.
- * При доступе к дочерним объектам или массивам также возвращается {@link Observable} объект
- */
+ /**
+  * @typedef Observable
+  * @name Observable
+  * @description Обьект или массив доступ к свойствам которого отслеживается.
+  * При доступе к дочерним объектам или массивам также возвращается {@link Observable} объект
+  */
 
 /**
  * @typedef UpdatableFunction
@@ -521,11 +469,13 @@ Manager.default.Manager = Manager;
  * Если внутри таких функций есть перекрестные ссылки то вычисление производится не будет, будет возвращено `undefined`
  */
 
+
 /***/ }),
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(0).default;
+
 
 /***/ })
 /******/ ]);
