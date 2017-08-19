@@ -104,7 +104,8 @@ var Manager = function () {
 		this.cache = new WeakMap();
 		this.options = {
 			enabled: true,
-			immediateReaction: false
+			immediateReaction: false,
+			wholeObjectObserveKey: "$$whole"
 		};
 		this.callStack = [];
 		this.reactions = [];
@@ -152,12 +153,17 @@ var Manager = function () {
 					record.deps.clear();
 				};
 
+				var initUpdates = function initUpdates(key) {
+					var updates = { records: new Set(), recordMap: new WeakMap() };
+					toUpdate.set(key, updates);
+					return updates;
+				};
+
 				var registerRead = function registerRead(record, key, prototypes) {
 					// record stores Updateble state
 					var updates = toUpdate.get(key);
 					if (!updates) {
-						updates = { records: new Set(), recordMap: new WeakMap() };
-						toUpdate.set(key, updates);
+						updates = initUpdates(key);
 					}
 					updates.records.add(record);
 					var recordMapItem = updates.recordMap.get(record);
@@ -165,6 +171,13 @@ var Manager = function () {
 						recordMapItem = {};
 						updates.recordMap.set(record, recordMapItem);
 					}
+					record.uninit.set(dataSource, function (record) {
+						updates.records.delete(record);
+						updates.recordMap.delete(record);
+						if (updates.records.size === 0) {
+							toUpdate.delete(key);
+						}
+					});
 					var isRoot = !prototypes;
 					if (isRoot) {
 						prototypes = [dataSource];
@@ -193,8 +206,48 @@ var Manager = function () {
 					}
 				};
 
+				var updateProperty = function updateProperty(obj, key) {
+					[key, manager.options.wholeObjectObserveKey].forEach(function (updKey) {
+						var updates = toUpdate.get(updKey);
+						if (updates) {
+							updates.records.forEach(function (record) {
+								var recordMapItem = updates.recordMap.get(record);
+								if (recordMapItem.root) {
+									invalidateDeps(record);
+								} else {
+									var invalidateAll = Array.from(recordMapItem.prototypes.values()).some(function (prototypes) {
+										var idx = prototypes.indexOf(obj) + 1;
+										var l = prototypes.length;
+										var invalidate = true;
+										for (var i = idx; i < l; i++) {
+											if (prototypes[i].hasOwnProperty(key)) {
+												invalidate = false;
+												break;
+											}
+										}
+										return invalidate;
+									});
+									if (invalidateAll) {
+										invalidateDeps(record);
+									}
+								}
+							});
+						}
+					});
+
+					// toUpdate.delete(key);
+
+					if (!manager.inRunSection) {
+						if (manager.options.immediateReaction) {
+							manager.run();
+						} else {
+							manager.runDeferred();
+						}
+					}
+				};
+
 				observable = new Proxy(dataSource, {
-					get: function get(obj, key) {
+					get: function get(obj, key, context) {
 						if (key === manager.$isObservableSymbol) {
 							return true;
 						}
@@ -207,6 +260,10 @@ var Manager = function () {
 								return registerRead;
 							}
 							registerRead(manager.callStack[manager.callStack.length - 1].record, key);
+						}
+
+						if (key === manager.options.wholeObjectObserveKey) {
+							return context;
 						}
 
 						var val = obj[key];
@@ -222,41 +279,12 @@ var Manager = function () {
 
 						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
 							obj[key] = val;
-							var updates = toUpdate.get(key);
-							if (updates) {
-								updates.records.forEach(function (record) {
-									var recordMapItem = updates.recordMap.get(record);
-									if (recordMapItem.root) {
-										invalidateDeps(record);
-									} else {
-										var invalidateAll = Array.from(recordMapItem.prototypes.values()).some(function (prototypes) {
-											var idx = prototypes.indexOf(obj) + 1;
-											var l = prototypes.length;
-											var invalidate = true;
-											for (var i = idx; i < l; i++) {
-												if (prototypes[i].hasOwnProperty(key)) {
-													invalidate = false;
-													break;
-												}
-											}
-											return invalidate;
-										});
-										if (invalidateAll) {
-											invalidateDeps(record);
-										}
-									}
-								});
-							}
-
-							toUpdate.delete(key);
-							if (!manager.inRunSection) {
-								if (manager.options.immediateReaction) {
-									manager.run();
-								} else {
-									manager.runDeferred();
-								}
-							}
+							updateProperty(obj, key);
 						}
+						return true;
+					},
+					deleteProperty: function deleteProperty(obj, key) {
+						updateProperty(obj, key);
 						return true;
 					}
 				});
@@ -293,7 +321,7 @@ var Manager = function () {
 				}
 
 				if (!record) {
-					record = { valid: false, value: undefined, deps: new Set() };
+					record = { valid: false, value: undefined, deps: new Set(), uninit: new Map() };
 					cacheByObject.set(call, record);
 				}
 				if (record.computing) {
@@ -308,6 +336,11 @@ var Manager = function () {
 					return record.value;
 				}
 				record.computing = true;
+				record.uninit.forEach(function (uninit) {
+					return uninit(record);
+				});
+				record.uninit.clear();
+
 				manager.callStack.push({ obj: obj, call: call, record: record });
 				try {
 					var context = void 0;

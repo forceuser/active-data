@@ -13,7 +13,8 @@ export class Manager {
 		this.cache = new WeakMap();
 		this.options = {
 			enabled: true,
-			immediateReaction: false
+			immediateReaction: false,
+			wholeObjectObserveKey: "$$whole"
 		};
 		this.callStack = [];
 		this.reactions = [];
@@ -50,13 +51,17 @@ export class Manager {
 				record.deps.clear();
 			};
 
+			const initUpdates = (key) => {
+				const updates = {records: new Set(), recordMap: new WeakMap()};
+				toUpdate.set(key, updates);
+				return updates;
+			};
 
 			const registerRead = (record, key, prototypes) => {
 				// record stores Updateble state
 				let updates = toUpdate.get(key);
 				if (!updates) {
-					updates = {records: new Set(), recordMap: new WeakMap()};
-					toUpdate.set(key, updates);
+					updates = initUpdates(key);
 				}
 				updates.records.add(record);
 				let recordMapItem = updates.recordMap.get(record);
@@ -64,6 +69,13 @@ export class Manager {
 					recordMapItem = {};
 					updates.recordMap.set(record, recordMapItem);
 				}
+				record.uninit.set(dataSource, record => {
+					updates.records.delete(record);
+					updates.recordMap.delete(record);
+					if (updates.records.size === 0) {
+						toUpdate.delete(key);
+					}
+				});
 				const isRoot = !prototypes;
 				if (isRoot) {
 					prototypes = [dataSource];
@@ -93,9 +105,53 @@ export class Manager {
 				}
 			};
 
+			const updateProperty = (obj, key) => {
+				[key, manager.options.wholeObjectObserveKey].forEach(updKey => {
+					const updates = toUpdate.get(updKey);
+					if (updates) {
+						updates.records.forEach((record) => {
+							const recordMapItem = updates.recordMap.get(record);
+							if (recordMapItem.root) {
+								invalidateDeps(record);
+							}
+							else {
+								const invalidateAll = Array.from(recordMapItem.prototypes.values())
+								.some((prototypes) => {
+									const idx = prototypes.indexOf(obj) + 1;
+									const l = prototypes.length;
+									let invalidate = true;
+									for (let i = idx; i < l; i++) {
+										if (prototypes[i].hasOwnProperty(key)) {
+											invalidate = false;
+											break;
+										}
+									}
+									return invalidate;
+								});
+								if (invalidateAll) {
+									invalidateDeps(record);
+								}
+							}
+						});
+
+					}
+				});
+
+				// toUpdate.delete(key);
+
+				if (!manager.inRunSection) {
+					if (manager.options.immediateReaction) {
+						manager.run();
+					}
+					else {
+						manager.runDeferred();
+					}
+				}
+			};
+
 
 			observable = new Proxy(dataSource, {
-				get: (obj, key) => {
+				get: (obj, key, context) => {
 					if (key === manager.$isObservableSymbol) {
 						return true;
 					}
@@ -108,6 +164,10 @@ export class Manager {
 							return registerRead;
 						}
 						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
+					}
+
+					if (key === manager.options.wholeObjectObserveKey) {
+						return context;
 					}
 
 					const val = obj[key];
@@ -123,44 +183,12 @@ export class Manager {
 
 					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
 						obj[key] = val;
-						const updates = toUpdate.get(key);
-						if (updates) {
-							updates.records.forEach((record) => {
-								const recordMapItem = updates.recordMap.get(record);
-								if (recordMapItem.root) {
-									invalidateDeps(record);
-								}
-								else {
-									const invalidateAll = Array.from(recordMapItem.prototypes.values())
-									.some((prototypes) => {
-										const idx = prototypes.indexOf(obj) + 1;
-										const l = prototypes.length;
-										let invalidate = true;
-										for (let i = idx; i < l; i++) {
-											if (prototypes[i].hasOwnProperty(key)) {
-												invalidate = false;
-												break;
-											}
-										}
-										return invalidate;
-									});
-									if (invalidateAll) {
-										invalidateDeps(record);
-									}
-								}
-							});
-						}
-
-						toUpdate.delete(key);
-						if (!manager.inRunSection) {
-							if (manager.options.immediateReaction) {
-								manager.run();
-							}
-							else {
-								manager.runDeferred();
-							}
-						}
+						updateProperty(obj, key);
 					}
+					return true;
+				},
+				deleteProperty: (obj, key) => {
+					updateProperty(obj, key);
 					return true;
 				}
 			});
@@ -193,7 +221,7 @@ export class Manager {
 			}
 
 			if (!record) {
-				record = {valid: false, value: undefined, deps: new Set()};
+				record = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
 				cacheByObject.set(call, record);
 			}
 			if (record.computing) {
@@ -208,6 +236,9 @@ export class Manager {
 				return record.value;
 			}
 			record.computing = true;
+			record.uninit.forEach(uninit => uninit(record));
+			record.uninit.clear();
+
 			manager.callStack.push({obj, call, record});
 			try {
 				let context;

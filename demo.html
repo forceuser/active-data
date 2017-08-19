@@ -1,15 +1,23 @@
 <!doctype html>
 <html>
+
 	<head>
 		<title>active-view demo</title>
 		<script src="./dist/active-data.js"></script>
 	</head>
+
 	<body>
 		<script>
 			const m = activeData;
-			function test1 () {
-				m.setOptions({immediateReaction: true});
-				const d = m.makeObservable({a: 1, b: 2});
+
+			function test1() {
+				m.setOptions({
+					immediateReaction: true
+				});
+				const d = m.makeObservable({
+					a: 1,
+					b: 2
+				});
 				const comp = self => self.a + self.b;
 				m.makeComputed(d, "comp", comp);
 				const comp2 = self => self.comp + "comp 2";
@@ -23,8 +31,10 @@
 				d.a = 5123;
 			}
 
-			function test2 () {
-				m.setOptions({immediateReaction: true});
+			function test2() {
+				m.setOptions({
+					immediateReaction: true
+				});
 				const srcProtoProto = {};
 				const srcProto = Object.create(srcProtoProto);
 				const src = Object.create(srcProto);
@@ -34,7 +44,8 @@
 				srcProtoProto.a = 1;
 				// srcProto.a = 2;
 				src.a = 3;
-				function updatable () {
+
+				function updatable() {
 					console.log(`${$srcProtoProto.a} ${$src.a}`);
 				}
 				m.makeReaction(updatable);
@@ -45,16 +56,20 @@
 
 			}
 
-			function test3 () {
-				m.setOptions({immediateReaction: true});
-				function makeLongPrototypeChain (maxlength = 1, res = []) {
+			function test3() {
+				m.setOptions({
+					immediateReaction: true
+				});
+
+				function makeLongPrototypeChain(maxlength = 1, res = []) {
 					if (res.length === maxlength) {
 						return res;
 					}
 					if (!res.length) {
-						res.push({n: 0});
-					}
-					else {
+						res.push({
+							n: 0
+						});
+					} else {
 						const obj = Object.create(res[res.length - 1]);
 						obj.n = res.length;
 						res.push(obj);
@@ -62,7 +77,7 @@
 					return makeLongPrototypeChain(maxlength, res);
 				}
 
-			 	chain = makeLongPrototypeChain(10);
+				chain = makeLongPrototypeChain(10);
 				chain[0].a = 0;
 				// chain[4].a = 4;
 
@@ -78,7 +93,75 @@
 
 			}
 
-			test3();
+			const ad = activeData;
+			const isolatedScope = ad.makeObservable({});
+
+			function createRootScope() {
+				return ad.makeObservable({
+					$child: [],
+					$new (isolated = false, extend) {
+						const data = ad.isObservable(this) ? ad.getObservableSource(this) : this
+
+						let scope = Object.create(isolated ? isolatedScope : data);
+						if (typeof extend === "object") {
+							scope = Object.assign(scope, extend);
+						}
+						Object.defineProperties(scope, {
+							"$parent": {
+								value: this,
+								enumerable: false
+							},
+							"$child": {
+								value: [],
+								enumerable: false
+							}
+						})
+						const $scope = ad.makeObservable(scope);
+						data.$child.push($scope);
+						return $scope;
+					},
+					toJSON: function() {
+				        var tmp = {};
+
+				        for (var key in this) {
+				            if (typeof this[key] !== "function") {
+								tmp[key] = this[key];
+							}
+				        }
+
+				        return tmp;
+				    }
+				})
+			}
+
+			const $rootScope = createRootScope();
+			const $scope1 = $rootScope.$new();
+			const $scope2 = $scope1.$new();
+			$scope1.a = {};
+			$scope2.b = 13;
+			ad.makeReaction(() => {
+				console.log(`$scope2.a: ${JSON.stringify($scope2.$$whole)}`);
+			});
+			setTimeout(() => {
+				$scope1.b = 212;
+			}, 2000);
+
+			setTimeout(() => {
+				$scope1.c = 555;
+			}, 3000);
+			// const obs = Object.create({});
+			// const $obs = ad.makeObservable(obs);
+			// const obs2 = Object.create(obs);
+			// const $obs2 = ad.makeObservable(obs2);
+			// $obs2.a = 22;
+			// ad.makeReaction(() => {
+			// 	console.log(`chch2: ${$obs2.a}`);
+			// 	console.log($obs2);
+			// });
+			// setTimeout(() => {
+			// 	$obs.a = 12
+			// }, 2000);
 		</script>
 	</body>
+
 </html>

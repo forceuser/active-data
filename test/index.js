@@ -305,11 +305,12 @@ test("Observable prototype - overriden property - reaction", t => {
 	observables.A0 = m.makeObservable(chainA[0]);
 	observables.A3 = m.makeObservable(chainA[3]);
 	observables.A6 = m.makeObservable(chainA[6]);
+	observables.A8 = m.makeObservable(chainA[8]);
 	observables.A9 = m.makeObservable(chainA[9]);
 	observables.B6 = m.makeObservable(chainB[6]);
 	observables.B7 = m.makeObservable(chainB[7]);
 
-	const reaction1 = sinon.spy(() => `${observables.A3.a} ${observables.A9.a}`);
+	const reaction1 = sinon.spy(() => `${observables.A3.a} ${observables.A9.a} ${observables.A9.a}`);
 	const reaction2 = sinon.spy(() => `${observables.B7.a}`);
 	m.makeReaction(reaction1);
 	m.makeReaction(reaction2);
@@ -352,5 +353,26 @@ test("Forked call stack and invalidation", t => {
 	d.a = 5123;
 	t.equal(reaction1.callCount, 2);
 	t.equal(reaction2.callCount, reaction1.callCount);
+	t.end();
+});
+
+test("Whole object watcher", t => {
+	const m = new Manager({immediateReaction: true, wholeObjectObserveKey: "__watch"});
+	const s1 = {};
+	const o1 = m.makeObservable(s1);
+	const s2 = Object.create(s1);
+	const o2 = m.makeObservable(s2);
+	o1.a = {};
+	o2.b = 13;
+	const reaction = sinon.spy(() => JSON.stringify(o2.__watch));
+	t.equal(reaction.callCount, 0);
+	m.makeReaction(reaction);
+	t.equal(reaction.callCount, 1);
+	o1.b = 212;
+	t.equal(reaction.callCount, 1);
+	o1.c = 555;
+	t.equal(reaction.callCount, 2);
+	delete o1.c;
+	t.equal(reaction.callCount, 3);
 	t.end();
 });
