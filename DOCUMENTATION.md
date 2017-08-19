@@ -120,8 +120,7 @@ Returns **[ReactionHandler](#reactionhandler)** Управляющий объе�
 
 -   `observable` **[Observable](#observable)** [Observable](#observable) для которого необходимо получить исходный объект
 
-Returns **([Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array))** Исходный обьект на основе которого был создан [Observable](#observable),
-если объект не является [Observable](#observable) возвращается переданный в параметре observable объект
+Returns **([Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array))** Исходный обьект на основе которого был создан [Observable](#observable)
 
 ## ManagerOptions
 
