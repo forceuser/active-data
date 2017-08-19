@@ -10535,61 +10535,51 @@ function createTestData() {
 	};
 }
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Check methods exists", function (t) {
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Check methods exists", t => {
 
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create observable", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create observable", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
 	__WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(m.observables, "get");
-	var data = createTestData();
+	const data = createTestData();
 	t.notOk(m.isObservable(data.d.d1.d11.d111));
-	var d = m.makeObservable(data);
+	const d = m.makeObservable(data);
 	t.comment("│    search for object in cache in case we already made observable for it");
 	t.equal(m.observables.get.callCount, 1);
-	var dsame = m.makeObservable(data);
+	const dsame = m.makeObservable(data);
 	t.equals(d, dsame);
 	m.observables.get.restore();
 
 	__WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(m.observables, "get");
-	var d2 = m.makeObservable(d);
+	const d2 = m.makeObservable(d);
 	t.comment("│    dont search object in cache if it's already observable");
 	t.equal(m.observables.get.callCount, 0);
 	m.observables.get.restore();
 
-	var d4 = m.makeObservable(null);
+	const d4 = m.makeObservable(null);
 	t.equal(d4, null);
 	t.ok(m.isObservable(d.d.d1.d11.d111));
 	t.notOk(m.isObservable(d.arr.map));
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create computed property", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create computed property", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
 	Object.assign(d, {
 		x: "x",
 		y: "y"
 	});
-	m.makeComputed(d, "comp1", function (self) {
-		return self.x + self.y;
-	});
+	m.makeComputed(d, "comp1", self => self.x + self.y);
 	console.log(d.comp1);
 	d.x = "x1";
 	d.y = "y1";
 	console.log(d.comp1);
 
-	var comp2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.arr.filter(function (i) {
-			return !i;
-		});
-	});
-	var comp3 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.arr.filter(function (i) {
-			return !i;
-		});
-	});
+	const comp2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.arr.filter(i => !i));
+	const comp3 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.arr.filter(i => !i));
 	m.makeComputed(d, "comp2", comp2);
 	m.makeComputed(d, "comp3", comp3);
 	console.log(d.comp2);
@@ -10607,12 +10597,10 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Create computed property", functio
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Computed property lazyness", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
-	var comp = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.a + self.b;
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Computed property lazyness", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
+	const comp = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.a + self.b);
 	m.makeComputed(d, "comp", comp);
 	t.equal(comp.callCount, 0);
 	console.log(d.comp);
@@ -10626,20 +10614,17 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Computed property lazyness", funct
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create reaction function and unregister", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Create reaction function and unregister", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
 	d.a = 7;
 	d.z = {};
 	d.z.x = 11;
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
+	const reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => {
 		console.log(d.a + d.b + d.a);
 	});
 	t.equal(m.reactions.length, 0);
-
-	var _m$makeReaction = m.makeReaction(reaction),
-	    unregister = _m$makeReaction.unregister;
-
+	const { unregister } = m.makeReaction(reaction);
 	t.equal(m.reactions.length, 1);
 	t.equal(reaction.callCount, 0);
 	m.run();
@@ -10662,21 +10647,15 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Create reaction function and unreg
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Cross reference inside computed properties", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
-	m.makeComputed(d, "comp1", function (self) {
-		return self.comp2;
-	});
-	m.makeComputed(d, "comp2", function (self) {
-		return self.comp1;
-	});
-	var warnMessage = void 0;
-	__WEBPACK_IMPORTED_MODULE_1_sinon___default.a.stub(console, "warn", function (message) {
-		return warnMessage = message;
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Cross reference inside computed properties", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
+	m.makeComputed(d, "comp1", self => self.comp2);
+	m.makeComputed(d, "comp2", self => self.comp1);
+	let warnMessage;
+	__WEBPACK_IMPORTED_MODULE_1_sinon___default.a.stub(console, "warn", message => warnMessage = message);
 	try {
-		var a = d.comp2;
+		const a = d.comp2;
 		t.comment("│    returned value is undefined");
 		t.equal(a, undefined);
 		t.comment("│    correct warn message is printed");
@@ -10687,55 +10666,39 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Cross reference inside computed pr
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Changing observable inside computed property", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
-	m.makeComputed(d, "comp1", function (self) {
-		return self.a = 3;
-	});
-	m.makeComputed(d, "comp2", function (self) {
-		return self.b = 2;
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Changing observable inside computed property", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
+	m.makeComputed(d, "comp1", self => self.a = 3);
+	m.makeComputed(d, "comp2", self => self.b = 2);
 	t.comment("│    changing to the new value");
-	t.throws(function () {
-		return d.comp1;
-	});
+	t.throws(() => d.comp1);
 	t.comment("│    changing to the same value");
-	t.throws(function () {
-		return d.comp2;
-	});
+	t.throws(() => d.comp2);
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Changing observable inside reaction function", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Changing observable inside reaction function", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
 	t.comment("│    changing to the new value");
-	m.makeReaction(function () {
-		return d.a = 3;
-	}, false);
-	t.throws(function () {
-		return m.run();
-	});
+	m.makeReaction(() => d.a = 3, false);
+	t.throws(() => m.run());
 	t.comment("│    changing to the same value");
-	m.makeReaction(function () {
-		return d.b = 2;
-	}, false);
-	t.throws(function () {
-		return m.run();
-	});
+	m.makeReaction(() => d.b = 2, false);
+	t.throws(() => m.run());
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Autorun on data change", function (t) {
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Autorun on data change", t => {
 	t.timeoutAfter(3000);
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
-	var d = m.makeObservable(createTestData());
-	var runCount = 0;
-	m.makeReaction(function () {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]();
+	const d = m.makeObservable(createTestData());
+	let runCount = 0;
+	m.makeReaction(() => {
 		console.log(d.a + d.b);
 		if (runCount === 0) {
-			t.comment("\u2502    check initial value");
+			t.comment(`│    check initial value`);
 			t.ok(d.a + d.b === 3);
 		} else {
 			t.comment("│    check value after change");
@@ -10743,47 +10706,45 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Autorun on data change", function 
 		}
 		runCount++;
 	});
-	m.onAfterRun = function () {
+	m.onAfterRun = () => {
 		if (runCount >= 2) {
 			t.end();
 		}
 	};
-	setTimeout(function () {
-		return d.a = 3;
-	}, 100);
+	setTimeout(() => d.a = 3, 100);
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Immediate reaction option", function (t) {
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Immediate reaction option", t => {
 	t.timeoutAfter(3000);
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
-	var d = m.makeObservable(createTestData());
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
+	const d = m.makeObservable(createTestData());
+	const reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => {
 		console.log(d.a + d.b);
 	});
 	m.makeReaction(reaction, true);
 	t.equal(reaction.callCount, 1);
 	d.a = 12;
 	t.equal(reaction.callCount, 2);
-	m.run(function () {
+	m.run(() => {
 		d.a = 13;
 		d.b = 14;
 	});
 	t.equal(reaction.callCount, 3);
-	m.onAfterRun = function () {
+	m.onAfterRun = () => {
 		t.equal(reaction.callCount, 4);
 		t.end();
 	};
-	m.runDeferred(function () {
+	m.runDeferred(() => {
 		d.a = 15;
 		d.b = 16;
 	});
 	t.equal(reaction.callCount, 3);
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Test disabled reaction", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true, enabled: false });
-	var d = m.makeObservable(createTestData());
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Test disabled reaction", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true, enabled: false });
+	const d = m.makeObservable(createTestData());
+	const reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => {
 		console.log(d.a + d.b);
 	});
 	m.makeReaction(reaction);
@@ -10793,31 +10754,29 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Test disabled reaction", function 
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Test disabled reaction - deferred", function (t) {
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Test disabled reaction - deferred", t => {
 	t.timeoutAfter(3000);
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ enabled: false });
-	var d = m.makeObservable(createTestData());
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ enabled: false });
+	const d = m.makeObservable(createTestData());
+	const reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => {
 		console.log(d.a + d.b);
 	});
 	m.makeReaction(reaction);
 	d.a = 3123;
 	m.runDeferred();
-	setTimeout(function () {
+	setTimeout(() => {
 		t.equal(reaction.callCount, 0);
 		t.end();
 	}, 100);
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Observable prototype", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
-	var src = { a: 1 };
-	var srcWithProto = Object.create(src);
-	var protoObs = m.makeObservable(src);
-	var obs = m.makeObservable(srcWithProto);
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
-		return console.log(obs.a);
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Observable prototype", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
+	const src = { a: 1 };
+	const srcWithProto = Object.create(src);
+	const protoObs = m.makeObservable(src);
+	const obs = m.makeObservable(srcWithProto);
+	const reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => console.log(obs.a));
 	m.makeReaction(reaction);
 	t.equal(reaction.callCount, 1);
 	protoObs.a = 111;
@@ -10825,52 +10784,71 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Observable prototype", function (t
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default.a.skip("Observable prototype - overriden property - reaction", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
-	var src = { a: 1 };
-	var srcWithProto = Object.create(src);
-	var protoObs = m.makeObservable(src);
-	var obs = m.makeObservable(srcWithProto);
-	var reaction = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
-		return console.log(obs.a);
-	});
-	m.makeReaction(reaction);
-	t.equal(reaction.callCount, 1);
-	protoObs.a = 111;
-	t.equal(reaction.callCount, 2);
-	obs.a = 222;
-	t.equal(reaction.callCount, 3);
-	protoObs.a = 333;
-	t.equal(reaction.callCount, 3);
-	var reaction2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
-		return console.log(obs.a + " " + protoObs.a);
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Observable prototype - overriden property - reaction", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
+	function makeLongPrototypeChain(maxlength = 1, res = []) {
+		if (res.length >= maxlength) {
+			return res;
+		}
+		if (!res.length) {
+			res.push({ n: 0 });
+		} else {
+			const obj = Object.create(res[res.length - 1]);
+			obj.n = res.length;
+			res.push(obj);
+		}
+		return makeLongPrototypeChain(maxlength, res);
+	}
+
+	const chainA = makeLongPrototypeChain(10);
+	const chainB = makeLongPrototypeChain(10, chainA.slice(0, 5));
+	chainA[0].a = 0;
+	// chain[4].a = 4;
+
+	const observables = {};
+	observables.A0 = m.makeObservable(chainA[0]);
+	observables.A3 = m.makeObservable(chainA[3]);
+	observables.A6 = m.makeObservable(chainA[6]);
+	observables.A9 = m.makeObservable(chainA[9]);
+	observables.B6 = m.makeObservable(chainB[6]);
+	observables.B7 = m.makeObservable(chainB[7]);
+
+	const reaction1 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => `${observables.A3.a} ${observables.A9.a}`);
+	const reaction2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => `${observables.B7.a}`);
+	m.makeReaction(reaction1);
 	m.makeReaction(reaction2);
+	t.equal(reaction1.callCount, 1);
+	t.equal(reaction2.callCount, 1);
+	observables.A0.a = 111;
+	t.equal(reaction1.callCount, 2);
+	t.equal(reaction2.callCount, 2);
+	observables.A3.a = 12;
+	t.equal(reaction1.callCount, 3);
+	t.equal(reaction2.callCount, 3);
+	observables.A0.a = 222;
+	t.equal(reaction1.callCount, 3);
+	t.equal(reaction2.callCount, 3);
+	observables.A6.a = 666;
+	t.equal(reaction1.callCount, 4);
+	t.equal(reaction2.callCount, 3);
+	observables.B6.a = 6666;
+	t.equal(reaction1.callCount, 4);
+	t.equal(reaction2.callCount, 4);
 
 	t.end();
 });
 
-__WEBPACK_IMPORTED_MODULE_0_tape___default()("Forked call stack and invalidation", function (t) {
-	var m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
-	var d = m.makeObservable(createTestData());
-	var comp = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.a + self.b;
-	});
+__WEBPACK_IMPORTED_MODULE_0_tape___default()("Forked call stack and invalidation", t => {
+	const m = new __WEBPACK_IMPORTED_MODULE_2__src_index__["a" /* Manager */]({ immediateReaction: true });
+	const d = m.makeObservable(createTestData());
+	const comp = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.a + self.b);
 	m.makeComputed(d, "comp", comp);
-	var comp2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.comp;
-	});
-	var comp3 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function (self) {
-		return self.comp;
-	});
+	const comp2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.comp);
+	const comp3 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(self => self.comp);
 	m.makeComputed(d, "comp2", comp2);
 	m.makeComputed(d, "comp3", comp3);
-	var reaction1 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
-		return d.comp2;
-	});
-	var reaction2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(function () {
-		return d.comp2;
-	});
+	const reaction1 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => d.comp2);
+	const reaction2 = __WEBPACK_IMPORTED_MODULE_1_sinon___default.a.spy(() => d.comp2);
 	m.makeReaction(reaction1);
 	m.makeReaction(reaction2);
 	t.equal(reaction1.callCount, 1);
@@ -10885,10 +10863,9 @@ __WEBPACK_IMPORTED_MODULE_0_tape___default()("Forked call stack and invalidation
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Manager; });
 var cov_7fzfwca28 = function () {
 	var path = "/home/forceuser/Projects/_VAPROJECTS/active-data/src/index.js",
-	    hash = "cf2554c847703d7fffcffff767a7ed1b267bd63e",
+	    hash = "1bbe81c92b9f08fac6f696e3c2a18d8671d54fa1",
 	    global = new Function('return this')(),
 	    gcv = "__coverage__",
 	    coverageData = {
@@ -11060,7 +11037,7 @@ var cov_7fzfwca28 = function () {
 					column: 2
 				},
 				end: {
-					line: 156,
+					line: 165,
 					column: 3
 				}
 			},
@@ -11130,78 +11107,78 @@ var cov_7fzfwca28 = function () {
 					column: 24
 				},
 				end: {
-					line: 85,
+					line: 94,
 					column: 4
 				}
 			},
 			"24": {
 				start: {
-					line: 55,
+					line: 56,
 					column: 18
 				},
 				end: {
-					line: 55,
+					line: 56,
 					column: 35
 				}
 			},
 			"25": {
 				start: {
-					line: 56,
+					line: 57,
 					column: 4
 				},
 				end: {
-					line: 59,
+					line: 60,
 					column: 5
 				}
 			},
 			"26": {
 				start: {
-					line: 57,
+					line: 58,
 					column: 5
 				},
 				end: {
-					line: 57,
-					column: 59
+					line: 58,
+					column: 62
 				}
 			},
 			"27": {
 				start: {
-					line: 58,
+					line: 59,
 					column: 5
 				},
 				end: {
-					line: 58,
+					line: 59,
 					column: 32
 				}
 			},
 			"28": {
 				start: {
 					line: 61,
-					column: 21
+					column: 4
 				},
 				end: {
 					line: 61,
-					column: 51
+					column: 32
 				}
 			},
 			"29": {
 				start: {
 					line: 62,
-					column: 4
+					column: 24
 				},
 				end: {
-					line: 68,
-					column: 5
+					line: 62,
+					column: 53
 				}
 			},
 			"30": {
 				start: {
 					line: 63,
-					column: 5
+					column: 4
 				},
 				end: {
-					line: 63,
-					column: 54
+					line: 66,
+					column: 5
 				}
 			},
 			"31": {
@@ -11211,222 +11188,242 @@ var cov_7fzfwca28 = function () {
 				},
 				end: {
 					line: 64,
-					column: 48
+					column: 24
 				}
 			},
 			"32": {
 				start: {
-					line: 66,
-					column: 9
+					line: 65,
+					column: 5
 				},
 				end: {
-					line: 68,
-					column: 5
+					line: 65,
+					column: 50
 				}
 			},
 			"33": {
 				start: {
 					line: 67,
-					column: 5
+					column: 19
 				},
 				end: {
 					line: 67,
-					column: 41
+					column: 30
 				}
 			},
 			"34": {
 				start: {
-					line: 70,
+					line: 68,
 					column: 4
 				},
 				end: {
-					line: 70,
-					column: 53
+					line: 82,
+					column: 5
 				}
 			},
 			"35": {
 				start: {
-					line: 72,
-					column: 4
+					line: 69,
+					column: 5
 				},
 				end: {
-					line: 72,
-					column: 32
+					line: 69,
+					column: 31
 				}
 			},
 			"36": {
 				start: {
-					line: 74,
-					column: 16
+					line: 70,
+					column: 5
 				},
 				end: {
-					line: 74,
-					column: 49
+					line: 70,
+					column: 31
 				}
 			},
 			"37": {
 				start: {
-					line: 75,
-					column: 24
+					line: 73,
+					column: 21
 				},
 				end: {
-					line: 75,
-					column: 41
+					line: 73,
+					column: 54
 				}
 			},
 			"38": {
 				start: {
-					line: 76,
-					column: 4
+					line: 74,
+					column: 5
 				},
 				end: {
-					line: 84,
-					column: 5
+					line: 76,
+					column: 6
 				}
 			},
 			"39": {
 				start: {
-					line: 77,
-					column: 29
+					line: 75,
+					column: 6
 				},
 				end: {
-					line: 77,
-					column: 59
+					line: 75,
+					column: 43
 				}
 			},
 			"40": {
+				start: {
+					line: 77,
+					column: 25
+				},
+				end: {
+					line: 77,
+					column: 62
+				}
+			},
+			"41": {
 				start: {
 					line: 78,
 					column: 5
 				},
 				end: {
-					line: 81,
+					line: 80,
 					column: 6
-				}
-			},
-			"41": {
-				start: {
-					line: 79,
-					column: 6
-				},
-				end: {
-					line: 79,
-					column: 73
 				}
 			},
 			"42": {
 				start: {
-					line: 80,
+					line: 79,
 					column: 6
 				},
 				end: {
-					line: 80,
-					column: 12
+					line: 79,
+					column: 13
 				}
 			},
 			"43": {
 				start: {
-					line: 82,
+					line: 81,
 					column: 5
 				},
 				end: {
-					line: 82,
-					column: 31
+					line: 81,
+					column: 55
 				}
 			},
 			"44": {
 				start: {
-					line: 83,
-					column: 5
+					line: 84,
+					column: 16
 				},
 				end: {
-					line: 83,
-					column: 42
+					line: 84,
+					column: 49
 				}
 			},
 			"45": {
 				start: {
-					line: 88,
-					column: 3
+					line: 85,
+					column: 4
 				},
 				end: {
-					line: 154,
-					column: 6
+					line: 93,
+					column: 5
 				}
 			},
 			"46": {
 				start: {
-					line: 90,
-					column: 5
+					line: 86,
+					column: 29
 				},
 				end: {
-					line: 92,
-					column: 6
+					line: 86,
+					column: 59
 				}
 			},
 			"47": {
 				start: {
-					line: 91,
-					column: 6
+					line: 87,
+					column: 5
 				},
 				end: {
-					line: 91,
-					column: 18
+					line: 87,
+					column: 31
 				}
 			},
 			"48": {
 				start: {
-					line: 97,
+					line: 88,
 					column: 5
 				},
 				end: {
-					line: 103,
+					line: 91,
 					column: 6
 				}
 			},
 			"49": {
 				start: {
-					line: 98,
+					line: 89,
 					column: 6
 				},
 				end: {
-					line: 100,
-					column: 7
+					line: 89,
+					column: 70
 				}
 			},
 			"50": {
 				start: {
-					line: 99,
-					column: 7
+					line: 90,
+					column: 6
 				},
 				end: {
-					line: 99,
-					column: 27
+					line: 90,
+					column: 12
 				}
 			},
 			"51": {
 				start: {
-					line: 102,
-					column: 6
+					line: 92,
+					column: 5
 				},
 				end: {
-					line: 102,
-					column: 80
+					line: 92,
+					column: 42
 				}
 			},
 			"52": {
 				start: {
-					line: 105,
-					column: 17
+					line: 97,
+					column: 3
 				},
 				end: {
-					line: 105,
-					column: 25
+					line: 163,
+					column: 6
 				}
 			},
 			"53": {
 				start: {
-					line: 106,
+					line: 99,
+					column: 5
+				},
+				end: {
+					line: 101,
+					column: 6
+				}
+			},
+			"54": {
+				start: {
+					line: 100,
+					column: 6
+				},
+				end: {
+					line: 100,
+					column: 18
+				}
+			},
+			"55": {
+				start: {
+					line: 103,
 					column: 5
 				},
 				end: {
@@ -11434,329 +11431,419 @@ var cov_7fzfwca28 = function () {
 					column: 6
 				}
 			},
-			"54": {
-				start: {
-					line: 107,
-					column: 6
-				},
-				end: {
-					line: 107,
-					column: 41
-				}
-			},
-			"55": {
-				start: {
-					line: 109,
-					column: 5
-				},
-				end: {
-					line: 109,
-					column: 16
-				}
-			},
 			"56": {
 				start: {
-					line: 112,
-					column: 5
+					line: 104,
+					column: 6
 				},
 				end: {
-					line: 114,
-					column: 6
+					line: 106,
+					column: 7
 				}
 			},
 			"57": {
 				start: {
-					line: 113,
-					column: 6
+					line: 105,
+					column: 7
 				},
 				end: {
-					line: 113,
-					column: 118
+					line: 105,
+					column: 27
 				}
 			},
 			"58": {
+				start: {
+					line: 107,
+					column: 6
+				},
+				end: {
+					line: 107,
+					column: 80
+				}
+			},
+			"59": {
+				start: {
+					line: 110,
+					column: 17
+				},
+				end: {
+					line: 110,
+					column: 25
+				}
+			},
+			"60": {
+				start: {
+					line: 111,
+					column: 5
+				},
+				end: {
+					line: 113,
+					column: 6
+				}
+			},
+			"61": {
+				start: {
+					line: 112,
+					column: 6
+				},
+				end: {
+					line: 112,
+					column: 41
+				}
+			},
+			"62": {
+				start: {
+					line: 114,
+					column: 5
+				},
+				end: {
+					line: 114,
+					column: 16
+				}
+			},
+			"63": {
 				start: {
 					line: 117,
 					column: 5
 				},
 				end: {
-					line: 151,
-					column: 6
-				}
-			},
-			"59": {
-				start: {
-					line: 118,
-					column: 6
-				},
-				end: {
-					line: 118,
-					column: 21
-				}
-			},
-			"60": {
-				start: {
 					line: 119,
-					column: 22
-				},
-				end: {
-					line: 119,
-					column: 39
-				}
-			},
-			"61": {
-				start: {
-					line: 121,
 					column: 6
-				},
-				end: {
-					line: 140,
-					column: 7
-				}
-			},
-			"62": {
-				start: {
-					line: 122,
-					column: 7
-				},
-				end: {
-					line: 139,
-					column: 10
-				}
-			},
-			"63": {
-				start: {
-					line: 123,
-					column: 25
-				},
-				end: {
-					line: 123,
-					column: 55
 				}
 			},
 			"64": {
 				start: {
-					line: 124,
-					column: 8
+					line: 118,
+					column: 6
 				},
 				end: {
-					line: 137,
-					column: 9
+					line: 118,
+					column: 118
 				}
 			},
 			"65": {
 				start: {
-					line: 136,
-					column: 9
+					line: 121,
+					column: 5
 				},
 				end: {
-					line: 136,
-					column: 32
+					line: 160,
+					column: 6
 				}
 			},
 			"66": {
 				start: {
-					line: 142,
+					line: 122,
 					column: 6
 				},
 				end: {
-					line: 142,
-					column: 27
+					line: 122,
+					column: 21
 				}
 			},
 			"67": {
 				start: {
-					line: 143,
-					column: 6
+					line: 123,
+					column: 22
 				},
 				end: {
-					line: 150,
-					column: 7
+					line: 123,
+					column: 39
 				}
 			},
 			"68": {
 				start: {
-					line: 144,
-					column: 7
+					line: 124,
+					column: 6
 				},
 				end: {
 					line: 149,
-					column: 8
+					column: 7
 				}
 			},
 			"69": {
 				start: {
-					line: 145,
-					column: 8
+					line: 125,
+					column: 7
 				},
 				end: {
-					line: 145,
-					column: 22
+					line: 148,
+					column: 10
 				}
 			},
 			"70": {
 				start: {
-					line: 148,
-					column: 8
+					line: 126,
+					column: 30
 				},
 				end: {
-					line: 148,
-					column: 30
+					line: 126,
+					column: 59
 				}
 			},
 			"71": {
 				start: {
-					line: 152,
-					column: 5
+					line: 127,
+					column: 8
 				},
 				end: {
-					line: 152,
-					column: 17
+					line: 147,
+					column: 9
 				}
 			},
 			"72": {
 				start: {
-					line: 155,
-					column: 3
+					line: 128,
+					column: 9
 				},
 				end: {
-					line: 155,
-					column: 51
+					line: 128,
+					column: 32
 				}
 			},
 			"73": {
 				start: {
-					line: 157,
-					column: 2
+					line: 131,
+					column: 31
 				},
 				end: {
-					line: 157,
-					column: 20
+					line: 143,
+					column: 11
 				}
 			},
 			"74": {
 				start: {
-					line: 168,
-					column: 18
+					line: 133,
+					column: 22
 				},
 				end: {
-					line: 168,
-					column: 22
+					line: 133,
+					column: 49
 				}
 			},
 			"75": {
 				start: {
-					line: 169,
-					column: 2
+					line: 134,
+					column: 20
 				},
 				end: {
-					line: 171,
-					column: 3
+					line: 134,
+					column: 37
 				}
 			},
 			"76": {
 				start: {
-					line: 170,
-					column: 3
+					line: 135,
+					column: 27
 				},
 				end: {
-					line: 170,
-					column: 17
+					line: 135,
+					column: 31
 				}
 			},
 			"77": {
 				start: {
-					line: 172,
-					column: 2
+					line: 136,
+					column: 10
 				},
 				end: {
-					line: 218,
-					column: 4
+					line: 141,
+					column: 11
 				}
 			},
 			"78": {
 				start: {
-					line: 173,
-					column: 23
+					line: 137,
+					column: 11
 				},
 				end: {
-					line: 173,
-					column: 45
+					line: 140,
+					column: 12
 				}
 			},
 			"79": {
 				start: {
-					line: 175,
-					column: 3
+					line: 138,
+					column: 12
 				},
 				end: {
-					line: 181,
-					column: 4
+					line: 138,
+					column: 31
 				}
 			},
 			"80": {
 				start: {
-					line: 176,
-					column: 4
+					line: 139,
+					column: 12
 				},
 				end: {
-					line: 176,
-					column: 37
+					line: 139,
+					column: 18
 				}
 			},
 			"81": {
 				start: {
-					line: 179,
-					column: 4
+					line: 142,
+					column: 10
 				},
 				end: {
-					line: 179,
-					column: 30
+					line: 142,
+					column: 28
 				}
 			},
 			"82": {
 				start: {
-					line: 180,
-					column: 4
+					line: 144,
+					column: 9
 				},
 				end: {
-					line: 180,
-					column: 42
+					line: 146,
+					column: 10
 				}
 			},
 			"83": {
 				start: {
-					line: 183,
-					column: 3
+					line: 145,
+					column: 10
 				},
 				end: {
-					line: 186,
-					column: 4
+					line: 145,
+					column: 33
 				}
 			},
 			"84": {
 				start: {
-					line: 184,
-					column: 4
+					line: 151,
+					column: 6
 				},
 				end: {
-					line: 184,
-					column: 63
+					line: 151,
+					column: 27
 				}
 			},
 			"85": {
 				start: {
-					line: 185,
-					column: 4
+					line: 152,
+					column: 6
 				},
 				end: {
-					line: 185,
-					column: 36
+					line: 159,
+					column: 7
 				}
 			},
 			"86": {
 				start: {
-					line: 187,
+					line: 153,
+					column: 7
+				},
+				end: {
+					line: 158,
+					column: 8
+				}
+			},
+			"87": {
+				start: {
+					line: 154,
+					column: 8
+				},
+				end: {
+					line: 154,
+					column: 22
+				}
+			},
+			"88": {
+				start: {
+					line: 157,
+					column: 8
+				},
+				end: {
+					line: 157,
+					column: 30
+				}
+			},
+			"89": {
+				start: {
+					line: 161,
+					column: 5
+				},
+				end: {
+					line: 161,
+					column: 17
+				}
+			},
+			"90": {
+				start: {
+					line: 164,
+					column: 3
+				},
+				end: {
+					line: 164,
+					column: 51
+				}
+			},
+			"91": {
+				start: {
+					line: 166,
+					column: 2
+				},
+				end: {
+					line: 166,
+					column: 20
+				}
+			},
+			"92": {
+				start: {
+					line: 177,
+					column: 18
+				},
+				end: {
+					line: 177,
+					column: 22
+				}
+			},
+			"93": {
+				start: {
+					line: 178,
+					column: 2
+				},
+				end: {
+					line: 180,
+					column: 3
+				}
+			},
+			"94": {
+				start: {
+					line: 179,
+					column: 3
+				},
+				end: {
+					line: 179,
+					column: 17
+				}
+			},
+			"95": {
+				start: {
+					line: 181,
+					column: 2
+				},
+				end: {
+					line: 227,
+					column: 4
+				}
+			},
+			"96": {
+				start: {
+					line: 182,
+					column: 23
+				},
+				end: {
+					line: 182,
+					column: 45
+				}
+			},
+			"97": {
+				start: {
+					line: 184,
 					column: 3
 				},
 				end: {
@@ -11764,543 +11851,613 @@ var cov_7fzfwca28 = function () {
 					column: 4
 				}
 			},
-			"87": {
+			"98": {
+				start: {
+					line: 185,
+					column: 4
+				},
+				end: {
+					line: 185,
+					column: 37
+				}
+			},
+			"99": {
 				start: {
 					line: 188,
 					column: 4
 				},
 				end: {
 					line: 188,
-					column: 125
+					column: 30
 				}
 			},
-			"88": {
+			"100": {
 				start: {
 					line: 189,
 					column: 4
 				},
 				end: {
 					line: 189,
-					column: 21
+					column: 42
 				}
 			},
-			"89": {
+			"101": {
 				start: {
-					line: 191,
+					line: 192,
 					column: 3
+				},
+				end: {
+					line: 195,
+					column: 4
+				}
+			},
+			"102": {
+				start: {
+					line: 193,
+					column: 4
 				},
 				end: {
 					line: 193,
-					column: 4
+					column: 63
 				}
 			},
-			"90": {
+			"103": {
 				start: {
-					line: 192,
+					line: 194,
 					column: 4
 				},
 				end: {
-					line: 192,
-					column: 76
+					line: 194,
+					column: 36
 				}
 			},
-			"91": {
+			"104": {
 				start: {
-					line: 195,
+					line: 196,
 					column: 3
+				},
+				end: {
+					line: 199,
+					column: 4
+				}
+			},
+			"105": {
+				start: {
+					line: 197,
+					column: 4
 				},
 				end: {
 					line: 197,
-					column: 4
+					column: 125
 				}
 			},
-			"92": {
-				start: {
-					line: 196,
-					column: 4
-				},
-				end: {
-					line: 196,
-					column: 24
-				}
-			},
-			"93": {
+			"106": {
 				start: {
 					line: 198,
-					column: 3
+					column: 4
 				},
 				end: {
 					line: 198,
-					column: 27
+					column: 21
 				}
 			},
-			"94": {
-				start: {
-					line: 199,
-					column: 3
-				},
-				end: {
-					line: 199,
-					column: 47
-				}
-			},
-			"95": {
+			"107": {
 				start: {
 					line: 200,
 					column: 3
 				},
 				end: {
-					line: 217,
-					column: 4
-				}
-			},
-			"96": {
-				start: {
 					line: 202,
 					column: 4
-				},
-				end: {
-					line: 207,
-					column: 5
-				}
-			},
-			"97": {
-				start: {
-					line: 203,
-					column: 5
-				},
-				end: {
-					line: 203,
-					column: 45
-				}
-			},
-			"98": {
-				start: {
-					line: 206,
-					column: 5
-				},
-				end: {
-					line: 206,
-					column: 23
-				}
-			},
-			"99": {
-				start: {
-					line: 209,
-					column: 18
-				},
-				end: {
-					line: 209,
-					column: 45
-				}
-			},
-			"100": {
-				start: {
-					line: 210,
-					column: 4
-				},
-				end: {
-					line: 210,
-					column: 24
-				}
-			},
-			"101": {
-				start: {
-					line: 211,
-					column: 4
-				},
-				end: {
-					line: 211,
-					column: 25
-				}
-			},
-			"102": {
-				start: {
-					line: 212,
-					column: 4
-				},
-				end: {
-					line: 212,
-					column: 17
-				}
-			},
-			"103": {
-				start: {
-					line: 215,
-					column: 4
-				},
-				end: {
-					line: 215,
-					column: 29
-				}
-			},
-			"104": {
-				start: {
-					line: 216,
-					column: 4
-				},
-				end: {
-					line: 216,
-					column: 28
-				}
-			},
-			"105": {
-				start: {
-					line: 229,
-					column: 2
-				},
-				end: {
-					line: 233,
-					column: 5
-				}
-			},
-			"106": {
-				start: {
-					line: 251,
-					column: 18
-				},
-				end: {
-					line: 251,
-					column: 22
-				}
-			},
-			"107": {
-				start: {
-					line: 252,
-					column: 20
-				},
-				end: {
-					line: 252,
-					column: 44
 				}
 			},
 			"108": {
 				start: {
-					line: 253,
-					column: 2
+					line: 201,
+					column: 4
 				},
 				end: {
-					line: 253,
-					column: 36
+					line: 201,
+					column: 76
 				}
 			},
 			"109": {
 				start: {
-					line: 254,
-					column: 2
+					line: 204,
+					column: 3
 				},
 				end: {
-					line: 261,
-					column: 3
+					line: 206,
+					column: 4
 				}
 			},
 			"110": {
 				start: {
-					line: 255,
-					column: 3
+					line: 205,
+					column: 4
 				},
 				end: {
-					line: 260,
-					column: 4
+					line: 205,
+					column: 24
 				}
 			},
 			"111": {
 				start: {
-					line: 256,
-					column: 4
+					line: 207,
+					column: 3
 				},
 				end: {
-					line: 256,
-					column: 18
+					line: 207,
+					column: 27
 				}
 			},
 			"112": {
 				start: {
-					line: 259,
-					column: 4
+					line: 208,
+					column: 3
 				},
 				end: {
-					line: 259,
-					column: 26
+					line: 208,
+					column: 47
 				}
 			},
 			"113": {
 				start: {
-					line: 262,
-					column: 2
+					line: 209,
+					column: 3
 				},
 				end: {
-					line: 270,
+					line: 226,
 					column: 4
 				}
 			},
 			"114": {
 				start: {
-					line: 264,
-					column: 16
+					line: 211,
+					column: 4
 				},
 				end: {
-					line: 264,
-					column: 52
+					line: 216,
+					column: 5
 				}
 			},
 			"115": {
+				start: {
+					line: 212,
+					column: 5
+				},
+				end: {
+					line: 212,
+					column: 45
+				}
+			},
+			"116": {
+				start: {
+					line: 215,
+					column: 5
+				},
+				end: {
+					line: 215,
+					column: 23
+				}
+			},
+			"117": {
+				start: {
+					line: 218,
+					column: 18
+				},
+				end: {
+					line: 218,
+					column: 45
+				}
+			},
+			"118": {
+				start: {
+					line: 219,
+					column: 4
+				},
+				end: {
+					line: 219,
+					column: 24
+				}
+			},
+			"119": {
+				start: {
+					line: 220,
+					column: 4
+				},
+				end: {
+					line: 220,
+					column: 25
+				}
+			},
+			"120": {
+				start: {
+					line: 221,
+					column: 4
+				},
+				end: {
+					line: 221,
+					column: 17
+				}
+			},
+			"121": {
+				start: {
+					line: 224,
+					column: 4
+				},
+				end: {
+					line: 224,
+					column: 29
+				}
+			},
+			"122": {
+				start: {
+					line: 225,
+					column: 4
+				},
+				end: {
+					line: 225,
+					column: 28
+				}
+			},
+			"123": {
+				start: {
+					line: 238,
+					column: 2
+				},
+				end: {
+					line: 242,
+					column: 5
+				}
+			},
+			"124": {
+				start: {
+					line: 260,
+					column: 18
+				},
+				end: {
+					line: 260,
+					column: 22
+				}
+			},
+			"125": {
+				start: {
+					line: 261,
+					column: 20
+				},
+				end: {
+					line: 261,
+					column: 44
+				}
+			},
+			"126": {
+				start: {
+					line: 262,
+					column: 2
+				},
+				end: {
+					line: 262,
+					column: 36
+				}
+			},
+			"127": {
+				start: {
+					line: 263,
+					column: 2
+				},
+				end: {
+					line: 270,
+					column: 3
+				}
+			},
+			"128": {
+				start: {
+					line: 264,
+					column: 3
+				},
+				end: {
+					line: 269,
+					column: 4
+				}
+			},
+			"129": {
 				start: {
 					line: 265,
 					column: 4
 				},
 				end: {
-					line: 267,
-					column: 5
-				}
-			},
-			"116": {
-				start: {
-					line: 266,
-					column: 5
-				},
-				end: {
-					line: 266,
-					column: 38
-				}
-			},
-			"117": {
-				start: {
-					line: 279,
-					column: 2
-				},
-				end: {
-					line: 279,
-					column: 48
-				}
-			},
-			"118": {
-				start: {
-					line: 290,
-					column: 2
-				},
-				end: {
-					line: 292,
-					column: 3
-				}
-			},
-			"119": {
-				start: {
-					line: 291,
-					column: 3
-				},
-				end: {
-					line: 291,
-					column: 10
-				}
-			},
-			"120": {
-				start: {
-					line: 293,
-					column: 2
-				},
-				end: {
-					line: 293,
-					column: 27
-				}
-			},
-			"121": {
-				start: {
-					line: 294,
-					column: 2
-				},
-				end: {
-					line: 304,
-					column: 3
-				}
-			},
-			"122": {
-				start: {
-					line: 295,
-					column: 3
-				},
-				end: {
-					line: 297,
-					column: 4
-				}
-			},
-			"123": {
-				start: {
-					line: 296,
-					column: 4
-				},
-				end: {
-					line: 296,
-					column: 13
-				}
-			},
-			"124": {
-				start: {
-					line: 298,
-					column: 3
-				},
-				end: {
-					line: 298,
-					column: 29
-				}
-			},
-			"125": {
-				start: {
-					line: 299,
-					column: 3
-				},
-				end: {
-					line: 299,
-					column: 52
-				}
-			},
-			"126": {
-				start: {
-					line: 299,
-					column: 39
-				},
-				end: {
-					line: 299,
-					column: 50
-				}
-			},
-			"127": {
-				start: {
-					line: 300,
-					column: 3
-				},
-				end: {
-					line: 300,
-					column: 62
-				}
-			},
-			"128": {
-				start: {
-					line: 303,
-					column: 3
-				},
-				end: {
-					line: 303,
-					column: 29
-				}
-			},
-			"129": {
-				start: {
-					line: 314,
-					column: 2
-				},
-				end: {
-					line: 316,
-					column: 3
+					line: 265,
+					column: 18
 				}
 			},
 			"130": {
 				start: {
-					line: 315,
-					column: 3
+					line: 268,
+					column: 4
 				},
 				end: {
-					line: 315,
-					column: 10
+					line: 268,
+					column: 26
 				}
 			},
 			"131": {
 				start: {
-					line: 317,
+					line: 271,
 					column: 2
 				},
 				end: {
-					line: 317,
-					column: 27
+					line: 279,
+					column: 4
 				}
 			},
 			"132": {
 				start: {
-					line: 318,
-					column: 2
+					line: 273,
+					column: 16
 				},
 				end: {
-					line: 328,
-					column: 3
+					line: 273,
+					column: 52
 				}
 			},
 			"133": {
 				start: {
-					line: 319,
-					column: 3
+					line: 274,
+					column: 4
 				},
 				end: {
-					line: 321,
-					column: 4
+					line: 276,
+					column: 5
 				}
 			},
 			"134": {
 				start: {
-					line: 320,
-					column: 4
+					line: 275,
+					column: 5
 				},
 				end: {
-					line: 320,
-					column: 53
+					line: 275,
+					column: 38
 				}
 			},
 			"135": {
 				start: {
-					line: 320,
-					column: 41
+					line: 288,
+					column: 2
 				},
 				end: {
-					line: 320,
-					column: 51
+					line: 288,
+					column: 48
 				}
 			},
 			"136": {
 				start: {
-					line: 322,
-					column: 3
+					line: 299,
+					column: 2
 				},
 				end: {
-					line: 324,
-					column: 4
+					line: 301,
+					column: 3
 				}
 			},
 			"137": {
 				start: {
-					line: 323,
-					column: 4
+					line: 300,
+					column: 3
 				},
 				end: {
-					line: 323,
-					column: 13
+					line: 300,
+					column: 10
 				}
 			},
 			"138": {
 				start: {
-					line: 327,
-					column: 3
+					line: 302,
+					column: 2
 				},
 				end: {
-					line: 327,
-					column: 29
+					line: 302,
+					column: 27
 				}
 			},
 			"139": {
 				start: {
-					line: 333,
-					column: 0
+					line: 303,
+					column: 2
 				},
 				end: {
-					line: 333,
-					column: 32
+					line: 313,
+					column: 3
 				}
 			},
 			"140": {
 				start: {
-					line: 334,
+					line: 304,
+					column: 3
+				},
+				end: {
+					line: 306,
+					column: 4
+				}
+			},
+			"141": {
+				start: {
+					line: 305,
+					column: 4
+				},
+				end: {
+					line: 305,
+					column: 13
+				}
+			},
+			"142": {
+				start: {
+					line: 307,
+					column: 3
+				},
+				end: {
+					line: 307,
+					column: 29
+				}
+			},
+			"143": {
+				start: {
+					line: 308,
+					column: 3
+				},
+				end: {
+					line: 308,
+					column: 52
+				}
+			},
+			"144": {
+				start: {
+					line: 308,
+					column: 39
+				},
+				end: {
+					line: 308,
+					column: 50
+				}
+			},
+			"145": {
+				start: {
+					line: 309,
+					column: 3
+				},
+				end: {
+					line: 309,
+					column: 62
+				}
+			},
+			"146": {
+				start: {
+					line: 312,
+					column: 3
+				},
+				end: {
+					line: 312,
+					column: 29
+				}
+			},
+			"147": {
+				start: {
+					line: 323,
+					column: 2
+				},
+				end: {
+					line: 325,
+					column: 3
+				}
+			},
+			"148": {
+				start: {
+					line: 324,
+					column: 3
+				},
+				end: {
+					line: 324,
+					column: 10
+				}
+			},
+			"149": {
+				start: {
+					line: 326,
+					column: 2
+				},
+				end: {
+					line: 326,
+					column: 27
+				}
+			},
+			"150": {
+				start: {
+					line: 327,
+					column: 2
+				},
+				end: {
+					line: 337,
+					column: 3
+				}
+			},
+			"151": {
+				start: {
+					line: 328,
+					column: 3
+				},
+				end: {
+					line: 330,
+					column: 4
+				}
+			},
+			"152": {
+				start: {
+					line: 329,
+					column: 4
+				},
+				end: {
+					line: 329,
+					column: 53
+				}
+			},
+			"153": {
+				start: {
+					line: 329,
+					column: 41
+				},
+				end: {
+					line: 329,
+					column: 51
+				}
+			},
+			"154": {
+				start: {
+					line: 331,
+					column: 3
+				},
+				end: {
+					line: 333,
+					column: 4
+				}
+			},
+			"155": {
+				start: {
+					line: 332,
+					column: 4
+				},
+				end: {
+					line: 332,
+					column: 13
+				}
+			},
+			"156": {
+				start: {
+					line: 336,
+					column: 3
+				},
+				end: {
+					line: 336,
+					column: 29
+				}
+			},
+			"157": {
+				start: {
+					line: 342,
 					column: 0
 				},
 				end: {
-					line: 334,
+					line: 342,
+					column: 32
+				}
+			},
+			"158": {
+				start: {
+					line: 343,
+					column: 0
+				},
+				end: {
+					line: 343,
 					column: 34
 				}
 			}
@@ -12372,7 +12529,7 @@ var cov_7fzfwca28 = function () {
 						column: 29
 					},
 					end: {
-						line: 158,
+						line: 167,
 						column: 2
 					}
 				},
@@ -12441,10 +12598,10 @@ var cov_7fzfwca28 = function () {
 				loc: {
 					start: {
 						line: 54,
-						column: 70
+						column: 53
 					},
 					end: {
-						line: 85,
+						line: 94,
 						column: 4
 					}
 				},
@@ -12454,289 +12611,313 @@ var cov_7fzfwca28 = function () {
 				name: "(anonymous_6)",
 				decl: {
 					start: {
-						line: 89,
+						line: 98,
 						column: 9
 					},
 					end: {
-						line: 89,
+						line: 98,
 						column: 10
 					}
 				},
 				loc: {
 					start: {
-						line: 89,
+						line: 98,
 						column: 23
 					},
 					end: {
-						line: 110,
+						line: 115,
 						column: 5
 					}
 				},
-				line: 89
+				line: 98
 			},
 			"7": {
 				name: "(anonymous_7)",
 				decl: {
 					start: {
-						line: 111,
+						line: 116,
 						column: 9
 					},
 					end: {
-						line: 111,
+						line: 116,
 						column: 10
 					}
 				},
 				loc: {
 					start: {
-						line: 111,
+						line: 116,
 						column: 28
 					},
 					end: {
-						line: 153,
+						line: 162,
 						column: 5
 					}
 				},
-				line: 111
+				line: 116
 			},
 			"8": {
 				name: "(anonymous_8)",
 				decl: {
 					start: {
-						line: 122,
+						line: 125,
 						column: 31
 					},
 					end: {
-						line: 122,
+						line: 125,
 						column: 32
 					}
 				},
 				loc: {
 					start: {
-						line: 122,
+						line: 125,
 						column: 43
 					},
 					end: {
-						line: 139,
+						line: 148,
 						column: 8
 					}
 				},
-				line: 122
+				line: 125
 			},
 			"9": {
 				name: "(anonymous_9)",
 				decl: {
 					start: {
-						line: 167,
-						column: 1
+						line: 132,
+						column: 15
 					},
 					end: {
-						line: 167,
-						column: 2
+						line: 132,
+						column: 16
 					}
 				},
 				loc: {
 					start: {
-						line: 167,
-						column: 34
+						line: 132,
+						column: 31
 					},
 					end: {
-						line: 219,
-						column: 2
+						line: 143,
+						column: 10
 					}
 				},
-				line: 167
+				line: 132
 			},
 			"10": {
 				name: "(anonymous_10)",
 				decl: {
 					start: {
-						line: 172,
-						column: 9
+						line: 176,
+						column: 1
 					},
 					end: {
-						line: 172,
-						column: 10
+						line: 176,
+						column: 2
 					}
 				},
 				loc: {
 					start: {
-						line: 172,
-						column: 21
+						line: 176,
+						column: 34
 					},
 					end: {
-						line: 218,
-						column: 3
+						line: 228,
+						column: 2
 					}
 				},
-				line: 172
+				line: 176
 			},
 			"11": {
 				name: "(anonymous_11)",
 				decl: {
 					start: {
-						line: 228,
-						column: 1
+						line: 181,
+						column: 9
 					},
 					end: {
-						line: 228,
-						column: 2
+						line: 181,
+						column: 10
 					}
 				},
 				loc: {
 					start: {
-						line: 228,
-						column: 47
+						line: 181,
+						column: 21
 					},
 					end: {
-						line: 234,
-						column: 2
+						line: 227,
+						column: 3
 					}
 				},
-				line: 228
+				line: 181
 			},
 			"12": {
 				name: "(anonymous_12)",
 				decl: {
 					start: {
-						line: 250,
+						line: 237,
 						column: 1
 					},
 					end: {
-						line: 250,
+						line: 237,
 						column: 2
 					}
 				},
 				loc: {
 					start: {
-						line: 250,
-						column: 33
+						line: 237,
+						column: 47
 					},
 					end: {
-						line: 271,
+						line: 243,
 						column: 2
 					}
 				},
-				line: 250
+				line: 237
 			},
 			"13": {
 				name: "(anonymous_13)",
 				decl: {
 					start: {
-						line: 278,
+						line: 259,
 						column: 1
 					},
 					end: {
-						line: 278,
+						line: 259,
 						column: 2
 					}
 				},
 				loc: {
 					start: {
-						line: 278,
-						column: 20
+						line: 259,
+						column: 33
 					},
 					end: {
 						line: 280,
 						column: 2
 					}
 				},
-				line: 278
+				line: 259
 			},
 			"14": {
 				name: "(anonymous_14)",
 				decl: {
 					start: {
-						line: 289,
+						line: 287,
 						column: 1
 					},
 					end: {
-						line: 289,
+						line: 287,
 						column: 2
 					}
 				},
 				loc: {
 					start: {
-						line: 289,
-						column: 14
+						line: 287,
+						column: 20
 					},
 					end: {
-						line: 305,
+						line: 289,
 						column: 2
 					}
 				},
-				line: 289
+				line: 287
 			},
 			"15": {
 				name: "(anonymous_15)",
 				decl: {
 					start: {
-						line: 299,
-						column: 26
+						line: 298,
+						column: 1
 					},
 					end: {
-						line: 299,
-						column: 27
+						line: 298,
+						column: 2
 					}
 				},
 				loc: {
 					start: {
-						line: 299,
-						column: 39
+						line: 298,
+						column: 14
 					},
 					end: {
-						line: 299,
-						column: 50
+						line: 314,
+						column: 2
 					}
 				},
-				line: 299
+				line: 298
 			},
 			"16": {
 				name: "(anonymous_16)",
 				decl: {
 					start: {
-						line: 313,
-						column: 1
+						line: 308,
+						column: 26
 					},
 					end: {
-						line: 313,
-						column: 2
+						line: 308,
+						column: 27
 					}
 				},
 				loc: {
 					start: {
-						line: 313,
-						column: 22
+						line: 308,
+						column: 39
 					},
 					end: {
-						line: 329,
-						column: 2
+						line: 308,
+						column: 50
 					}
 				},
-				line: 313
+				line: 308
 			},
 			"17": {
 				name: "(anonymous_17)",
 				decl: {
 					start: {
-						line: 320,
+						line: 322,
+						column: 1
+					},
+					end: {
+						line: 322,
+						column: 2
+					}
+				},
+				loc: {
+					start: {
+						line: 322,
+						column: 22
+					},
+					end: {
+						line: 338,
+						column: 2
+					}
+				},
+				line: 322
+			},
+			"18": {
+				name: "(anonymous_18)",
+				decl: {
+					start: {
+						line: 329,
 						column: 35
 					},
 					end: {
-						line: 320,
+						line: 329,
 						column: 36
 					}
 				},
 				loc: {
 					start: {
-						line: 320,
+						line: 329,
 						column: 41
 					},
 					end: {
-						line: 320,
+						line: 329,
 						column: 51
 					}
 				},
-				line: 320
+				line: 329
 			}
 		},
 		branchMap: {
@@ -12837,7 +13018,7 @@ var cov_7fzfwca28 = function () {
 						column: 2
 					},
 					end: {
-						line: 156,
+						line: 165,
 						column: 3
 					}
 				},
@@ -12848,7 +13029,7 @@ var cov_7fzfwca28 = function () {
 						column: 2
 					},
 					end: {
-						line: 156,
+						line: 165,
 						column: 3
 					}
 				}, {
@@ -12857,7 +13038,7 @@ var cov_7fzfwca28 = function () {
 						column: 2
 					},
 					end: {
-						line: 156,
+						line: 165,
 						column: 3
 					}
 				}],
@@ -12866,125 +13047,134 @@ var cov_7fzfwca28 = function () {
 			"4": {
 				loc: {
 					start: {
-						line: 54,
-						column: 38
+						line: 57,
+						column: 4
 					},
 					end: {
-						line: 54,
-						column: 65
+						line: 60,
+						column: 5
 					}
 				},
-				type: "default-arg",
+				type: "if",
 				locations: [{
 					start: {
-						line: 54,
-						column: 53
+						line: 57,
+						column: 4
 					},
 					end: {
-						line: 54,
-						column: 65
+						line: 60,
+						column: 5
+					}
+				}, {
+					start: {
+						line: 57,
+						column: 4
+					},
+					end: {
+						line: 60,
+						column: 5
 					}
 				}],
-				line: 54
+				line: 57
 			},
 			"5": {
 				loc: {
 					start: {
-						line: 56,
+						line: 63,
 						column: 4
 					},
 					end: {
-						line: 59,
+						line: 66,
 						column: 5
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 56,
+						line: 63,
 						column: 4
 					},
 					end: {
-						line: 59,
+						line: 66,
 						column: 5
 					}
 				}, {
 					start: {
-						line: 56,
+						line: 63,
 						column: 4
 					},
 					end: {
-						line: 59,
+						line: 66,
 						column: 5
 					}
 				}],
-				line: 56
+				line: 63
 			},
 			"6": {
 				loc: {
 					start: {
-						line: 62,
+						line: 68,
 						column: 4
 					},
 					end: {
-						line: 68,
+						line: 82,
 						column: 5
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 62,
+						line: 68,
 						column: 4
 					},
 					end: {
-						line: 68,
+						line: 82,
 						column: 5
 					}
 				}, {
 					start: {
-						line: 62,
+						line: 68,
 						column: 4
 					},
 					end: {
-						line: 68,
+						line: 82,
 						column: 5
 					}
 				}],
-				line: 62
+				line: 68
 			},
 			"7": {
 				loc: {
 					start: {
-						line: 66,
-						column: 9
+						line: 74,
+						column: 5
 					},
 					end: {
-						line: 68,
-						column: 5
+						line: 76,
+						column: 6
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 66,
-						column: 9
+						line: 74,
+						column: 5
 					},
 					end: {
-						line: 68,
-						column: 5
+						line: 76,
+						column: 6
 					}
 				}, {
 					start: {
-						line: 66,
-						column: 9
+						line: 74,
+						column: 5
 					},
 					end: {
-						line: 68,
-						column: 5
+						line: 76,
+						column: 6
 					}
 				}],
-				line: 66
+				line: 74
 			},
 			"8": {
 				loc: {
@@ -12993,7 +13183,7 @@ var cov_7fzfwca28 = function () {
 						column: 5
 					},
 					end: {
-						line: 81,
+						line: 80,
 						column: 6
 					}
 				},
@@ -13004,7 +13194,7 @@ var cov_7fzfwca28 = function () {
 						column: 5
 					},
 					end: {
-						line: 81,
+						line: 80,
 						column: 6
 					}
 				}, {
@@ -13013,7 +13203,7 @@ var cov_7fzfwca28 = function () {
 						column: 5
 					},
 					end: {
-						line: 81,
+						line: 80,
 						column: 6
 					}
 				}],
@@ -13022,305 +13212,296 @@ var cov_7fzfwca28 = function () {
 			"9": {
 				loc: {
 					start: {
-						line: 90,
-						column: 5
+						line: 85,
+						column: 11
 					},
 					end: {
-						line: 92,
-						column: 6
+						line: 85,
+						column: 53
 					}
 				},
-				type: "if",
+				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 90,
-						column: 5
+						line: 85,
+						column: 11
 					},
 					end: {
-						line: 92,
-						column: 6
+						line: 85,
+						column: 24
 					}
 				}, {
 					start: {
-						line: 90,
-						column: 5
+						line: 85,
+						column: 28
 					},
 					end: {
-						line: 92,
-						column: 6
+						line: 85,
+						column: 53
 					}
 				}],
-				line: 90
+				line: 85
 			},
 			"10": {
 				loc: {
 					start: {
-						line: 97,
+						line: 88,
 						column: 5
 					},
 					end: {
-						line: 103,
+						line: 91,
 						column: 6
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 97,
+						line: 88,
 						column: 5
 					},
 					end: {
-						line: 103,
+						line: 91,
 						column: 6
 					}
 				}, {
 					start: {
-						line: 97,
+						line: 88,
 						column: 5
 					},
 					end: {
-						line: 103,
+						line: 91,
 						column: 6
 					}
 				}],
-				line: 97
+				line: 88
 			},
 			"11": {
 				loc: {
 					start: {
-						line: 98,
-						column: 6
+						line: 88,
+						column: 9
 					},
 					end: {
-						line: 100,
-						column: 7
+						line: 88,
+						column: 72
 					}
 				},
-				type: "if",
+				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 98,
-						column: 6
+						line: 88,
+						column: 9
 					},
 					end: {
-						line: 100,
-						column: 7
+						line: 88,
+						column: 32
 					}
 				}, {
 					start: {
-						line: 98,
-						column: 6
+						line: 88,
+						column: 36
 					},
 					end: {
-						line: 100,
-						column: 7
+						line: 88,
+						column: 72
 					}
 				}],
-				line: 98
+				line: 88
 			},
 			"12": {
 				loc: {
 					start: {
-						line: 106,
+						line: 99,
 						column: 5
 					},
 					end: {
-						line: 108,
+						line: 101,
 						column: 6
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 106,
+						line: 99,
 						column: 5
 					},
 					end: {
-						line: 108,
+						line: 101,
 						column: 6
 					}
 				}, {
 					start: {
-						line: 106,
+						line: 99,
 						column: 5
 					},
 					end: {
-						line: 108,
+						line: 101,
 						column: 6
 					}
 				}],
-				line: 106
+				line: 99
 			},
 			"13": {
 				loc: {
 					start: {
-						line: 106,
-						column: 9
+						line: 103,
+						column: 5
 					},
 					end: {
-						line: 106,
-						column: 57
+						line: 108,
+						column: 6
 					}
 				},
-				type: "binary-expr",
+				type: "if",
 				locations: [{
 					start: {
-						line: 106,
-						column: 9
+						line: 103,
+						column: 5
 					},
 					end: {
-						line: 106,
-						column: 28
+						line: 108,
+						column: 6
 					}
 				}, {
 					start: {
-						line: 106,
-						column: 32
+						line: 103,
+						column: 5
 					},
 					end: {
-						line: 106,
-						column: 57
+						line: 108,
+						column: 6
 					}
 				}],
-				line: 106
+				line: 103
 			},
 			"14": {
 				loc: {
 					start: {
-						line: 112,
+						line: 104,
+						column: 6
+					},
+					end: {
+						line: 106,
+						column: 7
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 104,
+						column: 6
+					},
+					end: {
+						line: 106,
+						column: 7
+					}
+				}, {
+					start: {
+						line: 104,
+						column: 6
+					},
+					end: {
+						line: 106,
+						column: 7
+					}
+				}],
+				line: 104
+			},
+			"15": {
+				loc: {
+					start: {
+						line: 111,
 						column: 5
 					},
 					end: {
-						line: 114,
+						line: 113,
 						column: 6
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 112,
+						line: 111,
 						column: 5
 					},
 					end: {
-						line: 114,
+						line: 113,
 						column: 6
 					}
 				}, {
 					start: {
-						line: 112,
+						line: 111,
 						column: 5
 					},
 					end: {
-						line: 114,
+						line: 113,
 						column: 6
 					}
 				}],
-				line: 112
+				line: 111
 			},
-			"15": {
+			"16": {
 				loc: {
 					start: {
-						line: 112,
+						line: 111,
 						column: 9
 					},
 					end: {
-						line: 112,
-						column: 54
+						line: 111,
+						column: 57
 					}
 				},
 				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 112,
+						line: 111,
 						column: 9
 					},
 					end: {
-						line: 112,
-						column: 26
+						line: 111,
+						column: 28
 					}
 				}, {
 					start: {
-						line: 112,
-						column: 30
+						line: 111,
+						column: 32
 					},
 					end: {
-						line: 112,
-						column: 54
+						line: 111,
+						column: 57
 					}
 				}],
-				line: 112
-			},
-			"16": {
-				loc: {
-					start: {
-						line: 117,
-						column: 5
-					},
-					end: {
-						line: 151,
-						column: 6
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 117,
-						column: 5
-					},
-					end: {
-						line: 151,
-						column: 6
-					}
-				}, {
-					start: {
-						line: 117,
-						column: 5
-					},
-					end: {
-						line: 151,
-						column: 6
-					}
-				}],
-				line: 117
+				line: 111
 			},
 			"17": {
 				loc: {
 					start: {
 						line: 117,
-						column: 9
+						column: 5
 					},
 					end: {
-						line: 117,
-						column: 69
+						line: 119,
+						column: 6
 					}
 				},
-				type: "binary-expr",
+				type: "if",
 				locations: [{
 					start: {
 						line: 117,
-						column: 9
+						column: 5
 					},
 					end: {
-						line: 117,
-						column: 25
+						line: 119,
+						column: 6
 					}
 				}, {
 					start: {
 						line: 117,
-						column: 30
+						column: 5
 					},
 					end: {
-						line: 117,
-						column: 48
-					}
-				}, {
-					start: {
-						line: 117,
-						column: 52
-					},
-					end: {
-						line: 117,
-						column: 68
+						line: 119,
+						column: 6
 					}
 				}],
 				line: 117
@@ -13328,710 +13509,884 @@ var cov_7fzfwca28 = function () {
 			"18": {
 				loc: {
 					start: {
-						line: 121,
-						column: 6
+						line: 117,
+						column: 9
 					},
 					end: {
-						line: 140,
-						column: 7
+						line: 117,
+						column: 54
 					}
 				},
-				type: "if",
+				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 121,
-						column: 6
+						line: 117,
+						column: 9
 					},
 					end: {
-						line: 140,
-						column: 7
+						line: 117,
+						column: 26
 					}
 				}, {
 					start: {
-						line: 121,
-						column: 6
+						line: 117,
+						column: 30
 					},
 					end: {
-						line: 140,
-						column: 7
+						line: 117,
+						column: 54
 					}
 				}],
-				line: 121
+				line: 117
 			},
 			"19": {
 				loc: {
 					start: {
-						line: 124,
-						column: 8
+						line: 121,
+						column: 5
 					},
 					end: {
-						line: 137,
-						column: 9
+						line: 160,
+						column: 6
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 124,
-						column: 8
+						line: 121,
+						column: 5
 					},
 					end: {
-						line: 137,
-						column: 9
+						line: 160,
+						column: 6
 					}
 				}, {
 					start: {
-						line: 124,
-						column: 8
+						line: 121,
+						column: 5
 					},
 					end: {
-						line: 137,
-						column: 9
+						line: 160,
+						column: 6
 					}
 				}],
-				line: 124
+				line: 121
 			},
 			"20": {
 				loc: {
 					start: {
-						line: 143,
-						column: 6
+						line: 121,
+						column: 9
 					},
 					end: {
-						line: 150,
-						column: 7
+						line: 121,
+						column: 69
 					}
 				},
-				type: "if",
+				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 143,
-						column: 6
+						line: 121,
+						column: 9
 					},
 					end: {
-						line: 150,
-						column: 7
+						line: 121,
+						column: 25
 					}
 				}, {
 					start: {
-						line: 143,
-						column: 6
+						line: 121,
+						column: 30
 					},
 					end: {
-						line: 150,
-						column: 7
+						line: 121,
+						column: 48
+					}
+				}, {
+					start: {
+						line: 121,
+						column: 52
+					},
+					end: {
+						line: 121,
+						column: 68
 					}
 				}],
-				line: 143
+				line: 121
 			},
 			"21": {
 				loc: {
 					start: {
-						line: 144,
-						column: 7
+						line: 124,
+						column: 6
 					},
 					end: {
 						line: 149,
-						column: 8
+						column: 7
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 144,
-						column: 7
+						line: 124,
+						column: 6
 					},
 					end: {
 						line: 149,
-						column: 8
+						column: 7
 					}
 				}, {
 					start: {
-						line: 144,
-						column: 7
+						line: 124,
+						column: 6
 					},
 					end: {
 						line: 149,
-						column: 8
+						column: 7
 					}
 				}],
-				line: 144
+				line: 124
 			},
 			"22": {
 				loc: {
 					start: {
-						line: 167,
-						column: 22
+						line: 127,
+						column: 8
 					},
 					end: {
-						line: 167,
-						column: 32
+						line: 147,
+						column: 9
 					}
 				},
-				type: "default-arg",
+				type: "if",
 				locations: [{
 					start: {
-						line: 167,
-						column: 28
+						line: 127,
+						column: 8
 					},
 					end: {
-						line: 167,
-						column: 32
+						line: 147,
+						column: 9
+					}
+				}, {
+					start: {
+						line: 127,
+						column: 8
+					},
+					end: {
+						line: 147,
+						column: 9
 					}
 				}],
-				line: 167
+				line: 127
 			},
 			"23": {
 				loc: {
 					start: {
-						line: 169,
-						column: 2
+						line: 137,
+						column: 11
 					},
 					end: {
-						line: 171,
-						column: 3
+						line: 140,
+						column: 12
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 169,
-						column: 2
+						line: 137,
+						column: 11
 					},
 					end: {
-						line: 171,
-						column: 3
+						line: 140,
+						column: 12
 					}
 				}, {
 					start: {
-						line: 169,
-						column: 2
+						line: 137,
+						column: 11
 					},
 					end: {
-						line: 171,
-						column: 3
+						line: 140,
+						column: 12
 					}
 				}],
-				line: 169
+				line: 137
 			},
 			"24": {
 				loc: {
 					start: {
-						line: 175,
-						column: 3
+						line: 144,
+						column: 9
 					},
 					end: {
-						line: 181,
-						column: 4
+						line: 146,
+						column: 10
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 175,
-						column: 3
+						line: 144,
+						column: 9
 					},
 					end: {
-						line: 181,
-						column: 4
+						line: 146,
+						column: 10
 					}
 				}, {
 					start: {
-						line: 175,
-						column: 3
+						line: 144,
+						column: 9
 					},
 					end: {
-						line: 181,
-						column: 4
+						line: 146,
+						column: 10
 					}
 				}],
-				line: 175
+				line: 144
 			},
 			"25": {
 				loc: {
 					start: {
-						line: 183,
-						column: 3
+						line: 152,
+						column: 6
 					},
 					end: {
-						line: 186,
-						column: 4
+						line: 159,
+						column: 7
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 183,
-						column: 3
+						line: 152,
+						column: 6
 					},
 					end: {
-						line: 186,
-						column: 4
+						line: 159,
+						column: 7
 					}
 				}, {
 					start: {
-						line: 183,
-						column: 3
+						line: 152,
+						column: 6
 					},
 					end: {
-						line: 186,
-						column: 4
+						line: 159,
+						column: 7
 					}
 				}],
-				line: 183
+				line: 152
 			},
 			"26": {
 				loc: {
 					start: {
-						line: 187,
-						column: 3
+						line: 153,
+						column: 7
 					},
 					end: {
-						line: 190,
-						column: 4
+						line: 158,
+						column: 8
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 187,
-						column: 3
+						line: 153,
+						column: 7
 					},
 					end: {
-						line: 190,
-						column: 4
+						line: 158,
+						column: 8
 					}
 				}, {
 					start: {
-						line: 187,
-						column: 3
+						line: 153,
+						column: 7
 					},
 					end: {
-						line: 190,
-						column: 4
+						line: 158,
+						column: 8
 					}
 				}],
-				line: 187
+				line: 153
 			},
 			"27": {
 				loc: {
 					start: {
-						line: 191,
-						column: 3
+						line: 176,
+						column: 22
 					},
 					end: {
-						line: 193,
-						column: 4
+						line: 176,
+						column: 32
 					}
 				},
-				type: "if",
+				type: "default-arg",
 				locations: [{
 					start: {
-						line: 191,
-						column: 3
+						line: 176,
+						column: 28
 					},
 					end: {
-						line: 193,
-						column: 4
-					}
-				}, {
-					start: {
-						line: 191,
-						column: 3
-					},
-					end: {
-						line: 193,
-						column: 4
+						line: 176,
+						column: 32
 					}
 				}],
-				line: 191
+				line: 176
 			},
 			"28": {
 				loc: {
 					start: {
-						line: 195,
-						column: 3
+						line: 178,
+						column: 2
 					},
 					end: {
-						line: 197,
-						column: 4
+						line: 180,
+						column: 3
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 195,
-						column: 3
+						line: 178,
+						column: 2
 					},
 					end: {
-						line: 197,
-						column: 4
+						line: 180,
+						column: 3
 					}
 				}, {
 					start: {
-						line: 195,
-						column: 3
+						line: 178,
+						column: 2
 					},
 					end: {
-						line: 197,
-						column: 4
+						line: 180,
+						column: 3
 					}
 				}],
-				line: 195
+				line: 178
 			},
 			"29": {
 				loc: {
 					start: {
+						line: 184,
+						column: 3
+					},
+					end: {
+						line: 190,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 184,
+						column: 3
+					},
+					end: {
+						line: 190,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 184,
+						column: 3
+					},
+					end: {
+						line: 190,
+						column: 4
+					}
+				}],
+				line: 184
+			},
+			"30": {
+				loc: {
+					start: {
+						line: 192,
+						column: 3
+					},
+					end: {
+						line: 195,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 192,
+						column: 3
+					},
+					end: {
+						line: 195,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 192,
+						column: 3
+					},
+					end: {
+						line: 195,
+						column: 4
+					}
+				}],
+				line: 192
+			},
+			"31": {
+				loc: {
+					start: {
+						line: 196,
+						column: 3
+					},
+					end: {
+						line: 199,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 196,
+						column: 3
+					},
+					end: {
+						line: 199,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 196,
+						column: 3
+					},
+					end: {
+						line: 199,
+						column: 4
+					}
+				}],
+				line: 196
+			},
+			"32": {
+				loc: {
+					start: {
+						line: 200,
+						column: 3
+					},
+					end: {
 						line: 202,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 200,
+						column: 3
+					},
+					end: {
+						line: 202,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 200,
+						column: 3
+					},
+					end: {
+						line: 202,
+						column: 4
+					}
+				}],
+				line: 200
+			},
+			"33": {
+				loc: {
+					start: {
+						line: 204,
+						column: 3
+					},
+					end: {
+						line: 206,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 204,
+						column: 3
+					},
+					end: {
+						line: 206,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 204,
+						column: 3
+					},
+					end: {
+						line: 206,
+						column: 4
+					}
+				}],
+				line: 204
+			},
+			"34": {
+				loc: {
+					start: {
+						line: 211,
 						column: 4
 					},
 					end: {
-						line: 207,
+						line: 216,
 						column: 5
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 202,
+						line: 211,
 						column: 4
 					},
 					end: {
-						line: 207,
+						line: 216,
 						column: 5
 					}
 				}, {
 					start: {
-						line: 202,
+						line: 211,
 						column: 4
 					},
 					end: {
-						line: 207,
+						line: 216,
 						column: 5
 					}
 				}],
-				line: 202
+				line: 211
 			},
-			"30": {
+			"35": {
 				loc: {
 					start: {
-						line: 250,
+						line: 259,
 						column: 21
 					},
 					end: {
-						line: 250,
+						line: 259,
 						column: 31
 					}
 				},
 				type: "default-arg",
 				locations: [{
 					start: {
-						line: 250,
+						line: 259,
 						column: 27
 					},
 					end: {
-						line: 250,
+						line: 259,
 						column: 31
 					}
 				}],
-				line: 250
-			},
-			"31": {
-				loc: {
-					start: {
-						line: 254,
-						column: 2
-					},
-					end: {
-						line: 261,
-						column: 3
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 254,
-						column: 2
-					},
-					end: {
-						line: 261,
-						column: 3
-					}
-				}, {
-					start: {
-						line: 254,
-						column: 2
-					},
-					end: {
-						line: 261,
-						column: 3
-					}
-				}],
-				line: 254
-			},
-			"32": {
-				loc: {
-					start: {
-						line: 255,
-						column: 3
-					},
-					end: {
-						line: 260,
-						column: 4
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 255,
-						column: 3
-					},
-					end: {
-						line: 260,
-						column: 4
-					}
-				}, {
-					start: {
-						line: 255,
-						column: 3
-					},
-					end: {
-						line: 260,
-						column: 4
-					}
-				}],
-				line: 255
-			},
-			"33": {
-				loc: {
-					start: {
-						line: 265,
-						column: 4
-					},
-					end: {
-						line: 267,
-						column: 5
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 265,
-						column: 4
-					},
-					end: {
-						line: 267,
-						column: 5
-					}
-				}, {
-					start: {
-						line: 265,
-						column: 4
-					},
-					end: {
-						line: 267,
-						column: 5
-					}
-				}],
-				line: 265
-			},
-			"34": {
-				loc: {
-					start: {
-						line: 290,
-						column: 2
-					},
-					end: {
-						line: 292,
-						column: 3
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 290,
-						column: 2
-					},
-					end: {
-						line: 292,
-						column: 3
-					}
-				}, {
-					start: {
-						line: 290,
-						column: 2
-					},
-					end: {
-						line: 292,
-						column: 3
-					}
-				}],
-				line: 290
-			},
-			"35": {
-				loc: {
-					start: {
-						line: 295,
-						column: 3
-					},
-					end: {
-						line: 297,
-						column: 4
-					}
-				},
-				type: "if",
-				locations: [{
-					start: {
-						line: 295,
-						column: 3
-					},
-					end: {
-						line: 297,
-						column: 4
-					}
-				}, {
-					start: {
-						line: 295,
-						column: 3
-					},
-					end: {
-						line: 297,
-						column: 4
-					}
-				}],
-				line: 295
+				line: 259
 			},
 			"36": {
 				loc: {
 					start: {
-						line: 300,
+						line: 263,
+						column: 2
+					},
+					end: {
+						line: 270,
+						column: 3
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 263,
+						column: 2
+					},
+					end: {
+						line: 270,
+						column: 3
+					}
+				}, {
+					start: {
+						line: 263,
+						column: 2
+					},
+					end: {
+						line: 270,
+						column: 3
+					}
+				}],
+				line: 263
+			},
+			"37": {
+				loc: {
+					start: {
+						line: 264,
 						column: 3
 					},
 					end: {
-						line: 300,
+						line: 269,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 264,
+						column: 3
+					},
+					end: {
+						line: 269,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 264,
+						column: 3
+					},
+					end: {
+						line: 269,
+						column: 4
+					}
+				}],
+				line: 264
+			},
+			"38": {
+				loc: {
+					start: {
+						line: 274,
+						column: 4
+					},
+					end: {
+						line: 276,
+						column: 5
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 274,
+						column: 4
+					},
+					end: {
+						line: 276,
+						column: 5
+					}
+				}, {
+					start: {
+						line: 274,
+						column: 4
+					},
+					end: {
+						line: 276,
+						column: 5
+					}
+				}],
+				line: 274
+			},
+			"39": {
+				loc: {
+					start: {
+						line: 299,
+						column: 2
+					},
+					end: {
+						line: 301,
+						column: 3
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 299,
+						column: 2
+					},
+					end: {
+						line: 301,
+						column: 3
+					}
+				}, {
+					start: {
+						line: 299,
+						column: 2
+					},
+					end: {
+						line: 301,
+						column: 3
+					}
+				}],
+				line: 299
+			},
+			"40": {
+				loc: {
+					start: {
+						line: 304,
+						column: 3
+					},
+					end: {
+						line: 306,
+						column: 4
+					}
+				},
+				type: "if",
+				locations: [{
+					start: {
+						line: 304,
+						column: 3
+					},
+					end: {
+						line: 306,
+						column: 4
+					}
+				}, {
+					start: {
+						line: 304,
+						column: 3
+					},
+					end: {
+						line: 306,
+						column: 4
+					}
+				}],
+				line: 304
+			},
+			"41": {
+				loc: {
+					start: {
+						line: 309,
+						column: 3
+					},
+					end: {
+						line: 309,
 						column: 61
 					}
 				},
 				type: "binary-expr",
 				locations: [{
 					start: {
-						line: 300,
+						line: 309,
 						column: 3
 					},
 					end: {
-						line: 300,
+						line: 309,
 						column: 40
 					}
 				}, {
 					start: {
-						line: 300,
+						line: 309,
 						column: 44
 					},
 					end: {
-						line: 300,
+						line: 309,
 						column: 61
 					}
 				}],
-				line: 300
+				line: 309
 			},
-			"37": {
+			"42": {
 				loc: {
 					start: {
-						line: 314,
+						line: 323,
 						column: 2
 					},
 					end: {
-						line: 316,
+						line: 325,
 						column: 3
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 314,
+						line: 323,
 						column: 2
 					},
 					end: {
-						line: 316,
+						line: 325,
 						column: 3
 					}
 				}, {
 					start: {
-						line: 314,
+						line: 323,
 						column: 2
 					},
 					end: {
-						line: 316,
+						line: 325,
 						column: 3
 					}
 				}],
-				line: 314
+				line: 323
 			},
-			"38": {
+			"43": {
 				loc: {
 					start: {
-						line: 319,
+						line: 328,
 						column: 3
 					},
 					end: {
-						line: 321,
+						line: 330,
 						column: 4
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 319,
+						line: 328,
 						column: 3
 					},
 					end: {
-						line: 321,
+						line: 330,
 						column: 4
 					}
 				}, {
 					start: {
-						line: 319,
+						line: 328,
 						column: 3
 					},
 					end: {
-						line: 321,
+						line: 330,
 						column: 4
 					}
 				}],
-				line: 319
+				line: 328
 			},
-			"39": {
+			"44": {
 				loc: {
 					start: {
-						line: 322,
+						line: 331,
 						column: 3
 					},
 					end: {
-						line: 324,
+						line: 333,
 						column: 4
 					}
 				},
 				type: "if",
 				locations: [{
 					start: {
-						line: 322,
+						line: 331,
 						column: 3
 					},
 					end: {
-						line: 324,
+						line: 333,
 						column: 4
 					}
 				}, {
 					start: {
-						line: 322,
+						line: 331,
 						column: 3
 					},
 					end: {
-						line: 324,
+						line: 333,
 						column: 4
 					}
 				}],
-				line: 322
+				line: 331
 			}
 		},
 		s: {
@@ -14175,7 +14530,25 @@ var cov_7fzfwca28 = function () {
 			"137": 0,
 			"138": 0,
 			"139": 0,
-			"140": 0
+			"140": 0,
+			"141": 0,
+			"142": 0,
+			"143": 0,
+			"144": 0,
+			"145": 0,
+			"146": 0,
+			"147": 0,
+			"148": 0,
+			"149": 0,
+			"150": 0,
+			"151": 0,
+			"152": 0,
+			"153": 0,
+			"154": 0,
+			"155": 0,
+			"156": 0,
+			"157": 0,
+			"158": 0
 		},
 		f: {
 			"0": 0,
@@ -14195,14 +14568,15 @@ var cov_7fzfwca28 = function () {
 			"14": 0,
 			"15": 0,
 			"16": 0,
-			"17": 0
+			"17": 0,
+			"18": 0
 		},
 		b: {
 			"0": [0],
 			"1": [0, 0],
 			"2": [0, 0],
 			"3": [0, 0],
-			"4": [0],
+			"4": [0, 0],
 			"5": [0, 0],
 			"6": [0, 0],
 			"7": [0, 0],
@@ -14215,29 +14589,34 @@ var cov_7fzfwca28 = function () {
 			"14": [0, 0],
 			"15": [0, 0],
 			"16": [0, 0],
-			"17": [0, 0, 0],
+			"17": [0, 0],
 			"18": [0, 0],
 			"19": [0, 0],
-			"20": [0, 0],
+			"20": [0, 0, 0],
 			"21": [0, 0],
-			"22": [0],
+			"22": [0, 0],
 			"23": [0, 0],
 			"24": [0, 0],
 			"25": [0, 0],
 			"26": [0, 0],
-			"27": [0, 0],
+			"27": [0],
 			"28": [0, 0],
 			"29": [0, 0],
-			"30": [0],
+			"30": [0, 0],
 			"31": [0, 0],
 			"32": [0, 0],
 			"33": [0, 0],
 			"34": [0, 0],
-			"35": [0, 0],
+			"35": [0],
 			"36": [0, 0],
 			"37": [0, 0],
 			"38": [0, 0],
-			"39": [0, 0]
+			"39": [0, 0],
+			"40": [0, 0],
+			"41": [0, 0],
+			"42": [0, 0],
+			"43": [0, 0],
+			"44": [0, 0]
 		},
 		_coverageSchema: "332fd63041d2c1bcb487cc26dd0d5f7d97098a6c"
 	},
@@ -14251,22 +14630,14 @@ var cov_7fzfwca28 = function () {
 	return coverage[path] = coverageData;
 }();
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /**
 * Реактивный менеджер данных, следящий за изменениями данных и выполняющий действия в ответ на эти изменения
 * Отслеживание происходит лениво, данные обновляются только когда они требуются
 *
 * @param {ManagerOptions} [options] Настройки менеджера
 */
-var Manager = function () {
-	function Manager(options) {
-		_classCallCheck(this, Manager);
-
+class Manager {
+	constructor(options) {
 		++cov_7fzfwca28.f[0];
 		++cov_7fzfwca28.s[0];
 
@@ -14296,619 +14667,627 @@ var Manager = function () {
  *
  * @param {ManagerOptions} [options] Настройки менеджера
  */
+	setOptions(options = (++cov_7fzfwca28.b[0][0], {})) {
+		++cov_7fzfwca28.f[1];
+		++cov_7fzfwca28.s[9];
 
+		this.options = Object.assign(this.options, options);
+	}
+	/**
+ * Создает {@link Observable} объект для указанного источника данный
+ *
+ * @param {(Object|Array)} dataSource источник данных
+ * @return {Observable} отслеживаемый объект
+ */
+	makeObservable(dataSource) {
+		++cov_7fzfwca28.f[2];
 
-	_createClass(Manager, [{
-		key: "setOptions",
-		value: function setOptions() {
-			var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (++cov_7fzfwca28.b[0][0], {});
-			++cov_7fzfwca28.f[1];
-			++cov_7fzfwca28.s[9];
+		const manager = (++cov_7fzfwca28.s[10], this);
+		++cov_7fzfwca28.s[11];
+		if (!dataSource) {
+			++cov_7fzfwca28.b[1][0];
+			++cov_7fzfwca28.s[12];
 
-			this.options = Object.assign(this.options, options);
+			return dataSource;
+		} else {
+			++cov_7fzfwca28.b[1][1];
 		}
-		/**
-  * Создает {@link Observable} объект для указанного источника данный
-  *
-  * @param {(Object|Array)} dataSource источник данных
-  * @return {Observable} отслеживаемый объект
-  */
+		++cov_7fzfwca28.s[13];
+		if (this.isObservable(dataSource)) {
+			++cov_7fzfwca28.b[2][0];
+			++cov_7fzfwca28.s[14];
 
-	}, {
-		key: "makeObservable",
-		value: function makeObservable(dataSource) {
-			++cov_7fzfwca28.f[2];
+			return dataSource;
+		} else {
+			++cov_7fzfwca28.b[2][1];
+		}
+		let observable = (++cov_7fzfwca28.s[15], manager.observables.get(dataSource));
+		++cov_7fzfwca28.s[16];
+		if (!observable) {
+			++cov_7fzfwca28.b[3][0];
 
-			var manager = (++cov_7fzfwca28.s[10], this);
-			++cov_7fzfwca28.s[11];
-			if (!dataSource) {
-				++cov_7fzfwca28.b[1][0];
-				++cov_7fzfwca28.s[12];
+			const toUpdate = (++cov_7fzfwca28.s[17], new Map());
+			++cov_7fzfwca28.s[18];
+			const invalidateDeps = record => {
+				++cov_7fzfwca28.f[3];
+				++cov_7fzfwca28.s[19];
 
-				return dataSource;
-			} else {
-				++cov_7fzfwca28.b[1][1];
-			}
-			++cov_7fzfwca28.s[13];
-			if (this.isObservable(dataSource)) {
-				++cov_7fzfwca28.b[2][0];
-				++cov_7fzfwca28.s[14];
+				record.valid = false;
+				++cov_7fzfwca28.s[20];
+				record.deps.forEach(record => {
+					++cov_7fzfwca28.f[4];
+					++cov_7fzfwca28.s[21];
+					return invalidateDeps(record);
+				});
+				++cov_7fzfwca28.s[22];
+				record.deps.clear();
+			};
 
-				return dataSource;
-			} else {
-				++cov_7fzfwca28.b[2][1];
-			}
-			var observable = (++cov_7fzfwca28.s[15], manager.observables.get(dataSource));
-			++cov_7fzfwca28.s[16];
-			if (!observable) {
-				++cov_7fzfwca28.b[3][0];
+			++cov_7fzfwca28.s[23];
+			const registerRead = (record, key, prototypes) => {
+				++cov_7fzfwca28.f[5];
 
-				var toUpdate = (++cov_7fzfwca28.s[17], new Map());
-				++cov_7fzfwca28.s[18];
-				var invalidateDeps = function invalidateDeps(record) {
-					++cov_7fzfwca28.f[3];
-					++cov_7fzfwca28.s[19];
+				// record stores Updateble state
+				let updates = (++cov_7fzfwca28.s[24], toUpdate.get(key));
+				++cov_7fzfwca28.s[25];
+				if (!updates) {
+					++cov_7fzfwca28.b[4][0];
+					++cov_7fzfwca28.s[26];
 
-					record.valid = false;
-					++cov_7fzfwca28.s[20];
-					record.deps.forEach(function (record) {
-						++cov_7fzfwca28.f[4];
-						++cov_7fzfwca28.s[21];
-						return invalidateDeps(record);
-					});
-					++cov_7fzfwca28.s[22];
-					record.deps.clear();
-				};
+					updates = { records: new Set(), recordMap: new WeakMap() };
+					++cov_7fzfwca28.s[27];
+					toUpdate.set(key, updates);
+				} else {
+					++cov_7fzfwca28.b[4][1];
+				}
+				++cov_7fzfwca28.s[28];
+				updates.records.add(record);
+				let recordMapItem = (++cov_7fzfwca28.s[29], updates.recordMap.get(record));
+				++cov_7fzfwca28.s[30];
+				if (!recordMapItem) {
+					++cov_7fzfwca28.b[5][0];
+					++cov_7fzfwca28.s[31];
 
-				++cov_7fzfwca28.s[23];
-				var registerRead = function registerRead(record, key) {
-					var protoParents = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : (++cov_7fzfwca28.b[4][0], [dataSource]);
-					++cov_7fzfwca28.f[5];
-
-					var updates = (++cov_7fzfwca28.s[24], toUpdate.get(key));
-					++cov_7fzfwca28.s[25];
-					if (!updates) {
-						++cov_7fzfwca28.b[5][0];
-						++cov_7fzfwca28.s[26];
-
-						updates = { records: new Set(), parentData: new Map() };
-						++cov_7fzfwca28.s[27];
-						toUpdate.set(key, updates);
-					} else {
-						++cov_7fzfwca28.b[5][1];
-					}
-
-					var parentData = (++cov_7fzfwca28.s[28], updates.parentData.get(record));
-					++cov_7fzfwca28.s[29];
-					if (!parentData) {
-						++cov_7fzfwca28.b[6][0];
-						++cov_7fzfwca28.s[30];
-
-						parentData = { protoParents: protoParents, protoPos: new Set() };
-						++cov_7fzfwca28.s[31];
-						updates.parentData.set(record, parentData);
-					} else {
-							++cov_7fzfwca28.b[6][1];
-							++cov_7fzfwca28.s[32];
-							if (parentData.protoParents.length < protoParents.length) {
-								++cov_7fzfwca28.b[7][0];
-								++cov_7fzfwca28.s[33];
-
-								updates.protoParents = protoParents;
-							} else {
-								++cov_7fzfwca28.b[7][1];
-							}
-						}++cov_7fzfwca28.s[34];
-					parentData.protoPos.add(protoParents.length - 1);
-
+					recordMapItem = {};
+					++cov_7fzfwca28.s[32];
+					updates.recordMap.set(record, recordMapItem);
+				} else {
+					++cov_7fzfwca28.b[5][1];
+				}
+				const isRoot = (++cov_7fzfwca28.s[33], !prototypes);
+				++cov_7fzfwca28.s[34];
+				if (isRoot) {
+					++cov_7fzfwca28.b[6][0];
 					++cov_7fzfwca28.s[35];
-					updates.records.add(record);
 
-					var proto = (++cov_7fzfwca28.s[36], Object.getPrototypeOf(dataSource));
-					var _protoParents = (++cov_7fzfwca28.s[37], [].concat(_toConsumableArray(protoParents)));
+					prototypes = [dataSource];
+					++cov_7fzfwca28.s[36];
+					recordMapItem.root = true;
+				} else {
+					++cov_7fzfwca28.b[6][1];
+
+					const rootObj = (++cov_7fzfwca28.s[37], prototypes[prototypes.length - 1]);
 					++cov_7fzfwca28.s[38];
-					while (proto != null) {
-						var observableProto = (++cov_7fzfwca28.s[39], manager.observables.get(proto));
-						++cov_7fzfwca28.s[40];
-						if (observableProto != null) {
-							++cov_7fzfwca28.b[8][0];
-							++cov_7fzfwca28.s[41];
+					if (!recordMapItem.prototypes) {
+						++cov_7fzfwca28.b[7][0];
+						++cov_7fzfwca28.s[39];
 
-							observableProto[manager.$registerRead](record, key, _protoParents);
-							++cov_7fzfwca28.s[42];
-							break;
-						} else {
-							++cov_7fzfwca28.b[8][1];
-						}
-						++cov_7fzfwca28.s[43];
-						_protoParents.push(proto);
-						++cov_7fzfwca28.s[44];
-						proto = Object.getPrototypeOf(proto);
+						recordMapItem.prototypes = new Map();
+					} else {
+						++cov_7fzfwca28.b[7][1];
 					}
-				};
+					const _prototypes = (++cov_7fzfwca28.s[40], recordMapItem.prototypes.get(rootObj));
+					++cov_7fzfwca28.s[41];
+					if (_prototypes) {
+						++cov_7fzfwca28.b[8][0];
+						++cov_7fzfwca28.s[42];
 
+						return;
+					} else {
+						++cov_7fzfwca28.b[8][1];
+					}
+					++cov_7fzfwca28.s[43];
+					recordMapItem.prototypes.set(rootObj, prototypes);
+				}
+
+				let proto = (++cov_7fzfwca28.s[44], Object.getPrototypeOf(dataSource));
 				++cov_7fzfwca28.s[45];
-				observable = new Proxy(dataSource, {
-					get: function get(obj, key) {
-						++cov_7fzfwca28.f[6];
-						++cov_7fzfwca28.s[46];
+				while ((++cov_7fzfwca28.b[9][0], proto != null) && (++cov_7fzfwca28.b[9][1], proto != Object.prototype)) {
+					const observableProto = (++cov_7fzfwca28.s[46], manager.observables.get(proto));
+					++cov_7fzfwca28.s[47];
+					prototypes.unshift(proto);
+					++cov_7fzfwca28.s[48];
+					if ((++cov_7fzfwca28.b[11][0], observableProto != null) && (++cov_7fzfwca28.b[11][1], observableProto !== Object.prototype)) {
+						++cov_7fzfwca28.b[10][0];
+						++cov_7fzfwca28.s[49];
 
-						if (key === manager.$isObservableSymbol) {
-							++cov_7fzfwca28.b[9][0];
-							++cov_7fzfwca28.s[47];
+						observableProto[manager.$registerRead](record, key, prototypes);
+						++cov_7fzfwca28.s[50];
+						break;
+					} else {
+						++cov_7fzfwca28.b[10][1];
+					}
+					++cov_7fzfwca28.s[51];
+					proto = Object.getPrototypeOf(proto);
+				}
+			};
 
-							return true;
-						} else {
-							++cov_7fzfwca28.b[9][1];
-						}
-						// if (key === manager.$dataSource) {
-						// 	return dataSource;
-						// }
+			++cov_7fzfwca28.s[52];
+			observable = new Proxy(dataSource, {
+				get: (obj, key) => {
+					++cov_7fzfwca28.f[6];
+					++cov_7fzfwca28.s[53];
 
-						++cov_7fzfwca28.s[48];
-						if (manager.callStack.length) {
-							++cov_7fzfwca28.b[10][0];
-							++cov_7fzfwca28.s[49];
+					if (key === manager.$isObservableSymbol) {
+						++cov_7fzfwca28.b[12][0];
+						++cov_7fzfwca28.s[54];
 
-							if (key === manager.$registerRead) {
-								++cov_7fzfwca28.b[11][0];
-								++cov_7fzfwca28.s[50];
+						return true;
+					} else {
+						++cov_7fzfwca28.b[12][1];
+					}
 
-								return registerRead;
-							} else {
-								++cov_7fzfwca28.b[11][1];
-							}
-
-							++cov_7fzfwca28.s[51];
-							registerRead(manager.callStack[manager.callStack.length - 1].record, key);
-						} else {
-							++cov_7fzfwca28.b[10][1];
-						}
-
-						var val = (++cov_7fzfwca28.s[52], obj[key]);
-						++cov_7fzfwca28.s[53];
-						if ((++cov_7fzfwca28.b[13][0], val === Object(val)) && (++cov_7fzfwca28.b[13][1], typeof val !== "function")) {
-							++cov_7fzfwca28.b[12][0];
-							++cov_7fzfwca28.s[54];
-
-							return manager.makeObservable(val);
-						} else {
-							++cov_7fzfwca28.b[12][1];
-						}
-						++cov_7fzfwca28.s[55];
-						return val;
-					},
-					set: function set(obj, key, val) {
-						++cov_7fzfwca28.f[7];
+					++cov_7fzfwca28.s[55];
+					if (manager.callStack.length) {
+						++cov_7fzfwca28.b[13][0];
 						++cov_7fzfwca28.s[56];
 
-						if ((++cov_7fzfwca28.b[15][0], manager.callStack) && (++cov_7fzfwca28.b[15][1], manager.callStack.length)) {
+						if (key === manager.$registerRead) {
 							++cov_7fzfwca28.b[14][0];
 							++cov_7fzfwca28.s[57];
 
-							throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
+							return registerRead;
 						} else {
 							++cov_7fzfwca28.b[14][1];
 						}
-
 						++cov_7fzfwca28.s[58];
-						if ((++cov_7fzfwca28.b[17][0], val !== obj[key]) || (++cov_7fzfwca28.b[17][1], Array.isArray(obj)) && (++cov_7fzfwca28.b[17][2], key === "length")) {
-							++cov_7fzfwca28.b[16][0];
-							++cov_7fzfwca28.s[59];
+						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
+					} else {
+						++cov_7fzfwca28.b[13][1];
+					}
 
-							obj[key] = val;
-							var updates = (++cov_7fzfwca28.s[60], toUpdate.get(key));
+					const val = (++cov_7fzfwca28.s[59], obj[key]);
+					++cov_7fzfwca28.s[60];
+					if ((++cov_7fzfwca28.b[16][0], val === Object(val)) && (++cov_7fzfwca28.b[16][1], typeof val !== "function")) {
+						++cov_7fzfwca28.b[15][0];
+						++cov_7fzfwca28.s[61];
 
-							++cov_7fzfwca28.s[61];
-							if (updates) {
-								++cov_7fzfwca28.b[18][0];
-								++cov_7fzfwca28.s[62];
+						return manager.makeObservable(val);
+					} else {
+						++cov_7fzfwca28.b[15][1];
+					}
+					++cov_7fzfwca28.s[62];
+					return val;
+				},
+				set: (obj, key, val) => {
+					++cov_7fzfwca28.f[7];
+					++cov_7fzfwca28.s[63];
 
-								updates.records.forEach(function (record) {
-									++cov_7fzfwca28.f[8];
+					if ((++cov_7fzfwca28.b[18][0], manager.callStack) && (++cov_7fzfwca28.b[18][1], manager.callStack.length)) {
+						++cov_7fzfwca28.b[17][0];
+						++cov_7fzfwca28.s[64];
 
-									var parentData = (++cov_7fzfwca28.s[63], updates.parentData.get(record));
-									++cov_7fzfwca28.s[64];
-									if (parentData) {
-										++cov_7fzfwca28.b[19][0];
-										++cov_7fzfwca28.s[65];
+						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
+					} else {
+						++cov_7fzfwca28.b[17][1];
+					}
 
-										// (.some((p, idx) => {
-										// 	return (p.hasOwnProperty(key) || obj === p) && ;
-										// }))
-										// let invalidate = true;
-										// const protoParents = parentData.protoParents;
-										// for (let i = 0; i < protoParents.length; i++) {
-										// 	if ()
-										// 	parentData.protoPos.has(idx)
-										// }
+					++cov_7fzfwca28.s[65];
+					if ((++cov_7fzfwca28.b[20][0], val !== obj[key]) || (++cov_7fzfwca28.b[20][1], Array.isArray(obj)) && (++cov_7fzfwca28.b[20][2], key === "length")) {
+						++cov_7fzfwca28.b[19][0];
+						++cov_7fzfwca28.s[66];
 
+						obj[key] = val;
+						const updates = (++cov_7fzfwca28.s[67], toUpdate.get(key));
+						++cov_7fzfwca28.s[68];
+						if (updates) {
+							++cov_7fzfwca28.b[21][0];
+							++cov_7fzfwca28.s[69];
+
+							updates.records.forEach(record => {
+								++cov_7fzfwca28.f[8];
+
+								const recordMapItem = (++cov_7fzfwca28.s[70], updates.recordMap.get(record));
+								++cov_7fzfwca28.s[71];
+								if (recordMapItem.root) {
+									++cov_7fzfwca28.b[22][0];
+									++cov_7fzfwca28.s[72];
+
+									invalidateDeps(record);
+								} else {
+									++cov_7fzfwca28.b[22][1];
+
+									const invalidateAll = (++cov_7fzfwca28.s[73], Array.from(recordMapItem.prototypes.values()).some(prototypes => {
+										++cov_7fzfwca28.f[9];
+
+										const idx = (++cov_7fzfwca28.s[74], prototypes.indexOf(obj) + 1);
+										const l = (++cov_7fzfwca28.s[75], prototypes.length);
+										let invalidate = (++cov_7fzfwca28.s[76], true);
+										++cov_7fzfwca28.s[77];
+										for (let i = idx; i < l; i++) {
+											++cov_7fzfwca28.s[78];
+
+											if (prototypes[i].hasOwnProperty(key)) {
+												++cov_7fzfwca28.b[23][0];
+												++cov_7fzfwca28.s[79];
+
+												invalidate = false;
+												++cov_7fzfwca28.s[80];
+												break;
+											} else {
+												++cov_7fzfwca28.b[23][1];
+											}
+										}
+										++cov_7fzfwca28.s[81];
+										return invalidate;
+									}));
+									++cov_7fzfwca28.s[82];
+									if (invalidateAll) {
+										++cov_7fzfwca28.b[24][0];
+										++cov_7fzfwca28.s[83];
 
 										invalidateDeps(record);
 									} else {
-										++cov_7fzfwca28.b[19][1];
+										++cov_7fzfwca28.b[24][1];
 									}
-								});
-							} else {
-								++cov_7fzfwca28.b[18][1];
-							}
-
-							++cov_7fzfwca28.s[66];
-							toUpdate.delete(key);
-							++cov_7fzfwca28.s[67];
-							if (!manager.inRunSection) {
-								++cov_7fzfwca28.b[20][0];
-								++cov_7fzfwca28.s[68];
-
-								if (manager.options.immediateReaction) {
-									++cov_7fzfwca28.b[21][0];
-									++cov_7fzfwca28.s[69];
-
-									manager.run();
-								} else {
-									++cov_7fzfwca28.b[21][1];
-									++cov_7fzfwca28.s[70];
-
-									manager.runDeferred();
 								}
+							});
+						} else {
+							++cov_7fzfwca28.b[21][1];
+						}
+
+						++cov_7fzfwca28.s[84];
+						toUpdate.delete(key);
+						++cov_7fzfwca28.s[85];
+						if (!manager.inRunSection) {
+							++cov_7fzfwca28.b[25][0];
+							++cov_7fzfwca28.s[86];
+
+							if (manager.options.immediateReaction) {
+								++cov_7fzfwca28.b[26][0];
+								++cov_7fzfwca28.s[87];
+
+								manager.run();
 							} else {
-								++cov_7fzfwca28.b[20][1];
+								++cov_7fzfwca28.b[26][1];
+								++cov_7fzfwca28.s[88];
+
+								manager.runDeferred();
 							}
 						} else {
-							++cov_7fzfwca28.b[16][1];
+							++cov_7fzfwca28.b[25][1];
 						}
-						++cov_7fzfwca28.s[71];
-						return true;
-					}
-				});
-				++cov_7fzfwca28.s[72];
-				manager.observables.set(dataSource, observable);
-			} else {
-				++cov_7fzfwca28.b[3][1];
-			}
-			++cov_7fzfwca28.s[73];
-			return observable;
-		}
-		/**
-  * Создает {@link UpdatableFunction}
-  * Используется в основном для внутренних целей
-  *
-  * @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
-  * @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
-  * @return {UpdatableFunction}
-  */
-
-	}, {
-		key: "makeUpdatable",
-		value: function makeUpdatable(call) {
-			var obj = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (++cov_7fzfwca28.b[22][0], null);
-			++cov_7fzfwca28.f[9];
-
-			var manager = (++cov_7fzfwca28.s[74], this);
-			++cov_7fzfwca28.s[75];
-			if (obj == null) {
-				++cov_7fzfwca28.b[23][0];
-				++cov_7fzfwca28.s[76];
-
-				obj = manager;
-			} else {
-				++cov_7fzfwca28.b[23][1];
-			}
-			++cov_7fzfwca28.s[77];
-			return function () {
-				++cov_7fzfwca28.f[10];
-
-				var cacheByObject = (++cov_7fzfwca28.s[78], manager.cache.get(obj));
-				var record = void 0;
-				++cov_7fzfwca28.s[79];
-				if (cacheByObject) {
-					++cov_7fzfwca28.b[24][0];
-					++cov_7fzfwca28.s[80];
-
-					record = cacheByObject.get(call);
-				} else {
-					++cov_7fzfwca28.b[24][1];
-					++cov_7fzfwca28.s[81];
-
-					cacheByObject = new Map();
-					++cov_7fzfwca28.s[82];
-					manager.cache.set(obj, cacheByObject);
-				}
-
-				++cov_7fzfwca28.s[83];
-				if (!record) {
-					++cov_7fzfwca28.b[25][0];
-					++cov_7fzfwca28.s[84];
-
-					record = { valid: false, value: undefined, deps: new Set() };
-					++cov_7fzfwca28.s[85];
-					cacheByObject.set(call, record);
-				} else {
-					++cov_7fzfwca28.b[25][1];
-				}
-				++cov_7fzfwca28.s[86];
-				if (record.computing) {
-					++cov_7fzfwca28.b[26][0];
-					++cov_7fzfwca28.s[87];
-
-					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
-					++cov_7fzfwca28.s[88];
-					return undefined;
-				} else {
-					++cov_7fzfwca28.b[26][1];
-				}
-				++cov_7fzfwca28.s[89];
-				if (manager.callStack.length) {
-					++cov_7fzfwca28.b[27][0];
-					++cov_7fzfwca28.s[90];
-
-					record.deps.add(manager.callStack[manager.callStack.length - 1].record);
-				} else {
-					++cov_7fzfwca28.b[27][1];
-				}
-
-				++cov_7fzfwca28.s[91];
-				if (record.valid) {
-					++cov_7fzfwca28.b[28][0];
-					++cov_7fzfwca28.s[92];
-
-					return record.value;
-				} else {
-					++cov_7fzfwca28.b[28][1];
-				}
-				++cov_7fzfwca28.s[93];
-				record.computing = true;
-				++cov_7fzfwca28.s[94];
-				manager.callStack.push({ obj: obj, call: call, record: record });
-				++cov_7fzfwca28.s[95];
-				try {
-					var context = void 0;
-					++cov_7fzfwca28.s[96];
-					if (this) {
-						++cov_7fzfwca28.b[29][0];
-						++cov_7fzfwca28.s[97];
-
-						context = manager.observables.get(this);
 					} else {
-						++cov_7fzfwca28.b[29][1];
-						++cov_7fzfwca28.s[98];
-
-						context = manager;
+						++cov_7fzfwca28.b[19][1];
 					}
-
-					var value = (++cov_7fzfwca28.s[99], call.call(context, context));
-					++cov_7fzfwca28.s[100];
-					record.valid = true;
-					++cov_7fzfwca28.s[101];
-					record.value = value;
-					++cov_7fzfwca28.s[102];
-					return value;
-				} finally {
-					++cov_7fzfwca28.s[103];
-
-					record.computing = false;
-					++cov_7fzfwca28.s[104];
-					manager.callStack.pop();
+					++cov_7fzfwca28.s[89];
+					return true;
 				}
-			};
-		}
-		/**
-  * Создает вычисляемое свойство объекта
-  *
-  * @param {Object} obj Объект для которого будет создано вычисляемое свойство
-  * @param {String} key Имя вычисляемого свойства свойства
-  * @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
-  * @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
-  */
-
-	}, {
-		key: "makeComputed",
-		value: function makeComputed(obj, key, callOnGet, callOnSet) {
-			++cov_7fzfwca28.f[11];
-			++cov_7fzfwca28.s[105];
-
-			Object.defineProperty(obj, key, {
-				enumerable: true,
-				get: this.makeUpdatable(callOnGet, obj),
-				set: callOnSet
 			});
+			++cov_7fzfwca28.s[90];
+			manager.observables.set(dataSource, observable);
+		} else {
+			++cov_7fzfwca28.b[3][1];
 		}
-		/**
-  * Создает {@link UpdatableFunction} и помещает ее в список для проверки
-  * на валидность при изменении данных. Менеджер автозапускает эту
-  * функцию если ее результат стал невалидным
-  *
-  * @param {Function} call
-  *	Функция для которой будет создана {@link UpdatableFunction}
-  *	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
-  * @param {Boolean} run
-  *	Выполнить первый запуск реации после ее регистрации.
-  *	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
-  *	будет запускатся либо сразу либо по таймауту.
-  *	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
-  * @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
-  */
+		++cov_7fzfwca28.s[91];
+		return observable;
+	}
+	/**
+ * Создает {@link UpdatableFunction}
+ * Используется в основном для внутренних целей
+ *
+ * @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
+ * @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
+ * @return {UpdatableFunction}
+ */
+	makeUpdatable(call, obj = (++cov_7fzfwca28.b[27][0], null)) {
+		++cov_7fzfwca28.f[10];
 
-	}, {
-		key: "makeReaction",
-		value: function makeReaction(call) {
-			var run = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : (++cov_7fzfwca28.b[30][0], true);
-			++cov_7fzfwca28.f[12];
+		const manager = (++cov_7fzfwca28.s[92], this);
+		++cov_7fzfwca28.s[93];
+		if (obj == null) {
+			++cov_7fzfwca28.b[28][0];
+			++cov_7fzfwca28.s[94];
 
-			var manager = (++cov_7fzfwca28.s[106], this);
-			var updatable = (++cov_7fzfwca28.s[107], this.makeUpdatable(call));
-			++cov_7fzfwca28.s[108];
-			manager.reactions.push(updatable);
-			++cov_7fzfwca28.s[109];
-			if (run) {
+			obj = manager;
+		} else {
+			++cov_7fzfwca28.b[28][1];
+		}
+		++cov_7fzfwca28.s[95];
+		return function () {
+			++cov_7fzfwca28.f[11];
+
+			let cacheByObject = (++cov_7fzfwca28.s[96], manager.cache.get(obj));
+			let record;
+			++cov_7fzfwca28.s[97];
+			if (cacheByObject) {
+				++cov_7fzfwca28.b[29][0];
+				++cov_7fzfwca28.s[98];
+
+				record = cacheByObject.get(call);
+			} else {
+				++cov_7fzfwca28.b[29][1];
+				++cov_7fzfwca28.s[99];
+
+				cacheByObject = new Map();
+				++cov_7fzfwca28.s[100];
+				manager.cache.set(obj, cacheByObject);
+			}
+
+			++cov_7fzfwca28.s[101];
+			if (!record) {
+				++cov_7fzfwca28.b[30][0];
+				++cov_7fzfwca28.s[102];
+
+				record = { valid: false, value: undefined, deps: new Set() };
+				++cov_7fzfwca28.s[103];
+				cacheByObject.set(call, record);
+			} else {
+				++cov_7fzfwca28.b[30][1];
+			}
+			++cov_7fzfwca28.s[104];
+			if (record.computing) {
 				++cov_7fzfwca28.b[31][0];
-				++cov_7fzfwca28.s[110];
+				++cov_7fzfwca28.s[105];
 
-				if (this.options.immediateReaction) {
-					++cov_7fzfwca28.b[32][0];
-					++cov_7fzfwca28.s[111];
-
-					manager.run();
-				} else {
-					++cov_7fzfwca28.b[32][1];
-					++cov_7fzfwca28.s[112];
-
-					manager.runDeferred();
-				}
+				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+				++cov_7fzfwca28.s[106];
+				return undefined;
 			} else {
 				++cov_7fzfwca28.b[31][1];
 			}
-			++cov_7fzfwca28.s[113];
-			return {
-				unregister: function unregister() {
-					var idx = (++cov_7fzfwca28.s[114], manager.reactions.indexOf(updatable));
-					++cov_7fzfwca28.s[115];
-					if (idx >= 0) {
-						++cov_7fzfwca28.b[33][0];
-						++cov_7fzfwca28.s[116];
+			++cov_7fzfwca28.s[107];
+			if (manager.callStack.length) {
+				++cov_7fzfwca28.b[32][0];
+				++cov_7fzfwca28.s[108];
 
-						manager.reactions.splice(idx, 1);
-					} else {
-						++cov_7fzfwca28.b[33][1];
-					}
-				},
-
-				reaction: updatable
-			};
-		}
-
-		/**
-  * Проверяет является ли объект наблюдаемым
-  *
-  * @param {(Observable|Object|Array)} obj
-  */
-
-	}, {
-		key: "isObservable",
-		value: function isObservable(obj) {
-			++cov_7fzfwca28.f[13];
-			++cov_7fzfwca28.s[117];
-
-			return obj[this.$isObservableSymbol] === true;
-		}
-		/**
-  * Запускает все автозапускаемые функции которые помечены как невалидные
-  *
-  * @param {Function} [action]
-  *	Действия выполняемые внутри вызова этой функции
-  * 	не будут вызывать неотложный запуск реакций.
-  * 	Реакции будут запущены только после выхода из функции action
-  */
-
-	}, {
-		key: "run",
-		value: function run(action) {
-			++cov_7fzfwca28.f[14];
-			++cov_7fzfwca28.s[118];
-
-			if (!this.options.enabled) {
-				++cov_7fzfwca28.b[34][0];
-				++cov_7fzfwca28.s[119];
-
-				return;
+				record.deps.add(manager.callStack[manager.callStack.length - 1].record);
 			} else {
-				++cov_7fzfwca28.b[34][1];
+				++cov_7fzfwca28.b[32][1];
 			}
-			++cov_7fzfwca28.s[120];
-			this.inRunSection = true;
-			++cov_7fzfwca28.s[121];
+
+			++cov_7fzfwca28.s[109];
+			if (record.valid) {
+				++cov_7fzfwca28.b[33][0];
+				++cov_7fzfwca28.s[110];
+
+				return record.value;
+			} else {
+				++cov_7fzfwca28.b[33][1];
+			}
+			++cov_7fzfwca28.s[111];
+			record.computing = true;
+			++cov_7fzfwca28.s[112];
+			manager.callStack.push({ obj, call, record });
+			++cov_7fzfwca28.s[113];
 			try {
-				++cov_7fzfwca28.s[122];
+				let context;
+				++cov_7fzfwca28.s[114];
+				if (this) {
+					++cov_7fzfwca28.b[34][0];
+					++cov_7fzfwca28.s[115];
 
-				if (typeof action === "function") {
-					++cov_7fzfwca28.b[35][0];
-					++cov_7fzfwca28.s[123];
-
-					action();
+					context = manager.observables.get(this);
 				} else {
-					++cov_7fzfwca28.b[35][1];
+					++cov_7fzfwca28.b[34][1];
+					++cov_7fzfwca28.s[116];
+
+					context = manager;
 				}
-				++cov_7fzfwca28.s[124];
-				this.runScheduled = false;
-				++cov_7fzfwca28.s[125];
-				this.reactions.forEach(function (updatable) {
-					++cov_7fzfwca28.f[15];
-					++cov_7fzfwca28.s[126];
-					return updatable();
-				});
-				++cov_7fzfwca28.s[127];
-				(++cov_7fzfwca28.b[36][0], typeof this.onAfterRun === "function") && (++cov_7fzfwca28.b[36][1], this.onAfterRun());
+
+				const value = (++cov_7fzfwca28.s[117], call.call(context, context));
+				++cov_7fzfwca28.s[118];
+				record.valid = true;
+				++cov_7fzfwca28.s[119];
+				record.value = value;
+				++cov_7fzfwca28.s[120];
+				return value;
 			} finally {
-				++cov_7fzfwca28.s[128];
+				++cov_7fzfwca28.s[121];
 
-				this.inRunSection = false;
+				record.computing = false;
+				++cov_7fzfwca28.s[122];
+				manager.callStack.pop();
 			}
-		}
-		/**
-  * Запускает все {@link UpdatableFunction} которые помечены как невалидные
-  * В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
-  *
-  * @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
-  * @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
-  */
+		};
+	}
+	/**
+ * Создает вычисляемое свойство объекта
+ *
+ * @param {Object} obj Объект для которого будет создано вычисляемое свойство
+ * @param {String} key Имя вычисляемого свойства свойства
+ * @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
+ * @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
+ */
+	makeComputed(obj, key, callOnGet, callOnSet) {
+		++cov_7fzfwca28.f[12];
+		++cov_7fzfwca28.s[123];
 
-	}, {
-		key: "runDeferred",
-		value: function runDeferred(action) {
-			var _this = this;
+		Object.defineProperty(obj, key, {
+			enumerable: true,
+			get: this.makeUpdatable(callOnGet, obj),
+			set: callOnSet
+		});
+	}
+	/**
+ * Создает {@link UpdatableFunction} и помещает ее в список для проверки
+ * на валидность при изменении данных. Менеджер автозапускает эту
+ * функцию если ее результат стал невалидным
+ *
+ * @param {Function} call
+ *	Функция для которой будет создана {@link UpdatableFunction}
+ *	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
+ * @param {Boolean} run
+ *	Выполнить первый запуск реации после ее регистрации.
+ *	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
+ *	будет запускатся либо сразу либо по таймауту.
+ *	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
+ * @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
+ */
+	makeReaction(call, run = (++cov_7fzfwca28.b[35][0], true)) {
+		++cov_7fzfwca28.f[13];
 
-			++cov_7fzfwca28.f[16];
-			++cov_7fzfwca28.s[129];
+		const manager = (++cov_7fzfwca28.s[124], this);
+		const updatable = (++cov_7fzfwca28.s[125], this.makeUpdatable(call));
+		++cov_7fzfwca28.s[126];
+		manager.reactions.push(updatable);
+		++cov_7fzfwca28.s[127];
+		if (run) {
+			++cov_7fzfwca28.b[36][0];
+			++cov_7fzfwca28.s[128];
 
-			if (!this.options.enabled) {
+			if (this.options.immediateReaction) {
 				++cov_7fzfwca28.b[37][0];
-				++cov_7fzfwca28.s[130];
+				++cov_7fzfwca28.s[129];
 
-				return;
+				manager.run();
 			} else {
 				++cov_7fzfwca28.b[37][1];
-			}
-			++cov_7fzfwca28.s[131];
-			this.inRunSection = true;
-			++cov_7fzfwca28.s[132];
-			try {
-				++cov_7fzfwca28.s[133];
+				++cov_7fzfwca28.s[130];
 
-				if (!this.runScheduled) {
+				manager.runDeferred();
+			}
+		} else {
+			++cov_7fzfwca28.b[36][1];
+		}
+		++cov_7fzfwca28.s[131];
+		return {
+			unregister() {
+				const idx = (++cov_7fzfwca28.s[132], manager.reactions.indexOf(updatable));
+				++cov_7fzfwca28.s[133];
+				if (idx >= 0) {
 					++cov_7fzfwca28.b[38][0];
 					++cov_7fzfwca28.s[134];
 
-					this.runScheduled = setTimeout(function () {
-						++cov_7fzfwca28.f[17];
-						++cov_7fzfwca28.s[135];
-						return _this.run();
-					});
+					manager.reactions.splice(idx, 1);
 				} else {
 					++cov_7fzfwca28.b[38][1];
 				}
-				++cov_7fzfwca28.s[136];
-				if (typeof action === "function") {
-					++cov_7fzfwca28.b[39][0];
-					++cov_7fzfwca28.s[137];
+			},
+			reaction: updatable
+		};
+	}
 
-					action();
-				} else {
-					++cov_7fzfwca28.b[39][1];
-				}
-			} finally {
-				++cov_7fzfwca28.s[138];
+	/**
+ * Проверяет является ли объект наблюдаемым
+ *
+ * @param {(Observable|Object|Array)} obj
+ */
+	isObservable(obj) {
+		++cov_7fzfwca28.f[14];
+		++cov_7fzfwca28.s[135];
 
-				this.inRunSection = false;
-			}
+		return obj[this.$isObservableSymbol] === true;
+	}
+	/**
+ * Запускает все автозапускаемые функции которые помечены как невалидные
+ *
+ * @param {Function} [action]
+ *	Действия выполняемые внутри вызова этой функции
+ * 	не будут вызывать неотложный запуск реакций.
+ * 	Реакции будут запущены только после выхода из функции action
+ */
+	run(action) {
+		++cov_7fzfwca28.f[15];
+		++cov_7fzfwca28.s[136];
+
+		if (!this.options.enabled) {
+			++cov_7fzfwca28.b[39][0];
+			++cov_7fzfwca28.s[137];
+
+			return;
+		} else {
+			++cov_7fzfwca28.b[39][1];
 		}
-	}]);
+		++cov_7fzfwca28.s[138];
+		this.inRunSection = true;
+		++cov_7fzfwca28.s[139];
+		try {
+			++cov_7fzfwca28.s[140];
 
-	return Manager;
-}();
+			if (typeof action === "function") {
+				++cov_7fzfwca28.b[40][0];
+				++cov_7fzfwca28.s[141];
 
-++cov_7fzfwca28.s[139];
+				action();
+			} else {
+				++cov_7fzfwca28.b[40][1];
+			}
+			++cov_7fzfwca28.s[142];
+			this.runScheduled = false;
+			++cov_7fzfwca28.s[143];
+			this.reactions.forEach(updatable => {
+				++cov_7fzfwca28.f[16];
+				++cov_7fzfwca28.s[144];
+				return updatable();
+			});
+			++cov_7fzfwca28.s[145];
+			(++cov_7fzfwca28.b[41][0], typeof this.onAfterRun === "function") && (++cov_7fzfwca28.b[41][1], this.onAfterRun());
+		} finally {
+			++cov_7fzfwca28.s[146];
+
+			this.inRunSection = false;
+		}
+	}
+	/**
+ * Запускает все {@link UpdatableFunction} которые помечены как невалидные
+ * В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
+ *
+ * @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
+ * @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
+ */
+	runDeferred(action) {
+		++cov_7fzfwca28.f[17];
+		++cov_7fzfwca28.s[147];
+
+		if (!this.options.enabled) {
+			++cov_7fzfwca28.b[42][0];
+			++cov_7fzfwca28.s[148];
+
+			return;
+		} else {
+			++cov_7fzfwca28.b[42][1];
+		}
+		++cov_7fzfwca28.s[149];
+		this.inRunSection = true;
+		++cov_7fzfwca28.s[150];
+		try {
+			++cov_7fzfwca28.s[151];
+
+			if (!this.runScheduled) {
+				++cov_7fzfwca28.b[43][0];
+				++cov_7fzfwca28.s[152];
+
+				this.runScheduled = setTimeout(() => {
+					++cov_7fzfwca28.f[18];
+					++cov_7fzfwca28.s[153];
+					return this.run();
+				});
+			} else {
+				++cov_7fzfwca28.b[43][1];
+			}
+			++cov_7fzfwca28.s[154];
+			if (typeof action === "function") {
+				++cov_7fzfwca28.b[44][0];
+				++cov_7fzfwca28.s[155];
+
+				action();
+			} else {
+				++cov_7fzfwca28.b[44][1];
+			}
+		} finally {
+			++cov_7fzfwca28.s[156];
+
+			this.inRunSection = false;
+		}
+	}
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Manager;
+
+
+++cov_7fzfwca28.s[157];
 Manager.default = new Manager();
-++cov_7fzfwca28.s[140];
+++cov_7fzfwca28.s[158];
 Manager.default.Manager = Manager;
 
 /* unused harmony default export */ var _unused_webpack_default_export = (Manager.default);

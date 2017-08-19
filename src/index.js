@@ -91,7 +91,6 @@ export class Manager {
 					}
 					proto = Object.getPrototypeOf(proto);
 				}
-				console.log("prototypes", dataSource, prototypes);
 			};
 
 
@@ -105,7 +104,6 @@ export class Manager {
 						if (key === manager.$registerRead) {
 							return registerRead;
 						}
-						console.log("GET", obj, key);
 						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
 					}
 
@@ -127,10 +125,9 @@ export class Manager {
 							updates.records.forEach((record) => {
 								const recordMapItem = updates.recordMap.get(record);
 								if (recordMapItem.root) {
-									console.log("INVALIDATE -- ROOT", obj, key);
 									invalidateDeps(record);
 								}
-								else if (recordMapItem.prototypes) {
+								else {
 									const invalidateAll = Array.from(recordMapItem.prototypes.values())
 									.some((prototypes) => {
 										const idx = prototypes.indexOf(obj) + 1;
@@ -145,7 +142,6 @@ export class Manager {
 										return invalidate;
 									});
 									if (invalidateAll) {
-										console.log("INVALIDATE -- PROTO", obj, key);
 										invalidateDeps(record);
 									}
 								}

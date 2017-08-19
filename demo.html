@@ -71,14 +71,10 @@
 					observables[i] = m.makeObservable(chain[i]);
 				});
 
-				function updatable () {
-					console.log("UPDATE --------------");
-					console.log(`${observables[7].a} ${observables[0].a}`);
-				}
-				m.makeReaction(updatable);
-				setTimeout(() => {
-					observables[3].a = 9;
-				}, 2000);
+				m.makeReaction(() => `${observables[7].a} ${observables[0].a}`);
+				// setTimeout(() => {
+				// 	observables[3].a = 9;
+				// }, 2000);
 
 			}
 

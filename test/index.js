@@ -274,23 +274,58 @@ test("Observable prototype", t => {
 	t.end();
 });
 
-test.skip("Observable prototype - overriden property - reaction", t => {
+test("Observable prototype - overriden property - reaction", t => {
 	const m = new Manager({immediateReaction: true});
-	const src = {a: 1};
-	const srcWithProto = Object.create(src);
-	const protoObs = m.makeObservable(src);
-	const obs = m.makeObservable(srcWithProto);
-	const reaction = sinon.spy(() => console.log(obs.a));
-	m.makeReaction(reaction);
-	t.equal(reaction.callCount, 1);
-	protoObs.a = 111;
-	t.equal(reaction.callCount, 2);
-	obs.a = 222;
-	t.equal(reaction.callCount, 3);
-	protoObs.a = 333;
-	t.equal(reaction.callCount, 3);
-	const reaction2 = sinon.spy(() => console.log(obs.a + " " + protoObs.a));
+	function makeLongPrototypeChain (maxlength = 1, res = []) {
+		if (res.length >= maxlength) {
+			return res;
+		}
+		if (!res.length) {
+			res.push({n: 0});
+		}
+		else {
+			const obj = Object.create(res[res.length - 1]);
+			obj.n = res.length;
+			res.push(obj);
+		}
+		return makeLongPrototypeChain(maxlength, res);
+	}
+
+	const chainA = makeLongPrototypeChain(10);
+	const chainB = makeLongPrototypeChain(10, chainA.slice(0, 5));
+	chainA[0].a = 0;
+	// chain[4].a = 4;
+
+	const observables = {};
+	observables.A0 = m.makeObservable(chainA[0]);
+	observables.A3 = m.makeObservable(chainA[3]);
+	observables.A6 = m.makeObservable(chainA[6]);
+	observables.A9 = m.makeObservable(chainA[9]);
+	observables.B6 = m.makeObservable(chainB[6]);
+	observables.B7 = m.makeObservable(chainB[7]);
+
+	const reaction1 = sinon.spy(() => `${observables.A3.a} ${observables.A9.a}`);
+	const reaction2 = sinon.spy(() => `${observables.B7.a}`);
+	m.makeReaction(reaction1);
 	m.makeReaction(reaction2);
+	t.equal(reaction1.callCount, 1);
+	t.equal(reaction2.callCount, 1);
+	observables.A0.a = 111;
+	t.equal(reaction1.callCount, 2);
+	t.equal(reaction2.callCount, 2);
+	observables.A3.a = 12;
+	t.equal(reaction1.callCount, 3);
+	t.equal(reaction2.callCount, 3);
+	observables.A0.a = 222;
+	t.equal(reaction1.callCount, 3);
+	t.equal(reaction2.callCount, 3);
+	observables.A6.a = 666;
+	t.equal(reaction1.callCount, 4);
+	t.equal(reaction2.callCount, 3);
+	observables.B6.a = 6666;
+	t.equal(reaction1.callCount, 4);
+	t.equal(reaction2.callCount, 4);
+
 
 	t.end();
 });
