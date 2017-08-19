@@ -11,6 +11,7 @@
     -   [isObservable](#isobservable)
     -   [run](#run)
     -   [runDeferred](#rundeferred)
+    -   [getObservableSource](#getobservablesource)
 -   [ManagerOptions](#manageroptions)
 -   [ReactionHandler](#reactionhandler)
 -   [Observable](#observable)
@@ -110,6 +111,16 @@ Returns **[ReactionHandler](#reactionhandler)** Управляющий объе�
 
 -   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Изменения [Observable](#observable) выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
 -   `timeout` **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Таймаут запуска выполнения очереди зарегестрированых реакций (optional, default `0`)
+
+### getObservableSource
+
+Возвращает исходный объект на основе которого был создан [Observable](#observable)
+
+**Parameters**
+
+-   `observable` **[Observable](#observable)** [Observable](#observable) для которого необходимо получить исходный объект
+
+Returns **([Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array))** Исходный обьект на основе которого был создан [Observable](#observable)
 
 ## ManagerOptions
 

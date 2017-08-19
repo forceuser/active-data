@@ -198,6 +198,9 @@ var Manager = function () {
 						if (key === manager.$isObservableSymbol) {
 							return true;
 						}
+						if (key === manager.$dataSource) {
+							return dataSource;
+						}
 
 						if (manager.callStack.length) {
 							if (key === manager.$registerRead) {
@@ -454,6 +457,19 @@ var Manager = function () {
 			} finally {
 				this.inRunSection = false;
 			}
+		}
+		/**
+  * Возвращает исходный объект на основе которого был создан {@link Observable}
+  *
+  * @param {Observable} observable
+  *	{@link Observable} для которого необходимо получить исходный объект
+  * @return {(Object|Array)} Исходный обьект на основе которого был создан {@link Observable}
+  */
+
+	}, {
+		key: "getObservableSource",
+		value: function getObservableSource(observable) {
+			return observable[this.$dataSource];
 		}
 	}]);
 

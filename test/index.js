@@ -50,6 +50,11 @@ test("Create observable", t => {
 	t.equal(d4, null);
 	t.ok(m.isObservable(d.d.d1.d11.d111));
 	t.notOk(m.isObservable(d.arr.map));
+
+	const obsSrc1 = {};
+	t.equal(m.getObservableSource(m.makeObservable(obsSrc1)), obsSrc1);
+	const obsSrc2 = Object.create(obsSrc1);
+	t.equal(m.getObservableSource(m.makeObservable(obsSrc2)), obsSrc2);
 	t.end();
 });
 
