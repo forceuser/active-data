@@ -45,52 +45,54 @@ export class Manager {
 		let observable = manager.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
-			const invalidateDeps = (record) => {
-				record.valid = false;
-				record.deps.forEach(record => invalidateDeps(record));
-				record.deps.clear();
+			const invalidateDeps = (updatableState) => {
+				if (updatableState.valid) {
+					updatableState.valid = false;
+					updatableState.deps.forEach(updatableState => invalidateDeps(updatableState));
+				}
+				updatableState.deps.clear();
 			};
 
 			const initUpdates = (key) => {
-				const updates = {records: new Set(), recordMap: new WeakMap()};
+				const updates = {updatableStates: new Set(), updatableStateMap: new WeakMap()};
 				toUpdate.set(key, updates);
 				return updates;
 			};
 
-			const registerRead = (record, key, prototypes) => {
-				// record stores Updateble state
+			const registerRead = (updatableState, key, prototypes) => {
+				// updatableState stores Updateble state
 				let updates = toUpdate.get(key);
 				if (!updates) {
 					updates = initUpdates(key);
 				}
-				updates.records.add(record);
-				let recordMapItem = updates.recordMap.get(record);
-				if (!recordMapItem) {
-					recordMapItem = {};
-					updates.recordMap.set(record, recordMapItem);
+				updates.updatableStates.add(updatableState);
+				let updatableStateMapItem = updates.updatableStateMap.get(updatableState);
+				if (!updatableStateMapItem) {
+					updatableStateMapItem = {};
+					updates.updatableStateMap.set(updatableState, updatableStateMapItem);
 				}
-				record.uninit.set(dataSource, record => {
-					updates.records.delete(record);
-					updates.recordMap.delete(record);
-					if (updates.records.size === 0) {
+				updatableState.uninit.set(dataSource, updatableState => {
+					updates.updatableStates.delete(updatableState);
+					updates.updatableStateMap.delete(updatableState);
+					if (updates.updatableStates.size === 0) {
 						toUpdate.delete(key);
 					}
 				});
 				const isRoot = !prototypes;
 				if (isRoot) {
 					prototypes = [dataSource];
-					recordMapItem.root = true;
+					updatableStateMapItem.root = true;
 				}
 				else {
 					const rootObj = prototypes[prototypes.length - 1];
-					if (!recordMapItem.prototypes) {
-						recordMapItem.prototypes = new Map();
+					if (!updatableStateMapItem.prototypes) {
+						updatableStateMapItem.prototypes = new Map();
 					}
-					const _prototypes = recordMapItem.prototypes.get(rootObj);
+					const _prototypes = updatableStateMapItem.prototypes.get(rootObj);
 					if (_prototypes) {
 						return;
 					}
-					recordMapItem.prototypes.set(rootObj, prototypes);
+					updatableStateMapItem.prototypes.set(rootObj, prototypes);
 				}
 
 				let proto = Object.getPrototypeOf(dataSource);
@@ -98,7 +100,7 @@ export class Manager {
 					const observableProto = manager.observables.get(proto);
 					prototypes.unshift(proto);
 					if (observableProto != null && observableProto !== Object.prototype) {
-						observableProto[manager.$registerRead](record, key, prototypes);
+						observableProto[manager.$registerRead](updatableState, key, prototypes);
 						break;
 					}
 					proto = Object.getPrototypeOf(proto);
@@ -109,13 +111,13 @@ export class Manager {
 				[key, manager.options.wholeObjectObserveKey].forEach(updKey => {
 					const updates = toUpdate.get(updKey);
 					if (updates) {
-						updates.records.forEach((record) => {
-							const recordMapItem = updates.recordMap.get(record);
-							if (recordMapItem.root) {
-								invalidateDeps(record);
+						updates.updatableStates.forEach((updatableState) => {
+							const updatableStateMapItem = updates.updatableStateMap.get(updatableState);
+							if (updatableStateMapItem.root) {
+								invalidateDeps(updatableState);
 							}
 							else {
-								const invalidateAll = Array.from(recordMapItem.prototypes.values())
+								const invalidateAll = Array.from(updatableStateMapItem.prototypes.values())
 								.some((prototypes) => {
 									const idx = prototypes.indexOf(obj) + 1;
 									const l = prototypes.length;
@@ -129,7 +131,7 @@ export class Manager {
 									return invalidate;
 								});
 								if (invalidateAll) {
-									invalidateDeps(record);
+									invalidateDeps(updatableState);
 								}
 							}
 						});
@@ -163,7 +165,7 @@ export class Manager {
 						if (key === manager.$registerRead) {
 							return registerRead;
 						}
-						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
+						registerRead(manager.callStack[manager.callStack.length - 1].updatableState, key);
 					}
 
 					if (key === manager.options.wholeObjectObserveKey) {
@@ -211,35 +213,35 @@ export class Manager {
 		}
 		return function () {
 			let cacheByObject = manager.cache.get(obj);
-			let record;
+			let updatableState;
 			if (cacheByObject) {
-				record = cacheByObject.get(call);
+				updatableState = cacheByObject.get(call);
 			}
 			else {
 				cacheByObject = new Map();
 				manager.cache.set(obj, cacheByObject);
 			}
 
-			if (!record) {
-				record = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
-				cacheByObject.set(call, record);
+			if (!updatableState) {
+				updatableState = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
+				cacheByObject.set(call, updatableState);
 			}
-			if (record.computing) {
+			if (updatableState.computing) {
 				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
 				return undefined;
 			}
 			if (manager.callStack.length) {
-				record.deps.add(manager.callStack[manager.callStack.length - 1].record);
+				updatableState.deps.add(manager.callStack[manager.callStack.length - 1].updatableState);
 			}
 
-			if (record.valid) {
-				return record.value;
+			if (updatableState.valid) {
+				return updatableState.value;
 			}
-			record.computing = true;
-			record.uninit.forEach(uninit => uninit(record));
-			record.uninit.clear();
+			updatableState.computing = true;
+			updatableState.uninit.forEach(uninit => uninit(updatableState));
+			updatableState.uninit.clear();
 
-			manager.callStack.push({obj, call, record});
+			manager.callStack.push({obj, call, updatableState});
 			try {
 				let context;
 				if (this) {
@@ -250,12 +252,12 @@ export class Manager {
 				}
 
 				const value = call.call(context, context);
-				record.valid = true;
-				record.value = value;
+				updatableState.valid = true;
+				updatableState.value = value;
 				return value;
 			}
 			finally {
-				record.computing = false;
+				updatableState.computing = false;
 				manager.callStack.pop();
 			}
 		};
@@ -382,11 +384,28 @@ export class Manager {
 	}
 }
 
+// const aliases = {
+// 	"makeReaction": ["reaction", "observe"],
+// 	"makeObservable": ["observable"],
+// 	"makeUpdatable": ["updatable"],
+// 	"makeComputed": ["computed"]
+// };
+//
+// Object.keys(aliases).forEach(key => {
+// 	aliases[key].forEach(alias => {
+// 		Manager.prototype[alias] = Manager.prototype[key];
+// 	});
+// });
 
 Manager.default = new Manager();
 Manager.default.Manager = Manager;
 
 export default Manager.default;
+export const observable = (...args) => Manager.default.makeObservable(...args);
+export const observe = (...args) => Manager.default.makeReaction(...args);
+export const reaction = (...args) => Manager.default.makeReaction(...args);
+export const computed = (...args) => Manager.default.makeComputed(...args);
+export const updatable = (...args) => Manager.default.makeUpdatable(...args);
 
 /**
  * @typedef ManagerOptions

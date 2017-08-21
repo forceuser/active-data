@@ -7,6 +7,7 @@
 	</head>
 
 	<body>
+	  <button>RUN</button>
 		<script>
 			const m = activeData;
 
@@ -93,75 +94,116 @@
 
 			}
 
-			const ad = activeData;
-			const isolatedScope = ad.makeObservable({});
+			function scopeExample () {
+			  const ad = activeData;
+			  const isolatedScope = ad.makeObservable({});
 
-			function createRootScope() {
-				return ad.makeObservable({
-					$child: [],
-					$new (isolated = false, extend) {
-						const data = ad.isObservable(this) ? ad.getObservableSource(this) : this
+			  function createRootScope() {
+				  return ad.makeObservable({
+					  $child: [],
+					  $new (isolated = false, extend) {
+						  const data = ad.isObservable(this) ? ad.getObservableSource(this) : this
 
-						let scope = Object.create(isolated ? isolatedScope : data);
-						if (typeof extend === "object") {
-							scope = Object.assign(scope, extend);
-						}
-						Object.defineProperties(scope, {
-							"$parent": {
-								value: this,
-								enumerable: false
-							},
-							"$child": {
-								value: [],
-								enumerable: false
-							}
-						})
-						const $scope = ad.makeObservable(scope);
-						data.$child.push($scope);
-						return $scope;
-					},
-					toJSON: function() {
-				        var tmp = {};
+						  let scope = Object.create(isolated ? isolatedScope : data);
+						  if (typeof extend === "object") {
+							  scope = Object.assign(scope, extend);
+						  }
+						  Object.defineProperties(scope, {
+							  "$parent": {
+								  value: this,
+								  enumerable: false
+							  },
+							  "$child": {
+								  value: [],
+								  enumerable: false
+							  }
+						  })
+						  const $scope = ad.makeObservable(scope);
+						  data.$child.push($scope);
+						  return $scope;
+					  },
+					  toJSON: function() {
+					  var tmp = {};
 
-				        for (var key in this) {
-				            if (typeof this[key] !== "function") {
-								tmp[key] = this[key];
-							}
-				        }
+					  for (var key in this) {
+					      if (typeof this[key] !== "function") {
+								  tmp[key] = this[key];
+							  }
+					  }
 
-				        return tmp;
-				    }
-				})
+					  return tmp;
+				      }
+				  })
+			  }
+
+			  const $rootScope = createRootScope();
+			  const $scope1 = $rootScope.$new();
+			  const $scope2 = $scope1.$new();
+			  $scope1.a = {};
+			  $scope2.b = 13;
+			  ad.makeReaction(() => {
+				  console.log(`$scope2.a: ${JSON.stringify($scope2.$$whole)}`);
+			  });
+			  setTimeout(() => {
+				  $scope1.b = 212;
+			  }, 2000);
+
+			  setTimeout(() => {
+				  $scope1.c = 555;
+			  }, 3000);
 			}
 
-			const $rootScope = createRootScope();
-			const $scope1 = $rootScope.$new();
-			const $scope2 = $scope1.$new();
-			$scope1.a = {};
-			$scope2.b = 13;
-			ad.makeReaction(() => {
-				console.log(`$scope2.a: ${JSON.stringify($scope2.$$whole)}`);
-			});
-			setTimeout(() => {
-				$scope1.b = 212;
-			}, 2000);
+			function perfTest () {
+			  const ad = activeData;
+			//   ad.setOptions({
+			// 	  immediateReaction: true
+			//   });
 
-			setTimeout(() => {
-				$scope1.c = 555;
-			}, 3000);
-			// const obs = Object.create({});
-			// const $obs = ad.makeObservable(obs);
-			// const obs2 = Object.create(obs);
-			// const $obs2 = ad.makeObservable(obs2);
-			// $obs2.a = 22;
-			// ad.makeReaction(() => {
-			// 	console.log(`chch2: ${$obs2.a}`);
-			// 	console.log($obs2);
-			// });
-			// setTimeout(() => {
-			// 	$obs.a = 12
-			// }, 2000);
+
+			  function writeTest (count, obj, mark) {
+			    performance.mark(`${mark}-start`);
+				const a = [];
+			    for (let i = 0; i < count; i++) {
+			      a.push(Math.random());
+			    }
+				obj.a = obj.a.concat(a);
+			    performance.mark(`${mark}-end`);
+			    performance.measure(`${mark}`, `${mark}-start`, `${mark}-end`);
+				const perf = performance.getEntriesByName(`${mark}`)[performance.getEntriesByName(`${mark}`).length - 1];
+				return {name: perf.name, duration: perf.duration};
+			  }
+			  let reader;
+			  function readTest (count, obj, mark) {
+			    performance.mark(`${mark}-start`);
+			    for (let i = 0; i < count; i++) {
+			      reader = obj.prop;
+			    }
+			    performance.mark(`${mark}-end`);
+			    performance.measure(`${mark}`, `${mark}-start`, `${mark}-end`);
+			    const perf = performance.getEntriesByName(`${mark}`)[performance.getEntriesByName(`${mark}`).length - 1];
+				return {name: perf.name, duration: perf.duration};
+			  }
+			  const regularObj = {a: []};
+			  const obsObj = {a: []};
+			  const $obsObj = ad.makeObservable(obsObj);
+			  const count = Math.pow(10, 6);
+
+			  ad.makeReaction(() => console.log($obsObj.a));
+
+			  setTimeout(() => {
+				  console.log(writeTest(count, regularObj, "regular-write"));
+				  console.log(writeTest(count, $obsObj, "observable-write"));
+				  console.log(readTest(count, regularObj, "regular-read"));
+				  console.log(readTest(count, $obsObj, "observable-read"));
+			  }, 100);
+
+
+
+			}
+
+			document.querySelector("button").addEventListener("click", () => perfTest());
 		</script>
+
 	</body>
 
 </html>

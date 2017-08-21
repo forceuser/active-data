@@ -376,3 +376,26 @@ test("Whole object watcher", t => {
 	t.equal(reaction.callCount, 3);
 	t.end();
 });
+
+
+test("Getters and setters", t => {
+	const m = new Manager({immediateReaction: true});
+	const s1 = {
+		a: 1,
+		b: "count",
+		get test () {
+			return `${this.b}: ${this.a}`;
+		}
+	};
+	const o1 = m.makeObservable(s1);
+	const reaction = sinon.spy(() => o1.test);
+	m.makeReaction(reaction);
+	t.equal(reaction.callCount, 1);
+	o1.a = 5;
+	t.equal(reaction.callCount, 2);
+	o1.c = 212;
+	t.equal(reaction.callCount, 2);
+	o1.b = "mark";
+	t.equal(reaction.callCount, 3);
+	t.end();
+});
