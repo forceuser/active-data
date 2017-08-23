@@ -161,6 +161,12 @@ export class Manager {
 						return dataSource;
 					}
 
+					const propertyDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+
+					if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
+						return manager.makeUpdatable(propertyDescriptor.get, obj).call(obj);
+					}
+
 					if (manager.callStack.length) {
 						if (key === manager.$registerRead) {
 							return registerRead;
@@ -207,60 +213,64 @@ export class Manager {
 	* @return {UpdatableFunction}
 	*/
 	makeUpdatable (call, obj = null) {
+		if (call.updatableCall) {
+			return call;
+		}
 		const manager = this;
 		if (obj == null) {
 			obj = manager;
 		}
-		return function () {
-			let cacheByObject = manager.cache.get(obj);
-			let updatableState;
-			if (cacheByObject) {
-				updatableState = cacheByObject.get(call);
-			}
-			else {
-				cacheByObject = new Map();
-				manager.cache.set(obj, cacheByObject);
-			}
+		let updatableFunction;
+		let objectCallCache = manager.cache.get(obj);
 
-			if (!updatableState) {
-				updatableState = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
-				cacheByObject.set(call, updatableState);
-			}
-			if (updatableState.computing) {
-				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
-				return undefined;
-			}
-			if (manager.callStack.length) {
-				updatableState.deps.add(manager.callStack[manager.callStack.length - 1].updatableState);
-			}
-
-			if (updatableState.valid) {
-				return updatableState.value;
-			}
-			updatableState.computing = true;
-			updatableState.uninit.forEach(uninit => uninit(updatableState));
-			updatableState.uninit.clear();
-
-			manager.callStack.push({obj, call, updatableState});
-			try {
-				let context;
-				if (this) {
-					context = manager.observables.get(this);
+		if (objectCallCache) {
+			updatableFunction = objectCallCache.get(call);
+		}
+		else {
+			objectCallCache = new Map();
+			manager.cache.set(obj, objectCallCache);
+		}
+		if (!updatableFunction) {
+			const updatableState = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
+			updatableFunction = function () {
+				if (updatableState.computing) {
+					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+					return undefined;
 				}
-				else {
-					context = manager;
+				if (manager.callStack.length) {
+					updatableState.deps.add(manager.callStack[manager.callStack.length - 1].updatableState);
 				}
 
-				const value = call.call(context, context);
-				updatableState.valid = true;
-				updatableState.value = value;
-				return value;
-			}
-			finally {
-				updatableState.computing = false;
-				manager.callStack.pop();
-			}
-		};
+				if (updatableState.valid) {
+					return updatableState.value;
+				}
+				updatableState.computing = true;
+				updatableState.uninit.forEach(uninit => uninit(updatableState));
+				updatableState.uninit.clear();
+
+				manager.callStack.push({obj, call, updatableState});
+				try {
+					let context;
+					if (this) {
+						context = manager.observables.get(this);
+					}
+					else {
+						context = manager;
+					}
+					const value = call.call(context, context);
+					updatableState.valid = true;
+					updatableState.value = value;
+					return value;
+				}
+				finally {
+					updatableState.computing = false;
+					manager.callStack.pop();
+				}
+			};
+			updatableFunction.updatableCall = call;
+			objectCallCache.set(call, updatableFunction);
+		}
+		return updatableFunction;
 	}
 	/**
 	* Создает вычисляемое свойство объекта
@@ -405,7 +415,7 @@ export const observable = (...args) => Manager.default.makeObservable(...args);
 export const observe = (...args) => Manager.default.makeReaction(...args);
 export const reaction = (...args) => Manager.default.makeReaction(...args);
 export const computed = (...args) => Manager.default.makeComputed(...args);
-export const updatable = (...args) => Manager.default.makeUpdatable(...args);
+export const updatable = (...args) => Manager.default.makeUgpdatable(...args);
 
 /**
  * @typedef ManagerOptions
