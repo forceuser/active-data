@@ -129,54 +129,54 @@ class Manager {
 		let observable = manager.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
-			const invalidateDeps = (record) => {
-				if (record.valid) {
-					record.valid = false;
-					record.deps.forEach(record => invalidateDeps(record));
+			const invalidateDeps = (updatableState) => {
+				if (updatableState.valid) {
+					updatableState.valid = false;
+					updatableState.deps.forEach(updatableState => invalidateDeps(updatableState));
 				}
-				record.deps.clear();
+				updatableState.deps.clear();
 			};
 
 			const initUpdates = (key) => {
-				const updates = {records: new Set(), recordMap: new WeakMap()};
+				const updates = {updatableStates: new Set(), updatableStateMap: new WeakMap()};
 				toUpdate.set(key, updates);
 				return updates;
 			};
 
-			const registerRead = (record, key, prototypes) => {
-				// record stores Updateble state
+			const registerRead = (updatableState, key, prototypes) => {
+				// updatableState stores Updateble state
 				let updates = toUpdate.get(key);
 				if (!updates) {
 					updates = initUpdates(key);
 				}
-				updates.records.add(record);
-				let recordMapItem = updates.recordMap.get(record);
-				if (!recordMapItem) {
-					recordMapItem = {};
-					updates.recordMap.set(record, recordMapItem);
+				updates.updatableStates.add(updatableState);
+				let updatableStateMapItem = updates.updatableStateMap.get(updatableState);
+				if (!updatableStateMapItem) {
+					updatableStateMapItem = {};
+					updates.updatableStateMap.set(updatableState, updatableStateMapItem);
 				}
-				record.uninit.set(dataSource, record => {
-					updates.records.delete(record);
-					updates.recordMap.delete(record);
-					if (updates.records.size === 0) {
+				updatableState.uninit.set(dataSource, updatableState => {
+					updates.updatableStates.delete(updatableState);
+					updates.updatableStateMap.delete(updatableState);
+					if (updates.updatableStates.size === 0) {
 						toUpdate.delete(key);
 					}
 				});
 				const isRoot = !prototypes;
 				if (isRoot) {
 					prototypes = [dataSource];
-					recordMapItem.root = true;
+					updatableStateMapItem.root = true;
 				}
 				else {
 					const rootObj = prototypes[prototypes.length - 1];
-					if (!recordMapItem.prototypes) {
-						recordMapItem.prototypes = new Map();
+					if (!updatableStateMapItem.prototypes) {
+						updatableStateMapItem.prototypes = new Map();
 					}
-					const _prototypes = recordMapItem.prototypes.get(rootObj);
+					const _prototypes = updatableStateMapItem.prototypes.get(rootObj);
 					if (_prototypes) {
 						return;
 					}
-					recordMapItem.prototypes.set(rootObj, prototypes);
+					updatableStateMapItem.prototypes.set(rootObj, prototypes);
 				}
 
 				let proto = Object.getPrototypeOf(dataSource);
@@ -184,7 +184,7 @@ class Manager {
 					const observableProto = manager.observables.get(proto);
 					prototypes.unshift(proto);
 					if (observableProto != null && observableProto !== Object.prototype) {
-						observableProto[manager.$registerRead](record, key, prototypes);
+						observableProto[manager.$registerRead](updatableState, key, prototypes);
 						break;
 					}
 					proto = Object.getPrototypeOf(proto);
@@ -195,13 +195,13 @@ class Manager {
 				[key, manager.options.wholeObjectObserveKey].forEach(updKey => {
 					const updates = toUpdate.get(updKey);
 					if (updates) {
-						updates.records.forEach((record) => {
-							const recordMapItem = updates.recordMap.get(record);
-							if (recordMapItem.root) {
-								invalidateDeps(record);
+						updates.updatableStates.forEach((updatableState) => {
+							const updatableStateMapItem = updates.updatableStateMap.get(updatableState);
+							if (updatableStateMapItem.root) {
+								invalidateDeps(updatableState);
 							}
 							else {
-								const invalidateAll = Array.from(recordMapItem.prototypes.values())
+								const invalidateAll = Array.from(updatableStateMapItem.prototypes.values())
 								.some((prototypes) => {
 									const idx = prototypes.indexOf(obj) + 1;
 									const l = prototypes.length;
@@ -215,7 +215,7 @@ class Manager {
 									return invalidate;
 								});
 								if (invalidateAll) {
-									invalidateDeps(record);
+									invalidateDeps(updatableState);
 								}
 							}
 						});
@@ -245,11 +245,17 @@ class Manager {
 						return dataSource;
 					}
 
+					const propertyDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+
+					if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
+						return manager.makeUpdatable(propertyDescriptor.get, obj).call(obj);
+					}
+
 					if (manager.callStack.length) {
 						if (key === manager.$registerRead) {
 							return registerRead;
 						}
-						registerRead(manager.callStack[manager.callStack.length - 1].record, key);
+						registerRead(manager.callStack[manager.callStack.length - 1].updatableState, key);
 					}
 
 					if (key === manager.options.wholeObjectObserveKey) {
@@ -257,7 +263,7 @@ class Manager {
 					}
 
 					const val = obj[key];
-					if (val === Object(val) && typeof val !== "function") {
+					if (typeof val === "object") {
 						return manager.makeObservable(val);
 					}
 					return val;
@@ -291,60 +297,64 @@ class Manager {
 	* @return {UpdatableFunction}
 	*/
 	makeUpdatable (call, obj = null) {
+		if (call.updatableCall) {
+			return call;
+		}
 		const manager = this;
 		if (obj == null) {
 			obj = manager;
 		}
-		return function () {
-			let cacheByObject = manager.cache.get(obj);
-			let record;
-			if (cacheByObject) {
-				record = cacheByObject.get(call);
-			}
-			else {
-				cacheByObject = new Map();
-				manager.cache.set(obj, cacheByObject);
-			}
+		let updatableFunction;
+		let objectCallCache = manager.cache.get(obj);
 
-			if (!record) {
-				record = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
-				cacheByObject.set(call, record);
-			}
-			if (record.computing) {
-				console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
-				return undefined;
-			}
-			if (manager.callStack.length) {
-				record.deps.add(manager.callStack[manager.callStack.length - 1].record);
-			}
-
-			if (record.valid) {
-				return record.value;
-			}
-			record.computing = true;
-			record.uninit.forEach(uninit => uninit(record));
-			record.uninit.clear();
-
-			manager.callStack.push({obj, call, record});
-			try {
-				let context;
-				if (this) {
-					context = manager.observables.get(this);
+		if (objectCallCache) {
+			updatableFunction = objectCallCache.get(call);
+		}
+		else {
+			objectCallCache = new Map();
+			manager.cache.set(obj, objectCallCache);
+		}
+		if (!updatableFunction) {
+			const updatableState = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
+			updatableFunction = function () {
+				if (updatableState.computing) {
+					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+					return undefined;
 				}
-				else {
-					context = manager;
+				if (manager.callStack.length) {
+					updatableState.deps.add(manager.callStack[manager.callStack.length - 1].updatableState);
 				}
 
-				const value = call.call(context, context);
-				record.valid = true;
-				record.value = value;
-				return value;
-			}
-			finally {
-				record.computing = false;
-				manager.callStack.pop();
-			}
-		};
+				if (updatableState.valid) {
+					return updatableState.value;
+				}
+				updatableState.computing = true;
+				updatableState.uninit.forEach(uninit => uninit(updatableState));
+				updatableState.uninit.clear();
+
+				manager.callStack.push({obj, call, updatableState});
+				try {
+					let context;
+					if (this) {
+						context = manager.observables.get(this);
+					}
+					else {
+						context = manager;
+					}
+					const value = call.call(context, context);
+					updatableState.valid = true;
+					updatableState.value = value;
+					return value;
+				}
+				finally {
+					updatableState.computing = false;
+					manager.callStack.pop();
+				}
+			};
+			updatableFunction.updatableCall = call;
+			objectCallCache.set(call, updatableFunction);
+		}
+		return updatableFunction;
 	}
 	/**
 	* Создает вычисляемое свойство объекта
@@ -470,11 +480,38 @@ class Manager {
 /* harmony export (immutable) */ __webpack_exports__["Manager"] = Manager;
 
 
+// const aliases = {
+// 	"makeReaction": ["reaction", "observe"],
+// 	"makeObservable": ["observable"],
+// 	"makeUpdatable": ["updatable"],
+// 	"makeComputed": ["computed"]
+// };
+//
+// Object.keys(aliases).forEach(key => {
+// 	aliases[key].forEach(alias => {
+// 		Manager.prototype[alias] = Manager.prototype[key];
+// 	});
+// });
 
 Manager.default = new Manager();
 Manager.default.Manager = Manager;
 
 /* harmony default export */ __webpack_exports__["default"] = (Manager.default);
+const observable = (...args) => Manager.default.makeObservable(...args);
+/* harmony export (immutable) */ __webpack_exports__["observable"] = observable;
+
+const observe = (...args) => Manager.default.makeReaction(...args);
+/* harmony export (immutable) */ __webpack_exports__["observe"] = observe;
+
+const reaction = (...args) => Manager.default.makeReaction(...args);
+/* harmony export (immutable) */ __webpack_exports__["reaction"] = reaction;
+
+const computed = (...args) => Manager.default.makeComputed(...args);
+/* harmony export (immutable) */ __webpack_exports__["computed"] = computed;
+
+const updatable = (...args) => Manager.default.makeUpdatable(...args);
+/* harmony export (immutable) */ __webpack_exports__["updatable"] = updatable;
+
 
 /**
  * @typedef ManagerOptions
@@ -522,3 +559,4 @@ module.exports = __webpack_require__(0).default;
 /***/ })
 /******/ ]);
 });
+//# sourceMappingURL=active-data.js.map

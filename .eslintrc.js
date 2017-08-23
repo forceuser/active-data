@@ -137,6 +137,8 @@ module.exports = {
         "import/no-named-as-default": 2,
         // disabled because of https://github.com/benmosher/eslint-plugin-import/issues/275
         // "import/no-unresolved": [2, {commonjs: true}],
-        "import/order": 2
+        "import/order": 2,
+
+		"no-control-regex": 0
     }
 };

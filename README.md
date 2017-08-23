@@ -12,12 +12,12 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-active-data@1.0.37 minified file: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.0.37/active-data.min.js)
+active-data@1.0.38 minified file: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.0.38/active-data.min.js)
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/1.0.37/dist/active-data.min.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/1.0.38/dist/active-data.min.js">
 </script>
 ```
 
@@ -37,7 +37,7 @@ And then use **activeData** as global variable
 Run example with [runkit](https://npm.runkit.com/active-data)
 
 ```js
-import ad from "active-data";
+const ad = require("active-data");
 
 ad.setOptions({
 	immediateReaction: true // make recalculations for each change
@@ -63,6 +63,7 @@ ad.run(() => {
 	data.firstName = "Anakin";
 	data.welcomeMessage = "Welcome to dark side,";
 });
+
 ```
 
 ## Compatibility

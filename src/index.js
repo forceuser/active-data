@@ -179,7 +179,7 @@ export class Manager {
 					}
 
 					const val = obj[key];
-					if (val === Object(val) && typeof val !== "function") {
+					if (typeof val === "object") {
 						return manager.makeObservable(val);
 					}
 					return val;
@@ -415,7 +415,7 @@ export const observable = (...args) => Manager.default.makeObservable(...args);
 export const observe = (...args) => Manager.default.makeReaction(...args);
 export const reaction = (...args) => Manager.default.makeReaction(...args);
 export const computed = (...args) => Manager.default.makeComputed(...args);
-export const updatable = (...args) => Manager.default.makeUgpdatable(...args);
+export const updatable = (...args) => Manager.default.makeUpdatable(...args);
 
 /**
  * @typedef ManagerOptions

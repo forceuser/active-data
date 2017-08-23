@@ -14,7 +14,7 @@ module.exports = {
 		library: "activeData",
 		libraryTarget: "umd"
 	},
-	// devtool: "source-map",
+	devtool: "source-map",
 	// module: {
 	// 	rules: [{
 	// 		test: /\.js$/,
