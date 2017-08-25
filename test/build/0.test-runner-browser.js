@@ -1,5 +1,5 @@
-webpackJsonprunTest([0],Array(27).concat([
-/* 27 */
+webpackJsonprunTest([0],Array(28).concat([
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -37,14 +37,13 @@ function runTest(test) {
 	test("Check methods exists", t => {
 		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["a" /* observable */])({});
 		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["b" /* computed */])({}, "comp", () => {});
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["c" /* observe */])(() => {});
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["d" /* reaction */])(() => {});
-		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* updatable */])(() => {}, {});
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["c" /* reaction */])(() => {});
+		__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_src_index__["d" /* updatable */])(() => {}, {});
 		t.end();
 	});
 
 	test("Create observable", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		__WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(m.observables, "get");
 		const data = createTestData();
 		t.notOk(m.isObservable(data.d.d1.d11.d111));
@@ -67,14 +66,14 @@ function runTest(test) {
 		t.notOk(m.isObservable(d.arr.map));
 
 		const obsSrc1 = {};
-		t.equal(m.getObservableSource(m.makeObservable(obsSrc1)), obsSrc1);
+		t.equal(m.makeObservable(obsSrc1).$$dataSource, obsSrc1);
 		const obsSrc2 = Object.create(obsSrc1);
-		t.equal(m.getObservableSource(m.makeObservable(obsSrc2)), obsSrc2);
+		t.equal(m.makeObservable(obsSrc2).$$dataSource, obsSrc2);
 		t.end();
 	});
 
 	test("Create computed property", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		Object.assign(d, {
 			x: "x",
@@ -106,7 +105,7 @@ function runTest(test) {
 	});
 
 	test("Computed property lazyness", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		const comp = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(self => self.a + self.b);
 		m.makeComputed(d, "comp", comp);
@@ -123,7 +122,7 @@ function runTest(test) {
 	});
 
 	test("Create reaction function and unregister", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		d.a = 7;
 		d.z = {};
@@ -156,7 +155,7 @@ function runTest(test) {
 	});
 
 	test("Cross reference inside computed properties", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		m.makeComputed(d, "comp1", self => self.comp2);
 		m.makeComputed(d, "comp2", self => self.comp1);
@@ -167,7 +166,7 @@ function runTest(test) {
 			t.comment("│    returned value is undefined");
 			t.equal(a, undefined);
 			t.comment("│    correct warn message is printed");
-			t.equal(warnMessage, "Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+			t.equal(warnMessage, `Detected cross reference inside computed properties! "undefined" will be returned to prevent infinite loop`);
 		} finally {
 			console.warn.restore();
 		}
@@ -175,7 +174,7 @@ function runTest(test) {
 	});
 
 	test("Changing observable inside computed property", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		m.makeComputed(d, "comp1", self => self.a = 3);
 		m.makeComputed(d, "comp2", self => self.b = 2);
@@ -187,7 +186,7 @@ function runTest(test) {
 	});
 
 	test("Changing observable inside reaction function", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		t.comment("│    changing to the new value");
 		m.makeReaction(() => d.a = 3, false);
@@ -200,7 +199,7 @@ function runTest(test) {
 
 	test("Autorun on data change", t => {
 		t.timeoutAfter(3000);
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]();
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]();
 		const d = m.makeObservable(createTestData());
 		let runCount = 0;
 		m.makeReaction(() => {
@@ -224,7 +223,7 @@ function runTest(test) {
 
 	test("Immediate reaction option", t => {
 		t.timeoutAfter(3000);
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
 		const d = m.makeObservable(createTestData());
 		const reaction = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(() => {
 			d.a + d.b;
@@ -250,7 +249,7 @@ function runTest(test) {
 	});
 
 	test("Test disabled reaction", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true, enabled: false });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true, enabled: false });
 		const d = m.makeObservable(createTestData());
 		const reaction = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(() => {
 			d.a + d.b;
@@ -264,7 +263,7 @@ function runTest(test) {
 
 	test("Test disabled reaction - deferred", t => {
 		t.timeoutAfter(3000);
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ enabled: false });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ enabled: false });
 		const d = m.makeObservable(createTestData());
 		const reaction = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(() => {
 			d.a + d.b;
@@ -279,7 +278,7 @@ function runTest(test) {
 	});
 
 	test("Observable prototype", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
 		const src = { a: 1 };
 		const srcWithProto = Object.create(src);
 		const protoObs = m.makeObservable(src);
@@ -293,7 +292,7 @@ function runTest(test) {
 	});
 
 	test("Observable prototype - overriden property - reaction", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
 		function makeLongPrototypeChain(maxlength = 1, res = []) {
 			if (res.length >= maxlength) {
 				return res;
@@ -348,7 +347,7 @@ function runTest(test) {
 	});
 
 	test("Forked call stack and invalidation", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
 		const d = m.makeObservable(createTestData());
 		const comp = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(self => self.a + self.b);
 		m.makeComputed(d, "comp", comp);
@@ -368,7 +367,7 @@ function runTest(test) {
 	});
 
 	test("Whole object watcher", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true, wholeObjectObserveKey: "__watch" });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true, watchKey: "__watch" });
 		const s1 = {};
 		const o1 = m.makeObservable(s1);
 		const s2 = Object.create(s1);
@@ -389,7 +388,7 @@ function runTest(test) {
 	});
 
 	test("Getters and setters", t => {
-		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["f" /* Manager */]({ immediateReaction: true });
+		const m = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
 		const s1 = {
 			a: 1,
 			b: "count",
@@ -409,10 +408,38 @@ function runTest(test) {
 		t.equal(reaction.callCount, 3);
 		t.end();
 	});
+
+	test("Deep watch", t => {
+		const { reaction, observable } = new __WEBPACK_IMPORTED_MODULE_1_src_index__["e" /* Manager */]({ immediateReaction: true });
+		const srcProto = {
+			a: {
+				b: {
+					c: "c"
+				},
+				b1: "b1"
+			},
+			a1: "a1"
+		};
+		const $srcProto = observable(srcProto);
+		const src = Object.create(srcProto);
+		const $src = observable(src);
+
+		const r1 = __WEBPACK_IMPORTED_MODULE_0_sinon___default.a.spy(() => {
+			$src.$$watchDeep;
+		});
+		reaction(r1);
+
+		t.equal(r1.callCount, 1);
+		$srcProto.a.b.m = {};
+		t.equal(r1.callCount, 2);
+		t.comment("test nested observable objects and watchDeep");
+		$srcProto.a.b.m = $srcProto.a;
+		t.equal(r1.callCount, 3);
+		t.end();
+	});
 }
 
 /***/ }),
-/* 28 */,
 /* 29 */,
 /* 30 */,
 /* 31 */,
@@ -3704,7 +3731,8 @@ module.exports = {
 
 "use strict";
 /**
-* Реактивный менеджер данных, следящий за изменениями данных и выполняющий действия в ответ на эти изменения
+* Реактивный менеджер данных, следящий за изменениями данных
+* и выполняющий действия в ответ на эти изменения
 * Отслеживание происходит лениво, данные обновляются только когда они требуются
 *
 * @param {ManagerOptions} [options] Настройки менеджера
@@ -3719,11 +3747,18 @@ class Manager {
 		this.options = {
 			enabled: true,
 			immediateReaction: false,
-			wholeObjectObserveKey: "$$whole"
+			watchKey: "$$watch",
+			watchDeepKey: "$$watchDeep",
+			dataSourceKey: "$$dataSource"
 		};
 		this.callStack = [];
 		this.reactions = [];
 		this.setOptions(options);
+
+		this.observable = this.makeObservable.bind(this);
+		this.reaction = this.makeReaction.bind(this);
+		this.computed = this.makeComputed.bind(this);
+		this.updatable = this.makeUpdatable.bind(this);
 	}
 	/**
  * Динамически устанавливает настройки работы менеджера данных
@@ -3744,7 +3779,7 @@ class Manager {
 		if (!dataSource) {
 			return dataSource;
 		}
-		if (this.isObservable(dataSource)) {
+		if (manager.isObservable(dataSource)) {
 			return dataSource;
 		}
 		let observable = manager.observables.get(dataSource);
@@ -3763,40 +3798,55 @@ class Manager {
 				toUpdate.set(key, updates);
 				return updates;
 			};
-
+			let watchDeepSection = false;
 			const registerRead = (updatableState, key, prototypes) => {
-				// updatableState stores Updateble state
-				let updates = toUpdate.get(key);
+				let currentKey = key;
+				if (key === manager.options.watchDeepKey) {
+					if (watchDeepSection) {
+						return;
+					}
+					watchDeepSection = true;
+					Object.keys(dataSource).forEach(key => {
+						if (typeof dataSource[key] === "object") {
+							const obs = manager.makeObservable(dataSource[key]);
+							obs[manager.options.watchDeepKey];
+						}
+					});
+					currentKey = manager.options.watchKey;
+					watchDeepSection = false;
+				}
+
+				let updates = toUpdate.get(currentKey);
 				if (!updates) {
-					updates = initUpdates(key);
+					updates = initUpdates(currentKey);
 				}
 				updates.updatableStates.add(updatableState);
-				let updatableStateMapItem = updates.updatableStateMap.get(updatableState);
-				if (!updatableStateMapItem) {
-					updatableStateMapItem = {};
-					updates.updatableStateMap.set(updatableState, updatableStateMapItem);
+				let updatableStateEx = updates.updatableStateMap.get(updatableState);
+				if (!updatableStateEx) {
+					updatableStateEx = {};
+					updates.updatableStateMap.set(updatableState, updatableStateEx);
 				}
 				updatableState.uninit.set(dataSource, updatableState => {
 					updates.updatableStates.delete(updatableState);
 					updates.updatableStateMap.delete(updatableState);
 					if (updates.updatableStates.size === 0) {
-						toUpdate.delete(key);
+						toUpdate.delete(currentKey);
 					}
 				});
 				const isRoot = !prototypes;
 				if (isRoot) {
 					prototypes = [dataSource];
-					updatableStateMapItem.root = true;
+					updatableStateEx.root = true;
 				} else {
 					const rootObj = prototypes[prototypes.length - 1];
-					if (!updatableStateMapItem.prototypes) {
-						updatableStateMapItem.prototypes = new Map();
+					if (!updatableStateEx.prototypes) {
+						updatableStateEx.prototypes = new Map();
 					}
-					const _prototypes = updatableStateMapItem.prototypes.get(rootObj);
+					const _prototypes = updatableStateEx.prototypes.get(rootObj);
 					if (_prototypes) {
 						return;
 					}
-					updatableStateMapItem.prototypes.set(rootObj, prototypes);
+					updatableStateEx.prototypes.set(rootObj, prototypes);
 				}
 
 				let proto = Object.getPrototypeOf(dataSource);
@@ -3812,15 +3862,15 @@ class Manager {
 			};
 
 			const updateProperty = (obj, key) => {
-				[key, manager.options.wholeObjectObserveKey].forEach(updKey => {
+				[key, manager.options.watchKey].forEach(updKey => {
 					const updates = toUpdate.get(updKey);
 					if (updates) {
 						updates.updatableStates.forEach(updatableState => {
-							const updatableStateMapItem = updates.updatableStateMap.get(updatableState);
-							if (updatableStateMapItem.root) {
+							const updatableStateEx = updates.updatableStateMap.get(updatableState);
+							if (updatableStateEx.root) {
 								invalidateDeps(updatableState);
 							} else {
-								const invalidateAll = Array.from(updatableStateMapItem.prototypes.values()).some(prototypes => {
+								const invalidateAll = Array.from(updatableStateEx.prototypes.values()).some(prototypes => {
 									const idx = prototypes.indexOf(obj) + 1;
 									const l = prototypes.length;
 									let invalidate = true;
@@ -3840,8 +3890,6 @@ class Manager {
 					}
 				});
 
-				// toUpdate.delete(key);
-
 				if (!manager.inRunSection) {
 					if (manager.options.immediateReaction) {
 						manager.run();
@@ -3856,7 +3904,7 @@ class Manager {
 					if (key === manager.$isObservableSymbol) {
 						return true;
 					}
-					if (key === manager.$dataSource) {
+					if (key === manager.options.dataSourceKey) {
 						return dataSource;
 					}
 
@@ -3873,7 +3921,7 @@ class Manager {
 						registerRead(manager.callStack[manager.callStack.length - 1].updatableState, key);
 					}
 
-					if (key === manager.options.wholeObjectObserveKey) {
+					if (key === manager.options.watchKey || key === manager.options.watchDeepKey) {
 						return context;
 					}
 
@@ -3932,7 +3980,7 @@ class Manager {
 			const updatableState = { valid: false, value: undefined, deps: new Set(), uninit: new Map() };
 			updatableFunction = function () {
 				if (updatableState.computing) {
-					console.warn("Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+					console.warn(`Detected cross reference inside computed properties!` + ` "undefined" will be returned to prevent infinite loop`);
 					return undefined;
 				}
 				if (manager.callStack.length) {
@@ -3989,13 +4037,14 @@ class Manager {
  * функцию если ее результат стал невалидным
  *
  * @param {Function} call
- *	Функция для которой будет создана {@link UpdatableFunction}
- *	Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
+ * Функция для которой будет создана {@link UpdatableFunction}
+ * Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
  * @param {Boolean} run
- *	Выполнить первый запуск реации после ее регистрации.
- *	В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
- *	будет запускатся либо сразу либо по таймауту.
- *	Если {@link ManagerOptions.enabled} == false то реакция не будет выполнятся даже при установленном параметре run
+ * Выполнить первый запуск реации после ее регистрации.
+ * В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
+ * будет запускатся либо сразу либо по таймауту.
+ * Если {@link ManagerOptions.enabled} == false то реакция не будет
+ * выполнятся даже при установленном параметре run
  * @return {ReactionHandler} Управляющий объект для зарегестрированной реакции
  */
 	makeReaction(call, run = true) {
@@ -4032,9 +4081,9 @@ class Manager {
  * Запускает все автозапускаемые функции которые помечены как невалидные
  *
  * @param {Function} [action]
- *	Действия выполняемые внутри вызова этой функции
- * 	не будут вызывать неотложный запуск реакций.
- * 	Реакции будут запущены только после выхода из функции action
+ * Действия выполняемые внутри вызова этой функции
+ * не будут вызывать неотложный запуск реакций.
+ * Реакции будут запущены только после выхода из функции action
  */
 	run(action) {
 		if (!this.options.enabled) {
@@ -4056,7 +4105,9 @@ class Manager {
  * Запускает все {@link UpdatableFunction} которые помечены как невалидные
  * В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
  *
- * @param {Function} [action] Изменения {@link Observable} выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
+ * @param {Function} [action] Изменения {@link Observable} выполняемые внутри
+ * вызова этой функции не будут вызывать неотложный запуск реакций.
+ * Реакции будут запускатся после заданного таймаута
  * @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
  */
 	runDeferred(action) {
@@ -4075,58 +4126,34 @@ class Manager {
 			this.inRunSection = false;
 		}
 	}
-	/**
- * Возвращает исходный объект на основе которого был создан {@link Observable}
- *
- * @param {Observable} observable
- *	{@link Observable} для которого необходимо получить исходный объект
- * @return {(Object|Array)} Исходный обьект на основе которого был создан {@link Observable}
- */
-	getObservableSource(observable) {
-		return observable[this.$dataSource];
-	}
 }
-/* harmony export (immutable) */ __webpack_exports__["f"] = Manager;
+/* harmony export (immutable) */ __webpack_exports__["e"] = Manager;
 
-
-// const aliases = {
-// 	"makeReaction": ["reaction", "observe"],
-// 	"makeObservable": ["observable"],
-// 	"makeUpdatable": ["updatable"],
-// 	"makeComputed": ["computed"]
-// };
-//
-// Object.keys(aliases).forEach(key => {
-// 	aliases[key].forEach(alias => {
-// 		Manager.prototype[alias] = Manager.prototype[key];
-// 	});
-// });
 
 Manager.default = new Manager();
 Manager.default.Manager = Manager;
 
 /* unused harmony default export */ var _unused_webpack_default_export = (Manager.default);
-const observable = (...args) => Manager.default.makeObservable(...args);
+const observable = Manager.default.observable;
 /* harmony export (immutable) */ __webpack_exports__["a"] = observable;
 
-const observe = (...args) => Manager.default.makeReaction(...args);
-/* harmony export (immutable) */ __webpack_exports__["c"] = observe;
+const reaction = Manager.default.reaction;
+/* harmony export (immutable) */ __webpack_exports__["c"] = reaction;
 
-const reaction = (...args) => Manager.default.makeReaction(...args);
-/* harmony export (immutable) */ __webpack_exports__["d"] = reaction;
-
-const computed = (...args) => Manager.default.makeComputed(...args);
+const computed = Manager.default.computed;
 /* harmony export (immutable) */ __webpack_exports__["b"] = computed;
 
-const updatable = (...args) => Manager.default.makeUpdatable(...args);
-/* harmony export (immutable) */ __webpack_exports__["e"] = updatable;
+const updatable = Manager.default.updatable;
+/* harmony export (immutable) */ __webpack_exports__["d"] = updatable;
 
 
 /**
  * @typedef ManagerOptions
  * @name ManagerOptions
  * @type {Object}
- * @property {Boolean} immediateReaction - Запускать реакции сразу после изменения данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
+ * @property {Boolean} immediateReaction
+ * Запускать реакции сразу после изменения
+ * данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
  * @property {Boolean} enabled - Активен ли менеджер данных (по-умолчнию true)
  */
 

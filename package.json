@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "1.0.40",
+	"version": "1.0.41",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
 	"module": "index.js",
@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"test": "eslint . && webpack --hide-modules --config ./webpack/test.config.js && node ./test/build/test-runner-node.js && istanbul report --dir ./coverage/  --include ./coverage/coverage.json text html",
+		"test-debug": "eslint . && webpack --hide-modules --config ./webpack/test.config.js && node --inspect-brk ./test/build/test-runner-node.js && istanbul report --dir ./coverage/  --include ./coverage/coverage.json text html",
 		"fix": "eslint --fix .",
 		"coverage": "codecov",
 		"serve": "http-server -a localhost -p 8061",

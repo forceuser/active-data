@@ -1,6 +1,6 @@
 import sinon from "sinon";
 import {Manager} from "src/index";
-import {observe, observable, computed, reaction, updatable} from "src/index";
+import {observable, computed, reaction, updatable} from "src/index";
 
 function createTestData () {
 	return {
@@ -27,7 +27,6 @@ export default function runTest (test) {
 	test("Check methods exists", t => {
 		observable({});
 		computed({}, "comp", () => {});
-		observe(() => {});
 		reaction(() => {});
 		updatable(() => {}, {});
 		t.end();
@@ -57,9 +56,9 @@ export default function runTest (test) {
 		t.notOk(m.isObservable(d.arr.map));
 
 		const obsSrc1 = {};
-		t.equal(m.getObservableSource(m.makeObservable(obsSrc1)), obsSrc1);
+		t.equal(m.makeObservable(obsSrc1).$$dataSource, obsSrc1);
 		const obsSrc2 = Object.create(obsSrc1);
-		t.equal(m.getObservableSource(m.makeObservable(obsSrc2)), obsSrc2);
+		t.equal(m.makeObservable(obsSrc2).$$dataSource, obsSrc2);
 		t.end();
 	});
 
@@ -157,7 +156,7 @@ export default function runTest (test) {
 			t.comment("│    returned value is undefined");
 			t.equal(a, undefined);
 			t.comment("│    correct warn message is printed");
-			t.equal(warnMessage, "Detected cross reference inside computed properties! undefined will be returned to prevent infinite loop");
+			t.equal(warnMessage, `Detected cross reference inside computed properties! "undefined" will be returned to prevent infinite loop`);
 		}
 		finally {
 			console.warn.restore();
@@ -362,7 +361,7 @@ export default function runTest (test) {
 	});
 
 	test("Whole object watcher", t => {
-		const m = new Manager({immediateReaction: true, wholeObjectObserveKey: "__watch"});
+		const m = new Manager({immediateReaction: true, watchKey: "__watch"});
 		const s1 = {};
 		const o1 = m.makeObservable(s1);
 		const s2 = Object.create(s1);
@@ -381,6 +380,7 @@ export default function runTest (test) {
 		t.equal(reaction.callCount, 3);
 		t.end();
 	});
+
 
 
 	test("Getters and setters", t => {
@@ -402,6 +402,35 @@ export default function runTest (test) {
 		t.equal(reaction.callCount, 2);
 		o1.b = "mark";
 		t.equal(reaction.callCount, 3);
+		t.end();
+	});
+
+	test("Deep watch", t => {
+		const {reaction, observable} = new Manager({immediateReaction: true});
+		const srcProto = {
+			a: {
+				b: {
+					c: "c"
+				},
+				b1: "b1"
+			},
+			a1: "a1"
+		};
+		const $srcProto = observable(srcProto);
+		const src = Object.create(srcProto);
+		const $src = observable(src);
+
+		const r1 = sinon.spy(() => {
+			$src.$$watchDeep;
+		});
+		reaction(r1);
+
+		t.equal(r1.callCount, 1);
+		$srcProto.a.b.m = {};
+		t.equal(r1.callCount, 2);
+		t.comment("test nested observable objects and watchDeep");
+		$srcProto.a.b.m = $srcProto.a;
+		t.equal(r1.callCount, 3);
 		t.end();
 	});
 }

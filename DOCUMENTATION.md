@@ -11,7 +11,6 @@
     -   [isObservable](#isobservable)
     -   [run](#run)
     -   [runDeferred](#rundeferred)
-    -   [getObservableSource](#getobservablesource)
 -   [ManagerOptions](#manageroptions)
 -   [ReactionHandler](#reactionhandler)
 -   [Observable](#observable)
@@ -19,7 +18,8 @@
 
 ## Manager
 
-Реактивный менеджер данных, следящий за изменениями данных и выполняющий действия в ответ на эти изменения
+Реактивный менеджер данных, следящий за изменениями данных
+и выполняющий действия в ответ на эти изменения
 Отслеживание происходит лениво, данные обновляются только когда они требуются
 
 **Parameters**
@@ -80,7 +80,8 @@ Returns **[UpdatableFunction](#updatablefunction)**
 -   `run` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Выполнить первый запуск реации после ее регистрации.
     В зависимости от указанной опции [ManagerOptions.immediateReaction](ManagerOptions.immediateReaction)
     будет запускатся либо сразу либо по таймауту.
-    Если [ManagerOptions.enabled](ManagerOptions.enabled) == false то реакция не будет выполнятся даже при установленном параметре run (optional, default `true`)
+    Если [ManagerOptions.enabled](ManagerOptions.enabled) == false то реакция не будет
+    выполнятся даже при установленном параметре run (optional, default `true`)
 
 Returns **[ReactionHandler](#reactionhandler)** Управляющий объект для зарегестрированной реакции
 
@@ -99,8 +100,8 @@ Returns **[ReactionHandler](#reactionhandler)** Управляющий объе�
 **Parameters**
 
 -   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Действия выполняемые внутри вызова этой функции
-    	не будут вызывать неотложный запуск реакций.
-    	Реакции будут запущены только после выхода из функции action
+    не будут вызывать неотложный запуск реакций.
+    Реакции будут запущены только после выхода из функции action
 
 ### runDeferred
 
@@ -109,24 +110,17 @@ Returns **[ReactionHandler](#reactionhandler)** Управляющий объе�
 
 **Parameters**
 
--   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Изменения [Observable](#observable) выполняемые внутри вызова этой функции не будут вызывать неотложный запуск реакций. Реакции будут запускатся после заданного таймаута
+-   `action` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)?** Изменения [Observable](#observable) выполняемые внутри
+    вызова этой функции не будут вызывать неотложный запуск реакций.
+    Реакции будут запускатся после заданного таймаута
 -   `timeout` **[Number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)** Таймаут запуска выполнения очереди зарегестрированых реакций (optional, default `0`)
-
-### getObservableSource
-
-Возвращает исходный объект на основе которого был создан [Observable](#observable)
-
-**Parameters**
-
--   `observable` **[Observable](#observable)** [Observable](#observable) для которого необходимо получить исходный объект
-
-Returns **([Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object) \| [Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array))** Исходный обьект на основе которого был создан [Observable](#observable)
 
 ## ManagerOptions
 
 **Properties**
 
--   `immediateReaction` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Запускать реакции сразу после изменения данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
+-   `immediateReaction` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Запускать реакции сразу после изменения
+    данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
 -   `enabled` **[Boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Активен ли менеджер данных (по-умолчнию true)
 
 ## ReactionHandler

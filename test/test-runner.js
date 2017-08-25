@@ -7,21 +7,23 @@ import fs from "fs-promise";
 import runTest from "./run-test";
 
 async function run () {
+	await fs.remove("./coverage");
 	const files = (await globby(`./test/unit-tests/**/*.js`)).map(path => path.toString().replace("./test/unit-tests/", ""));
 	let success = true;
+	let $faucet = faucet();
 	for (const fileName of files) {
 		await new Promise(async (resolve) => {
 			runTest({
 				fileName,
-				middleware: [faucet()],
+				middleware: [$faucet],
 				ondata: (data) => {
 					process.stdout.write(data);
 				},
 				onend: (tape) => {
-					resolve();
 					if (tape._exitCode !== 0) {
 						success = false;
 					}
+					resolve();
 				}
 			});
 		});
@@ -29,8 +31,7 @@ async function run () {
 	if (!success) {
 		process.exit(1);
 	}
-
-	await fs.remove("./coverage");
+	console.log(`\n==== CODE COVERAGE ====\n`);
 	await fs.mkdirs("./coverage");
 	await fs.writeFile(`./coverage/coverage.json`, JSON.stringify(global.__coverage__ || {}), "utf-8");
 }
