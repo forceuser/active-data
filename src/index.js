@@ -1,3 +1,5 @@
+const maxIterations = 10;
+
 /**
 * Реактивный менеджер данных, следящий за изменениями данных
 * и выполняющий действия в ответ на эти изменения
@@ -54,6 +56,8 @@ export class Manager {
 		if (!observable) {
 			const toUpdate = new Map();
 			const invalidateDeps = (updatableState) => {
+				manager.valid = false;
+				updatableState.invalidIteration = true;
 				if (updatableState.valid) {
 					updatableState.valid = false;
 					updatableState.deps.forEach(updatableState => invalidateDeps(updatableState));
@@ -204,10 +208,6 @@ export class Manager {
 					return val;
 				},
 				set: (obj, key, val) => {
-					if (manager.callStack && manager.callStack.length) {
-						throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
-					}
-
 					if (val !== obj[key] || (Array.isArray(obj) && key === "length")) {
 						obj[key] = val;
 						updateProperty(obj, key);
@@ -250,6 +250,7 @@ export class Manager {
 			manager.cache.set(obj, objectCallCache);
 		}
 		if (!updatableFunction) {
+			manager.valid = false;
 			const updatableState = {valid: false, value: undefined, deps: new Set(), uninit: new Map()};
 			updatableFunction = function () {
 				if (updatableState.computing) {
@@ -278,8 +279,9 @@ export class Manager {
 					else {
 						context = manager;
 					}
+					updatableState.invalidIteration = false;
 					const value = call.call(context, context);
-					updatableState.valid = true;
+					updatableState.valid = !updatableState.invalidIteration; // check if it was invalidated inside call
 					updatableState.value = value;
 					return value;
 				}
@@ -373,7 +375,15 @@ export class Manager {
 				action();
 			}
 			this.runScheduled = false;
-			this.reactions.forEach(updatable => updatable());
+			let iterations = 0;
+			while (!this.valid) {
+				this.valid = true;
+				if (iterations > maxIterations) {
+					throw new Error("Max iterations exceeded!");
+				}
+				iterations++;
+				this.reactions.forEach(updatable => updatable());
+			}
 			typeof this.onAfterRun === "function" && this.onAfterRun();
 		}
 		finally {

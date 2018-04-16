@@ -170,20 +170,32 @@ export default function runTest (test) {
 		m.makeComputed(d, "comp1", self => self.a = 3);
 		m.makeComputed(d, "comp2", self => self.b = 2);
 		t.comment("│    changing to the new value");
-		t.throws(() => d.comp1);
+		t.doesNotThrow(() => d.comp1);
 		t.comment("│    changing to the same value");
-		t.throws(() => d.comp2);
+		t.doesNotThrow(() => d.comp2);
 		t.end();
 	});
 
-	test("Changing observable inside reaction function", t => {
+	test("Changing observable inside reaction function - positive", t => {
 		const m = new Manager();
 		const d = m.makeObservable(createTestData());
 		t.comment("│    changing to the new value");
 		m.makeReaction(() => d.a = 3, false);
-		t.throws(() => m.run());
+		t.doesNotThrow(() => m.run());
 		t.comment("│    changing to the same value");
 		m.makeReaction(() => d.b = 2, false);
+		t.doesNotThrow(() => m.run());
+		t.equal(d.a, 3);
+		t.equal(d.b, 2);
+		t.end();
+	});
+
+	test("Changing observable inside reaction function - negative", t => {
+		const m = new Manager({immediateReaction: false});
+		const d = m.makeObservable(createTestData());
+		t.comment("│    making loop inside reaction");
+		m.makeReaction(() => d.a = d.a + 2);
+		t.equal(d.a, 1);
 		t.throws(() => m.run());
 		t.end();
 	});

@@ -93,6 +93,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var maxIterations = 10;
+
 /**
 * Реактивный менеджер данных, следящий за изменениями данных
 * и выполняющий действия в ответ на эти изменения
@@ -160,6 +162,8 @@ var Manager = function () {
 			if (!observable) {
 				var toUpdate = new Map();
 				var invalidateDeps = function invalidateDeps(updatableState) {
+					manager.valid = false;
+					updatableState.invalidIteration = true;
 					if (updatableState.valid) {
 						updatableState.valid = false;
 						updatableState.deps.forEach(function (updatableState) {
@@ -308,10 +312,6 @@ var Manager = function () {
 						return val;
 					},
 					set: function set(obj, key, val) {
-						if (manager.callStack && manager.callStack.length) {
-							throw new Error("Changing observable objects is restricted inside computed properties and reaction functions!");
-						}
-
 						if (val !== obj[key] || Array.isArray(obj) && key === "length") {
 							obj[key] = val;
 							updateProperty(obj, key);
@@ -358,6 +358,7 @@ var Manager = function () {
 				manager.cache.set(obj, objectCallCache);
 			}
 			if (!updatableFunction) {
+				manager.valid = false;
 				var updatableState = { valid: false, value: undefined, deps: new Set(), uninit: new Map() };
 				updatableFunction = function updatableFunction() {
 					if (updatableState.computing) {
@@ -385,8 +386,9 @@ var Manager = function () {
 						} else {
 							context = manager;
 						}
+						updatableState.invalidIteration = false;
 						var value = call.call(context, context);
-						updatableState.valid = true;
+						updatableState.valid = !updatableState.invalidIteration; // check if it was invalidated inside call
 						updatableState.value = value;
 						return value;
 					} finally {
@@ -493,9 +495,17 @@ var Manager = function () {
 					action();
 				}
 				this.runScheduled = false;
-				this.reactions.forEach(function (updatable) {
-					return updatable();
-				});
+				var iterations = 0;
+				while (!this.valid) {
+					this.valid = true;
+					if (iterations > maxIterations) {
+						throw new Error("Max iterations exceeded!");
+					}
+					iterations++;
+					this.reactions.forEach(function (updatable) {
+						return updatable();
+					});
+				}
 				typeof this.onAfterRun === "function" && this.onAfterRun();
 			} finally {
 				this.inRunSection = false;
