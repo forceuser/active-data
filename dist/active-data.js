@@ -155,6 +155,10 @@ var Manager = function () {
 			if (!dataSource) {
 				return dataSource;
 			}
+			if (dataSource.constructor !== Object && dataSource.constructor !== Array) {
+				return dataSource;
+			}
+
 			if (manager.isObservable(dataSource)) {
 				return dataSource;
 			}
