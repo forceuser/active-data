@@ -12,12 +12,12 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-active-data@1.0.44 minified file: [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.0.44/active-data.min.js)
+active-data@1.1.0 : [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.1.0/active-data.js)
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/1.0.44/dist/active-data.min.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/1.1.0/dist/active-data.js">
 </script>
 ```
 
@@ -40,13 +40,13 @@ Run example with [runkit](https://npm.runkit.com/active-data)
 const ad = require("active-data");
 
 ad.setOptions({
-	immediateReaction: true // make recalculations for each change
+	immediateReaction: true, // make recalculations for each change
 });
 
 const data = ad.makeObservable({
 	welcomeMessage: "Hello,",
 	firstName: "Luke",
-	lastName: "Skywalker"
+	lastName: "Skywalker",
 });
 
 ad.makeComputed(data, "fullName", self => `${self.firstName} ${self.lastName}`);

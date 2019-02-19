@@ -9,8 +9,8 @@ import runTest from "./run-test";
 async function run () {
 	await fs.remove("./coverage");
 	const files = (await globby(`./test/unit-tests/**/*.js`)).map(path => path.toString().replace("./test/unit-tests/", ""));
+	const $faucet = faucet();
 	let success = true;
-	let $faucet = faucet();
 	for (const fileName of files) {
 		await new Promise(async (resolve) => {
 			runTest({
@@ -24,7 +24,7 @@ async function run () {
 						success = false;
 					}
 					resolve();
-				}
+				},
 			});
 		});
 	}
