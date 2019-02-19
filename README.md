@@ -12,12 +12,12 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-active-data@1.1.3 : [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.1.3/active-data.js)
+active-data@1.1.4 : [active-data.min.js](https://github.com/forceuser/active-data/releases/download/1.1.4/active-data.js)
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/1.1.3/dist/active-data.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/1.1.4/dist/active-data.js">
 </script>
 ```
 
