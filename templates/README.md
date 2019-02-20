@@ -14,7 +14,7 @@ npm i active-data --save
 
 [active-data.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.js)
 
-[active-data.modern.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.modern.js) *for modern browsers (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
 #### Or just load from CDN
 
@@ -23,7 +23,7 @@ npm i active-data --save
 </script>
 ```
 
-*if you need only modern browsers*
+*if you need only modern browsers use script below:*
 
 ```html
 <script src="//cdn.rawgit.com/forceuser/active-data/{{version}}/dist/active-data.modern.js">
