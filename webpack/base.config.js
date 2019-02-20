@@ -10,17 +10,14 @@ const alias = Object.keys(ma).reduce((acc, key) => (acc[key] = path.resolve(__di
 
 module.exports = (env = {}) => {
 	return ({
-		entry: [
-			// "@babel/polyfill",
-			`./src/active-data.js`,
-		],
+		entry: "./src/active-data.js",
 		output: {
 			path: path.resolve(__dirname, "../dist"),
-			filename: `[name]${process.env.BROWSERSLIST_ENV === "modern" ? ".modern" : ""}.js`,
+			filename: `active-data${process.env.BROWSERSLIST_ENV === "modern" ? ".modern" : ""}.js`,
 			library: "activeData",
 			libraryExport: "default",
 			libraryTarget: "umd",
-			publicPath: `/js/`,
+			// publicPath: `/js/`,
 			globalObject: "typeof self !== 'undefined' ? self : this",
 		},
 		resolve: {

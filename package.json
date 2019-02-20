@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "1.1.11",
+	"version": "1.1.12",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
 	"module": "src/active-data.js",
@@ -104,7 +104,7 @@
 		"terser-webpack-plugin": "^1.2.2",
 		"uglifyjs-webpack-plugin": "^2.0.1",
 		"universal-url": "^2.0.0",
-		"va-release": "^1.0.29",
+		"va-release": "^1.0.34",
 		"webpack": "4.20.2",
 		"webpack-bundle-analyzer": "^3.0.3",
 		"webpack-cli": "3.1.1",

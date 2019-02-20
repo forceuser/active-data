@@ -19,14 +19,14 @@ npm i active-data --save
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/{{version}}/dist/active-data.js">
+<script src="//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.js" integrity="{{#ssri}}../dist/active-data.js{{/ssri}}" crossorigin="anonymous">
 </script>
 ```
 
 *if you need only modern browsers use script below:*
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/{{version}}/dist/active-data.modern.js">
+<script src="//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.modern.js" integrity="{{#ssri}}../dist/active-data.modern.js{{/ssri}}" crossorigin="anonymous">
 </script>
 ```
 
