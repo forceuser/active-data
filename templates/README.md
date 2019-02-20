@@ -23,7 +23,7 @@ npm i active-data --save
 </script>
 ```
 
-*if you need only modern browsers use script below:*
+*if you need only modern browsers then use script below:*
 
 ```html
 <script src="//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.modern.js" integrity="{{#ssri}}../dist/active-data.modern.js{{/ssri}}" crossorigin="anonymous">
@@ -33,10 +33,10 @@ npm i active-data --save
 And then use **activeData** as global variable
 ```html
 <script>
-    const data = activeData.makeObservable({c: 1});
-    activeData.makeAutorun(() => {
-        document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
-    });
+	data = activeData.makeObservable({c: 1});
+	activeData.makeReaction(() => {
+		document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
+	});
 </script>
 ```
 ## [Documentation](./DOCUMENTATION.md)
@@ -53,9 +53,9 @@ Run example with [runkit](https://npm.runkit.com/active-data)
 
 #### Browsers
 
-Chrome | Edge | Firefox | Internet Explorer | Opera | Safari
--------|------|---------|-------------------|-------|-------
-49 | 12 | 18 | *No support* | 36 | 10
+| Chrome | Edge | Firefox | Internet Explorer | Opera | Safari |
+| ------ | ---- | ------- | ----------------- | ----- | ------ |
+| 49     | 12   | 18      | *No support*      | 36    | 10     |
 
 #### Servers/runtimes
 

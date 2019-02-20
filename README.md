@@ -12,31 +12,31 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@1.1.12](https://github.com/forceuser/active-data/releases/download/1.1.12/active-data.js)
+[active-data.js@1.1.13](https://github.com/forceuser/active-data/releases/download/1.1.13/active-data.js)
 
-[active-data.modern.js@1.1.12](https://github.com/forceuser/active-data/releases/download/1.1.12/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@1.1.13](https://github.com/forceuser/active-data/releases/download/1.1.13/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@1.1.12/dist/active-data.js" integrity="sha512-91e/48S4sxqQsjewkz6233fVvecUWCTf5nnF/nsC6y5/g6ytVYemHbYnQO11Hbw3vvi3zk0Os7RjZN1F+dpvVQ==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@1.1.13/dist/active-data.js" integrity="sha512-91e/48S4sxqQsjewkz6233fVvecUWCTf5nnF/nsC6y5/g6ytVYemHbYnQO11Hbw3vvi3zk0Os7RjZN1F+dpvVQ==" crossorigin="anonymous">
 </script>
 ```
 
-*if you need only modern browsers use script below:*
+*if you need only modern browsers then use script below:*
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@1.1.12/dist/active-data.modern.js" integrity="sha512-FbsR8g30v8jRxHKl/LmEbZDfZ0N7puQ85VBgzGjJeOgaI7IzEMk8LV13uo1rX9D3EO18rHxTEkyKnJ/w9F2W2w==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@1.1.13/dist/active-data.modern.js" integrity="sha512-FbsR8g30v8jRxHKl/LmEbZDfZ0N7puQ85VBgzGjJeOgaI7IzEMk8LV13uo1rX9D3EO18rHxTEkyKnJ/w9F2W2w==" crossorigin="anonymous">
 </script>
 ```
 
 And then use **activeData** as global variable
 ```html
 <script>
-    const data = activeData.makeObservable({c: 1});
-    activeData.makeAutorun(() => {
-        document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
-    });
+	data = activeData.makeObservable({c: 1});
+	activeData.makeReaction(() => {
+		document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
+	});
 </script>
 ```
 ## [Documentation](./DOCUMENTATION.md)
@@ -68,7 +68,7 @@ ad.makeReaction(() => {
 data.firstName = "Leia"; // will print "Hello, Leia Skywalker"
 
 ad.run(() => {
-	// group changes and run autorun function only at the end
+	// group changes together and run reaction functions only at the end
 	data.firstName = "Anakin";
 	data.welcomeMessage = "Welcome to dark side,";
 });
@@ -79,9 +79,9 @@ ad.run(() => {
 
 #### Browsers
 
-Chrome | Edge | Firefox | Internet Explorer | Opera | Safari
--------|------|---------|-------------------|-------|-------
-49 | 12 | 18 | *No support* | 36 | 10
+| Chrome | Edge | Firefox | Internet Explorer | Opera | Safari |
+| ------ | ---- | ------- | ----------------- | ----- | ------ |
+| 49     | 12   | 18      | *No support*      | 36    | 10     |
 
 #### Servers/runtimes
 

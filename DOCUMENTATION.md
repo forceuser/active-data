@@ -27,77 +27,74 @@
 
 ## Manager
 
-Реактивный менеджер данных, следящий за изменениями данных
-и выполняющий действия в ответ на эти изменения
-Отслеживание происходит лениво, данные обновляются только когда они требуются
+Reactive data manager that observes data changes and performs actions in response to these changes.
+Observation is lazy, data is updated only when required.
 
 ### Parameters
 
--   `options` **[ManagerOptions][23]?** Настройки менеджера
+-   `options` **[ManagerOptions][23]?** Manager options
 
 ### setOptions
 
-Динамически устанавливает настройки работы менеджера данных
+Dynamically sets the options of the data manager
 
 #### Parameters
 
--   `options` **[ManagerOptions][23]?** Настройки менеджера (optional, default `{}`)
+-   `options` **[ManagerOptions][23]?** Manager options (optional, default `{}`)
 
 ### makeObservable
 
-Создает [Observable][21] объект для указанного источника данный
+Creates [Observable][21] object for the specified dataSource
 
 #### Parameters
 
--   `dataSource` **([Object][24] \| [Array][25])** источник данных
+-   `dataSource` **([Object][24] \| [Array][25])** data source
 
-Returns **[Observable][26]** отслеживаемый объект
+Returns **[Observable][26]** observable object
 
 ### makeUpdatable
 
-Создает [UpdatableFunction][22]
-Используется в основном для внутренних целей
+Creates [UpdatableFunction][22]
+Used for internal purposes
 
 #### Parameters
 
--   `call` **[Function][27]** Функция для которой будет создана [UpdatableFunction][22]
+-   `call` **[Function][27]** function that will be called from [UpdatableFunction][22]
 -   `settings`   (optional, default `{}`)
--   `obj` **[Object][24]** Если `call` это метод объекта необходимо указать связанный объект
+-   `obj` **[Object][24]** Specify obj if `call` is the method of the obj
 
 Returns **[UpdatableFunction][28]** 
 
 ### makeComputed
 
-Создает вычисляемое свойство объекта
+Creates computed property
 
 #### Parameters
 
--   `obj` **[Object][24]** Объект для которого будет создано вычисляемое свойство
--   `key` **[String][29]** Имя вычисляемого свойства свойства
--   `callOnGet` **[Function][27]** Функция которая будет вычислятся при доступе к свойству
--   `callOnSet` **[Function][27]?** Функция которая будет выполнятся при установке значения свойства
+-   `obj` **[Object][24]** The object for which the calculated property will be created
+-   `key` **[String][29]** Name of calculated property
+-   `callOnGet` **[Function][27]** The function to be executed when accessing the property
+-   `callOnSet` **[Function][27]?** The function that will be executed when setting the value of the property
 
 ### makeReaction
 
-Создает [UpdatableFunction][22] и помещает ее в список для проверки
-на валидность при изменении данных. Менеджер автозапускает эту
-функцию если ее результат стал невалидным
+Creates [UpdatableFunction][22] that will be automatically
+executed when one of it's dependencies are changed
 
 #### Parameters
 
--   `call` **[Function][27]** Функция для которой будет создана [UpdatableFunction][22]
-    Она будет автозапускатся при изменении [Observable][21] данных использованых при ее вычислении
--   `run` **[Boolean][30]** Выполнить первый запуск реации после ее регистрации.
-    В зависимости от указанной опции [ManagerOptions.immediateReaction][31]
-    будет запускатся либо сразу либо по таймауту.
-    Если [ManagerOptions.enabled][32] == false то реакция не будет
-    выполнятся даже при установленном параметре run (optional, default `true`)
+-   `call` **[Function][27]** Function to call [UpdatableFunction][22]
+    'call' will be executed when some of [Observable][21] that was used on previous call
+    are changed
+-   `run` **[Boolean][30]** Run function immediately after it's registration
+    If [ManagerOptions.immediateReaction][31] is not set
+    then it will be called on the next tick. (optional, default `true`)
 
-Returns **[UpdatableFunction][28]** Управляющий объект для зарегестрированной реакции
+Returns **[UpdatableFunction][28]** 
 
 ### isObservable
 
-Проверяет является ли объект наблюдаемым
+Checks if the object is [Observable][21]
 
 #### Parameters
 
@@ -105,25 +102,25 @@ Returns **[UpdatableFunction][28]** Управляющий объект для �
 
 ### run
 
-Запускает все автозапускаемые функции которые помечены как невалидные
+Executes all reactions that marked as invalid
 
 #### Parameters
 
--   `action` **[Function][27]?** Действия выполняемые внутри вызова этой функции
-    не будут вызывать неотложный запуск реакций.
-    Реакции будут запущены только после выхода из функции action
+-   `action` **[Function][27]?** changes of [Observable][21] that happens inside 'action' function
+    will not trigger immediate execution of dependent reactions
+    if [ManagerOptions.immediateReaction][31] is set then reactions
+    will be executed after exiting the 'action' function
 
 ### runDeferred
 
-Запускает все [UpdatableFunction][22] которые помечены как невалидные
-В отличии от метода [run][33] запускает их не сразу а по указанному таймауту
+Executes all reactions that marked as invalid
+Unlike [run][32], 'runDeferred' makes it after timeout
 
 #### Parameters
 
--   `action` **[Function][27]?** Изменения [Observable][21] выполняемые внутри
-    вызова этой функции не будут вызывать неотложный запуск реакций.
-    Реакции будут запускатся после заданного таймаута
--   `timeout` **[Number][34]** Таймаут запуска выполнения очереди зарегестрированых реакций (optional, default `0`)
+-   `action` **[Function][27]?** changes of [Observable][21] that happens inside 'action' function
+    will not trigger immediate execution of dependent reactions
+-   `timeout` **[Number][33]** reactions execution delay (optional, default `0`)
 
 ## ManagerOptions
 
@@ -213,8 +210,6 @@ Type: [Object][24]
 
 [31]: ManagerOptions.immediateReaction
 
-[32]: ManagerOptions.enabled
+[32]: run
 
-[33]: run
-
-[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

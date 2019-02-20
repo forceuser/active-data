@@ -1,11 +1,10 @@
 const maxIterations = 10;
 
 /**
- * Реактивный менеджер данных, следящий за изменениями данных
- * и выполняющий действия в ответ на эти изменения
- * Отслеживание происходит лениво, данные обновляются только когда они требуются
+ * Reactive data manager that observes data changes and performs actions in response to these changes.
+ * Observation is lazy, data is updated only when required.
  *
- * @param {ManagerOptions} [options] Настройки менеджера
+ * @param {ManagerOptions} [options] Manager options
  */
 export class Manager {
 	constructor (options) {
@@ -32,18 +31,18 @@ export class Manager {
 		this.updatable = this.makeUpdatable.bind(this);
 	}
 	/**
-	 * Динамически устанавливает настройки работы менеджера данных
+	 * Dynamically sets the options of the data manager
 	 *
-	 * @param {ManagerOptions} [options] Настройки менеджера
+	 * @param {ManagerOptions} [options] Manager options
 	 */
 	setOptions (options = {}) {
 		this.options = Object.assign(this.options, options);
 	}
 	/**
-	 * Создает {@link Observable} объект для указанного источника данный
+	 * Creates {@link Observable} object for the specified dataSource
 	 *
-	 * @param {(Object|Array)} dataSource источник данных
-	 * @return {Observable} отслеживаемый объект
+	 * @param {(Object|Array)} dataSource data source
+	 * @return {Observable} observable object
 	 */
 	makeObservable (dataSource) {
 		const manager = this;
@@ -279,11 +278,11 @@ export class Manager {
 		return observable;
 	}
 	/**
-	 * Создает {@link UpdatableFunction}
-	 * Используется в основном для внутренних целей
+	 * Creates {@link UpdatableFunction}
+	 * Used for internal purposes
 	 *
-	 * @param {Function} call Функция для которой будет создана {@link UpdatableFunction}
-	 * @param {Object} obj Если `call` это метод объекта необходимо указать связанный объект
+	 * @param {Function} call function that will be called from {@link UpdatableFunction}
+	 * @param {Object} obj Specify obj if `call` is the method of the obj
 	 * @return {UpdatableFunction}
 	 */
 	makeUpdatable (call, settings = {}) {
@@ -366,12 +365,12 @@ export class Manager {
 		return updatableFunction;
 	}
 	/**
-	 * Создает вычисляемое свойство объекта
+	 * Creates computed property
 	 *
-	 * @param {Object} obj Объект для которого будет создано вычисляемое свойство
-	 * @param {String} key Имя вычисляемого свойства свойства
-	 * @param {Function} callOnGet Функция которая будет вычислятся при доступе к свойству
-	 * @param {Function} [callOnSet] Функция которая будет выполнятся при установке значения свойства
+	 * @param {Object} obj The object for which the calculated property will be created
+	 * @param {String} key Name of calculated property
+	 * @param {Function} callOnGet The function to be executed when accessing the property
+	 * @param {Function} [callOnSet] The function that will be executed when setting the value of the property
 	 */
 	makeComputed (obj, key, callOnGet, callOnSet) {
 		Object.defineProperty(obj, key, {
@@ -381,20 +380,19 @@ export class Manager {
 		});
 	}
 	/**
-	 * Создает {@link UpdatableFunction} и помещает ее в список для проверки
-	 * на валидность при изменении данных. Менеджер автозапускает эту
-	 * функцию если ее результат стал невалидным
+	 * Creates {@link UpdatableFunction} that will be automatically
+	 * executed when one of it's dependencies are changed
 	 *
 	 * @param {Function} call
-	 * Функция для которой будет создана {@link UpdatableFunction}
-	 * Она будет автозапускатся при изменении {@link Observable} данных использованых при ее вычислении
+	 * Function to call {@link UpdatableFunction}
+	 * 'call' will be executed when some of {@link Observable} that was used on previous call
+	 * are changed
+	 *
 	 * @param {Boolean} run
-	 * Выполнить первый запуск реации после ее регистрации.
-	 * В зависимости от указанной опции {@link ManagerOptions.immediateReaction}
-	 * будет запускатся либо сразу либо по таймауту.
-	 * Если {@link ManagerOptions.enabled} == false то реакция не будет
-	 * выполнятся даже при установленном параметре run
-	 * @return {UpdatableFunction} Управляющий объект для зарегестрированной реакции
+	 * Run function immediately after it's registration
+	 * If {@link ManagerOptions.immediateReaction} is not set
+	 * then it will be called on the next tick.
+	 * @return {UpdatableFunction}
 	 */
 	makeReaction (call, run = true) {
 		const manager = this;
@@ -414,7 +412,7 @@ export class Manager {
 	}
 
 	/**
-	 * Проверяет является ли объект наблюдаемым
+	 * Checks if the object is {@link Observable}
 	 *
 	 * @param {(Observable|Object|Array)} obj
 	 */
@@ -422,12 +420,13 @@ export class Manager {
 		return obj[this.$isObservableSymbol] === true;
 	}
 	/**
-	 * Запускает все автозапускаемые функции которые помечены как невалидные
+	 * Executes all reactions that marked as invalid
 	 *
 	 * @param {Function} [action]
-	 * Действия выполняемые внутри вызова этой функции
-	 * не будут вызывать неотложный запуск реакций.
-	 * Реакции будут запущены только после выхода из функции action
+	 * changes of {@link Observable} that happens inside 'action' function
+	 * will not trigger immediate execution of dependent reactions
+	 * if {@link ManagerOptions.immediateReaction} is set then reactions
+	 * will be executed after exiting the 'action' function
 	 */
 	run (action) {
 		if (!this.options.enabled) {
@@ -458,13 +457,12 @@ export class Manager {
 		}
 	}
 	/**
-	 * Запускает все {@link UpdatableFunction} которые помечены как невалидные
-	 * В отличии от метода {@link run} запускает их не сразу а по указанному таймауту
+	 * Executes all reactions that marked as invalid
+	 * Unlike {@link run}, 'runDeferred' makes it after timeout
 	 *
-	 * @param {Function} [action] Изменения {@link Observable} выполняемые внутри
-	 * вызова этой функции не будут вызывать неотложный запуск реакций.
-	 * Реакции будут запускатся после заданного таймаута
-	 * @param {Number} [timeout=0] Таймаут запуска выполнения очереди зарегестрированых реакций
+	 * @param {Function} [action] changes of {@link Observable} that happens inside 'action' function
+	 * will not trigger immediate execution of dependent reactions
+	 * @param {Number} [timeout=0] reactions execution delay
 	 */
 	runDeferred (action) {
 		if (!this.options.enabled) {
