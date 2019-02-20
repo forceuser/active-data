@@ -12,16 +12,21 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@1.1.8](https://github.com/forceuser/active-data/releases/download/1.1.8/active-data.js)
+[active-data.js@1.1.9](https://github.com/forceuser/active-data/releases/download/1.1.9/active-data.js)
 
-*or only for modern browsers (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
-
-[active-data.modern.js@1.1.8](https://github.com/forceuser/active-data/releases/download/1.1.8/active-data.modern.js)
+[active-data.modern.js@1.1.9](https://github.com/forceuser/active-data/releases/download/1.1.9/active-data.modern.js) *for modern browsers (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.rawgit.com/forceuser/active-data/1.1.8/dist/active-data.js">
+<script src="//cdn.rawgit.com/forceuser/active-data/1.1.9/dist/active-data.js">
+</script>
+```
+
+*if you need only modern browsers*
+
+```html
+<script src="//cdn.rawgit.com/forceuser/active-data/1.1.9/dist/active-data.modern.js">
 </script>
 ```
 
