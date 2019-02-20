@@ -290,7 +290,9 @@ export class Manager {
 		if (call.updatableCall) {
 			return call;
 		}
-		let {obj, onInvalidate} = settings;
+		const onInvalidate = settings.onInvalidate;
+		let obj = settings.obj;
+
 		const manager = this;
 		if (obj == null) {
 			obj = manager;

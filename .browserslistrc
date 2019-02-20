@@ -1,4 +1,15 @@
 # Browsers that we support
 
-last 2 major versions
-maintained node versions
+[legacy]
+chrome >= 49
+firefox >= 18
+edge >= 12
+opera >= 36
+safari >= 10
+node 6
+
+[modern]
+last 1 chrome versions
+last 2 firefox versions
+last 2 safari versions
+node 10

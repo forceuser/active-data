@@ -36,6 +36,7 @@ test("Create observable", t => {
 	const m = new Manager();
 	sinon.spy(m.observables, "get");
 	const plain = m.makeObservable("plain");
+	t.equal(plain, "plain");
 	const data = createTestData();
 	t.notOk(m.isObservable(data.d.d1.d11.d111));
 	const d = m.makeObservable(data);
@@ -48,7 +49,7 @@ test("Create observable", t => {
 	m.observables.get.restore();
 
 	sinon.spy(m.observables, "get");
-	const d2 = m.makeObservable(d);
+	m.makeObservable(d);
 	t.comment("│    dont search object in cache if it's already observable");
 	t.equal(m.observables.get.callCount, 0);
 	m.observables.get.restore();
