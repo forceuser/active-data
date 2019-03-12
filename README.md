@@ -1,4 +1,8 @@
-# active-data | [![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data) [![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data) [![npm repository](https://img.shields.io/npm/v/active-data.svg)](https://www.npmjs.com/package/active-data) [![Known Vulnerabilities](https://snyk.io/test/github/forceuser/active-data/badge.svg)](https://snyk.io/test/github/forceuser/active-data)
+# active-data |
+[![npm repository](https://img.shields.io/npm/v/active-data.svg)](https://www.npmjs.com/package/active-data)
+[![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data)
+[![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data)
+[![Known Vulnerabilities](https://snyk.io/test/github/forceuser/active-data/badge.svg)](https://snyk.io/test/github/forceuser/active-data)
 
 Tiny and convenient reactive data manager, inspired by MobX. Automatically detects associated data and performs updates to your views or everything dependent on that data when it changes. Implemented with javascript Proxy objects
 
@@ -12,21 +16,21 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@1.1.13](https://github.com/forceuser/active-data/releases/download/1.1.13/active-data.js)
+[active-data.js@2.0.0](https://github.com/forceuser/active-data/releases/download/2.0.0/active-data.js)
 
-[active-data.modern.js@1.1.13](https://github.com/forceuser/active-data/releases/download/1.1.13/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@2.0.0](https://github.com/forceuser/active-data/releases/download/2.0.0/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@1.1.13/dist/active-data.js" integrity="sha512-91e/48S4sxqQsjewkz6233fVvecUWCTf5nnF/nsC6y5/g6ytVYemHbYnQO11Hbw3vvi3zk0Os7RjZN1F+dpvVQ==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.0/dist/active-data.js" integrity="sha512-7y9VUB8/9UJDNSOO6dKr4xAjy8lLPjxC4+SEsXi50adc9D68nUvLinU3hFR7/62pjKCuw+retSvOcOWn5mc4UA==" crossorigin="anonymous">
 </script>
 ```
 
 *if you need only modern browsers then use script below:*
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@1.1.13/dist/active-data.modern.js" integrity="sha512-FbsR8g30v8jRxHKl/LmEbZDfZ0N7puQ85VBgzGjJeOgaI7IzEMk8LV13uo1rX9D3EO18rHxTEkyKnJ/w9F2W2w==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.0/dist/active-data.modern.js" integrity="sha512-BwaV5ohWZ138DzlOhOYvikstGTvoXhOuAcwKVoKX/3Kw+rFgi293Q6JiDaDixUdmuaSlQBSVifvlyr81UhYOQg==" crossorigin="anonymous">
 </script>
 ```
 

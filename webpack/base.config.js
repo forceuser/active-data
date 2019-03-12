@@ -9,6 +9,7 @@ const alias = Object.keys(ma).reduce((acc, key) => (acc[key] = path.resolve(__di
 
 
 module.exports = (env = {}) => {
+	console.log("env", env);
 	return ({
 		entry: "./src/active-data.js",
 		output: {
@@ -48,6 +49,9 @@ module.exports = (env = {}) => {
 			],
 		},
 		plugins: [
+			new webpack.DefinePlugin({
+				"process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+			})
 		],
 	});
 }

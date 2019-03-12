@@ -4,35 +4,53 @@
 
 -   [Manager][1]
     -   [Parameters][2]
-    -   [setOptions][3]
+    -   [mapProperties][3]
         -   [Parameters][4]
-    -   [makeObservable][5]
+    -   [setOptions][5]
         -   [Parameters][6]
-    -   [makeUpdatable][7]
-        -   [Parameters][8]
-    -   [makeComputed][9]
-        -   [Parameters][10]
-    -   [makeReaction][11]
-        -   [Parameters][12]
-    -   [isObservable][13]
-        -   [Parameters][14]
-    -   [run][15]
-        -   [Parameters][16]
-    -   [runDeferred][17]
-        -   [Parameters][18]
--   [ManagerOptions][19]
-    -   [Properties][20]
--   [Observable][21]
--   [UpdatableFunction][22]
+    -   [getOptions][7]
+    -   [makeObservable][8]
+        -   [Parameters][9]
+    -   [makeUpdatable][10]
+        -   [Parameters][11]
+    -   [makeComputed][12]
+        -   [Parameters][13]
+    -   [makeReaction][14]
+        -   [Parameters][15]
+    -   [getDataSource][16]
+        -   [Parameters][17]
+    -   [isObservable][18]
+        -   [Parameters][19]
+    -   [run][20]
+        -   [Parameters][21]
+    -   [runDeferred][22]
+        -   [Parameters][23]
+-   [ManagerOptions][24]
+    -   [Properties][25]
+-   [Observable][26]
+-   [UpdatableFunction][27]
+    -   [Properties][28]
+-   [UpdatableSettings][29]
+    -   [Properties][30]
 
 ## Manager
 
-Reactive data manager that observes data changes and performs actions in response to these changes.
+Reactive data manager that observes data changes and performs actions in response.
 Observation is lazy, data is updated only when required.
 
 ### Parameters
 
--   `options` **[ManagerOptions][23]?** Manager options
+-   `options` **[ManagerOptions][31]?** Manager options
+
+### mapProperties
+
+Maps properties from `source` to `target`
+
+#### Parameters
+
+-   `source` **[Observable][32]** 
+-   `target` **[Observable][32]** 
+-   `propertyKeys` **([Array][33] \| [String][34])?** property keys of `source` object to map to `target` object, if not set then all keys will be mapped
 
 ### setOptions
 
@@ -40,30 +58,35 @@ Dynamically sets the options of the data manager
 
 #### Parameters
 
--   `options` **[ManagerOptions][23]?** Manager options (optional, default `{}`)
+-   `options` **[ManagerOptions][31]?** Manager options (optional, default `{}`)
+
+### getOptions
+
+Gets the options of the data manager
+
+Returns **[ManagerOptions][31]** Manager options
 
 ### makeObservable
 
-Creates [Observable][21] object for the specified dataSource
+Creates [Observable][26] object for the specified dataSource
 
 #### Parameters
 
--   `dataSource` **([Object][24] \| [Array][25])** data source
+-   `dataSource` **([Object][35] \| [Array][33])** data source
 
-Returns **[Observable][26]** observable object
+Returns **[Observable][32]** observable object
 
 ### makeUpdatable
 
-Creates [UpdatableFunction][22]
+Creates [UpdatableFunction][27]
 Used for internal purposes
 
 #### Parameters
 
--   `call` **[Function][27]** function that will be called from [UpdatableFunction][22]
--   `settings`   (optional, default `{}`)
--   `obj` **[Object][24]** Specify obj if `call` is the method of the obj
+-   `fn` **[Function][36]** function that will be called from [UpdatableFunction][27]
+-   `settings` **[UpdatableSettings][37]** settings for updatable function (optional, default `{}`)
 
-Returns **[UpdatableFunction][28]** 
+Returns **[UpdatableFunction][38]** 
 
 ### makeComputed
 
@@ -71,145 +94,187 @@ Creates computed property
 
 #### Parameters
 
--   `obj` **[Object][24]** The object for which the calculated property will be created
--   `key` **[String][29]** Name of calculated property
--   `callOnGet` **[Function][27]** The function to be executed when accessing the property
--   `callOnSet` **[Function][27]?** The function that will be executed when setting the value of the property
+-   `target` **[Object][35]** The object for which the calculated property will be created
+-   `propertyKey` **[String][34]** Name of calculated property
+-   `getter` **[Function][36]** The function to be executed when accessing the property
+-   `setter` **[Function][36]?** The function that will be executed when setting the value of the property
 
 ### makeReaction
 
-Creates [UpdatableFunction][22] that will be automatically
+Creates [UpdatableFunction][27] that will be automatically
 executed when one of it's dependencies are changed
 
 #### Parameters
 
--   `call` **[Function][27]** Function to call [UpdatableFunction][22]
-    'call' will be executed when some of [Observable][21] that was used on previous call
+-   `call` **[Function][36]** Function to call [UpdatableFunction][27]
+    'call' will be executed when some of [Observable][26] that was used on previous call
     are changed
--   `run` **[Boolean][30]** Run function immediately after it's registration
-    If [ManagerOptions.immediateReaction][31] is not set
+-   `run` **[Boolean][39]** Run function immediately after it's registration
+    If [ManagerOptions.immediateReaction][40] is not set
     then it will be called on the next tick. (optional, default `true`)
 
-Returns **[UpdatableFunction][28]** 
+Returns **[UpdatableFunction][38]** 
+
+### getDataSource
+
+Returns original source of [Observable][26]
+
+#### Parameters
+
+-   `target`  
+
+Returns **([Object][35] \| [Array][33])** 
 
 ### isObservable
 
-Checks if the object is [Observable][21]
+Checks if the object is [Observable][26]
 
 #### Parameters
 
--   `obj` **([Observable][26] \| [Object][24] \| [Array][25])** 
+-   `target` **([Observable][32] \| [Object][35] \| [Array][33])** 
 
 ### run
 
-Executes all reactions that marked as invalid
+Executes all reactions that marked with invalid state
 
 #### Parameters
 
--   `action` **[Function][27]?** changes of [Observable][21] that happens inside 'action' function
+-   `action` **[Function][36]?** Changes of [Observable][26] that happens inside 'action' function
     will not trigger immediate execution of dependent reactions
-    if [ManagerOptions.immediateReaction][31] is set then reactions
+    If [ManagerOptions.immediateReaction][40] is set then reactions
     will be executed after exiting the 'action' function
 
 ### runDeferred
 
 Executes all reactions that marked as invalid
-Unlike [run][32], 'runDeferred' makes it after timeout
+Unlike [run][41], 'runDeferred' makes it not immediately but after 'timeout'
 
 #### Parameters
 
--   `action` **[Function][27]?** changes of [Observable][21] that happens inside 'action' function
+-   `action` **[Function][36]?** changes of [Observable][26] that happens inside 'action' function
     will not trigger immediate execution of dependent reactions
--   `timeout` **[Number][33]** reactions execution delay (optional, default `0`)
+-   `timeout` **[Number][42]** reactions execution delay (optional, default `0`)
 
 ## ManagerOptions
 
-Type: [Object][24]
+Type: [Object][35]
 
 ### Properties
 
--   `immediateReaction` **[Boolean][30]** Запускать реакции сразу после изменения
-    данных (по-умолчанию false - т.е. реакции выполняются по нулевому таймауту)
--   `prototypes` **[Boolean][30]** поддержка прототипов объектов (Прототип объекта должен быть также создан как [Observable][21])
--   `enabled` **[Boolean][30]** Активен ли менеджер данных (по-умолчнию true)
+-   `immediateReaction` **[Boolean][39]?** if set to `true` reactions will be executed immediately on same event loop
+    otherwise it will be executed after zero timeout (on next event loop)
+-   `enabled` **[Boolean][39]?** state of data manager, if it is disabled then reactions will not be executed
 
 ## Observable
 
-Обьект или массив доступ к свойствам которого отслеживается.
-При доступе к дочерним объектам или массивам также возвращается [Observable][21] объект
+Object or array that will be observed for changes.
+When the property of type [Array)][43] of [Observable][26]
+are accessed it automaticaly becomes [Observable][26]
 
 ## UpdatableFunction
 
-Функция которая кеширует результат своего выполнение и хранит состояние валидности результата
+function that caches result of its execution and returns cached value if function state is valid
+function state can be invalidated if some of [Observable][26] objects that were accessed on previous call are changed
 
-При изменении [Observable][21] данных которые были использованы при вычилении этой функции ее кеш инвалидируется
+### Properties
 
-Внутри [UpdatableFunction][22] разрешено только чтение [Observable][21], при записи будет брошено исключение
+-   `uninit` **[Function][36]** 
 
-Если внутри таких функций есть перекрестные ссылки то вычисление производится не будет, будет возвращено `undefined`
+## UpdatableSettings
+
+Settings to create [UpdatableFunction][27]
+
+Type: [Object][35]
+
+### Properties
+
+-   `onInvalidate` **[Function][36]** callback function that will be executed when UpdatableState of [UpdatableFunction][27] becomes invalid
+-   `onUninit` **[Function][36]** callback function that will be executed after [UpdatableFunction#uninit][44] is called
 
 [1]: #manager
 
 [2]: #parameters
 
-[3]: #setoptions
+[3]: #mapproperties
 
 [4]: #parameters-1
 
-[5]: #makeobservable
+[5]: #setoptions
 
 [6]: #parameters-2
 
-[7]: #makeupdatable
+[7]: #getoptions
 
-[8]: #parameters-3
+[8]: #makeobservable
 
-[9]: #makecomputed
+[9]: #parameters-3
 
-[10]: #parameters-4
+[10]: #makeupdatable
 
-[11]: #makereaction
+[11]: #parameters-4
 
-[12]: #parameters-5
+[12]: #makecomputed
 
-[13]: #isobservable
+[13]: #parameters-5
 
-[14]: #parameters-6
+[14]: #makereaction
 
-[15]: #run
+[15]: #parameters-6
 
-[16]: #parameters-7
+[16]: #getdatasource
 
-[17]: #rundeferred
+[17]: #parameters-7
 
-[18]: #parameters-8
+[18]: #isobservable
 
-[19]: #manageroptions
+[19]: #parameters-8
 
-[20]: #properties
+[20]: #run
 
-[21]: #observable
+[21]: #parameters-9
 
-[22]: #updatablefunction
+[22]: #rundeferred
 
-[23]: #manageroptions
+[23]: #parameters-10
 
-[24]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[24]: #manageroptions
 
-[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[25]: #properties
 
 [26]: #observable
 
-[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[27]: #updatablefunction
 
-[28]: #updatablefunction
+[28]: #properties-1
 
-[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[29]: #updatablesettings
 
-[30]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[30]: #properties-2
 
-[31]: ManagerOptions.immediateReaction
+[31]: #manageroptions
 
-[32]: run
+[32]: #observable
 
-[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+
+[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+
+[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+
+[36]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+
+[37]: #updatablesettings
+
+[38]: #updatablefunction
+
+[39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+
+[40]: ManagerOptions.immediateReaction
+
+[41]: run
+
+[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+
+[43]: <(Object>
+
+[44]: UpdatableFunction#uninit

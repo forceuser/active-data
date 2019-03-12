@@ -1,12 +1,20 @@
 #!/usr/bin/env node
 /* global process */
-process.env.BABEL_ENV = "node";
 const path = require("path");
+const fs = require("fs-extra");
 require("module-alias/register");
 // eslint-disable-next-line no-global-assign
 require = require("esm")(module, {cjs: true});
 require("@babel/register");
 require("@babel/polyfill");
+
+if (process.env.NODE_ENV === "test") {
+	const tape = require("tape");
+	tape.onFinish(async () => {
+		await fs.mkdirs(path.resolve(process.cwd(), "./coverage"));
+		await fs.writeFile(path.resolve(process.cwd(), "./coverage/coverage.json"), JSON.stringify(global.__coverage__ || {}), "utf-8");
+	});
+}
 
 function getArg (args) {
 	const idx = process.argv.findIndex(i => [].concat(args).some(v => v === i));
@@ -15,4 +23,8 @@ function getArg (args) {
 	}
 }
 
-module.exports = require(path.resolve(process.cwd(), getArg(["-s", "--script"])));
+const script = getArg(["-s", "--script"]);
+if (script) {
+	module.exports = require(path.resolve(process.cwd(), getArg(["-s", "--script"])));
+}
+

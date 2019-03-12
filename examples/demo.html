@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>active-data prototypes and angularjs-like scopes example</title>
+	</head>
+
+	<body>
+		<script type="module">
+			import {Manager} from "../src/active-data.js";
+
+			const {observable, observableProto, reaction, getDataSource, isObservable} = new Manager({
+				prototypes: true
+			});
+
+
+			function createRootScope () {
+				return observable({
+					// $child: [],
+					$new (isolated = false, extend) {
+						const $scope = observableProto(isolated ? {} : this, extend);
+						const scope = getDataSource($scope);
+						Object.defineProperties(scope, {
+							$parent: {
+								value: this,
+								enumerable: false,
+							},
+							$child: {
+								value: [],
+								enumerable: false,
+							},
+						});
+						console.log("Object.keys(scope)", Object.keys(scope));
+						if (!this.$child) {
+							Object.defineProperties(getDataSource(this), {
+								$child: {
+									value: [],
+									enumerable: false,
+								},
+							});
+						}
+						this.$child.push($scope);
+						return $scope;
+					},
+					toJSON () {
+						const result = {};
+						for (const key in this) {
+							if (typeof this[key] !== "function") {
+								result[key] = this[key];
+							}
+						}
+						return result;
+					},
+				});
+			}
+
+			const $rootScope = createRootScope();
+			const $scope1 = $rootScope.$new();
+			const $scope2 = $scope1.$new();
+			$scope1.a = {};
+			$scope2.b = 13;
+			reaction(() => {
+				// $scope1.a;
+				console.log(`$scope2: ${JSON.stringify($scope2.$$watchDeep)}`);
+			});
+			setTimeout(() => {
+				$scope1.b = 212;
+			}, 2000);
+
+			setTimeout(() => {
+				$scope1.c = 555;
+			}, 3000);
+		</script>
+	</body>
+</html>

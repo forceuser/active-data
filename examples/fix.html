@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>active-data prototypes and angularjs-like scopes example</title>
+	</head>
+
+	<body>
+		<script type="module">
+			import {Manager} from "../src/active-data.js";
+			const sinon = {
+				spy (call) {
+					const fn = (...args) => {
+						fn.callCount++;
+						return call(...args);
+					}
+					fn.callCount = 0;
+					return fn;
+				}
+			};
+
+			// const {reaction, observable, observableProto} = new Manager({
+			// 	immediateReaction: true,
+			// 	prototypes: true,
+			// });
+			// const obj = {
+			// 	a: {
+			// 		b: {
+			// 			c: "c",
+			// 		},
+			// 		b1: "b1",
+			// 	},
+			// 	a1: "a1",
+			// };
+			// const src = observable(obj);
+			// const _src = Object.create(src);
+			// const $src = observable(_src);
+			// const __src = Object.create($src);
+			// const $$src = observable(__src);
+			// const x = observable({});
+			// src.x = observableProto(observableProto(x));
+			// console.log("", $$src);
+
+			// let callCount = 0;
+			// const r1 = () => {
+			// 	callCount++;
+			// 	$$src.$$watchDeep;
+			// };
+			// reaction(r1);
+			// console.log(callCount, 1);
+			// src.a.b.m = {};
+			// console.log(callCount, 2);
+			// console.log("test nested observable objects and watchDeep");
+			// src.a.b.m = src.a;
+			// console.log(callCount, 3);
+			// x.d = 1;
+			// console.log(callCount, 4);
+
+
+
+			const m = new Manager({immediateReaction: true, prototypes: true});
+			const src = {a: 1, b: 2};
+			const srcWithProto = Object.create(src);
+			const protoObs = m.makeObservable(src);
+			const obs = m.makeObservable(srcWithProto);
+			const reaction = sinon.spy(() => {
+				obs.a;
+				obs.a;
+			});
+			m.makeReaction(reaction);
+			console.log(reaction.callCount, 1);
+			protoObs.a = 111;
+			console.log(reaction.callCount, 2);
+
+
+			// const m = new activeData.Manager({immediateReaction: true, prototypes: true});
+			// const src = {a: 1};
+			// const srcWithProto = Object.create(src);
+			// const protoObs = m.makeObservable(src);
+			// const obs = m.makeObservable(srcWithProto);
+
+
+			// const m = new Manager({immediateReaction: true, prototypes: true});
+			// const src = {a: 1};
+			// const srcWithProto = Object.create(src);
+			// const protoObs = m.makeObservable(src);
+			// const obs = m.makeObservable(srcWithProto);
+			// let callCount = 0;
+			// const reaction = () => {
+			// 	callCount++;
+			// 	obs.a;
+			// };
+			// m.makeReaction(reaction);
+			// console.log(callCount, 1);
+			// protoObs.a = 111;
+			// console.log(callCount, 2);
+		</script>
+	</body>
+</html>
