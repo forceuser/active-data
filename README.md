@@ -12,21 +12,21 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@2.0.1](https://github.com/forceuser/active-data/releases/download/2.0.1/active-data.js)
+[active-data.js@2.0.2](https://github.com/forceuser/active-data/releases/download/2.0.2/active-data.js)
 
-[active-data.modern.js@2.0.1](https://github.com/forceuser/active-data/releases/download/2.0.1/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@2.0.2](https://github.com/forceuser/active-data/releases/download/2.0.2/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.1/dist/active-data.js" integrity="sha512-7y9VUB8/9UJDNSOO6dKr4xAjy8lLPjxC4+SEsXi50adc9D68nUvLinU3hFR7/62pjKCuw+retSvOcOWn5mc4UA==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.2/dist/active-data.js" integrity="sha512-7y9VUB8/9UJDNSOO6dKr4xAjy8lLPjxC4+SEsXi50adc9D68nUvLinU3hFR7/62pjKCuw+retSvOcOWn5mc4UA==" crossorigin="anonymous">
 </script>
 ```
 
 *if you need only modern browsers then use script below:*
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.1/dist/active-data.modern.js" integrity="sha512-BwaV5ohWZ138DzlOhOYvikstGTvoXhOuAcwKVoKX/3Kw+rFgi293Q6JiDaDixUdmuaSlQBSVifvlyr81UhYOQg==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.2/dist/active-data.modern.js" integrity="sha512-BwaV5ohWZ138DzlOhOYvikstGTvoXhOuAcwKVoKX/3Kw+rFgi293Q6JiDaDixUdmuaSlQBSVifvlyr81UhYOQg==" crossorigin="anonymous">
 </script>
 ```
 
