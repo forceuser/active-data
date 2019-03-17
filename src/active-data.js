@@ -501,7 +501,7 @@ export const updatable = Manager.default.updatable;
  * @typedef Observable
  * @name Observable
  * @description Object or array that will be observed for changes.
- * When the property of type {@link (Object|Array)} of {@link Observable}
+ * When the property of type {@link Object} or {@link Array} of {@link Observable}
  * are accessed it automaticaly becomes {@link Observable}
  */
 

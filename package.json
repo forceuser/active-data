@@ -1,6 +1,6 @@
 {
 	"name": "active-data",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
 	"module": "src/active-data.js",
@@ -27,7 +27,8 @@
 		"build": "run-p build:*",
 		"build:legacy": "cross-env BROWSERSLIST_ENV=legacy NODE_ENV=production BABEL_ENV=production webpack --config ./webpack/production.config.js",
 		"build:modern": "cross-env BROWSERSLIST_ENV=modern NODE_ENV=production BABEL_ENV=production webpack --config ./webpack/production.config.js",
-		"documentation": "documentation build src/active-data.js -f md > DOCUMENTATION.md",
+		"documentation-old": "documentation build src/active-data.js -f md > DOCUMENTATION.md",
+		"documentation": "jsdoc2md src/active-data.js > DOCUMENTATION.md",
 		"release": "npm run release-patch --",
 		"release-patch": "npm test && npm run build && npm run documentation && va-release --version patch",
 		"release-minor": "npm test && npm run build && npm run documentation && va-release --version minor",
@@ -74,6 +75,7 @@
 	"homepage": "https://github.com/forceuser/active-data#readme",
 	"dependencies": {},
 	"devDependencies": {
+		"jsdoc-to-markdown": "^4.0.1",
 		"@babel/core": "^7.1.0",
 		"@babel/plugin-proposal-object-rest-spread": "^7.0.0",
 		"@babel/plugin-proposal-optional-chaining": "^7.0.0",
