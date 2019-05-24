@@ -1,7 +1,7 @@
 import sinon from "sinon";
 import test from "tape";
-import {Manager} from "../src/active-data";
-import {observable, computed, reaction, updatable} from "../src/active-data";
+import sqnc from "sqnc";
+import {Manager, observable, computed, reaction, updatable} from "../src/active-data";
 
 function createTestData () {
 	return {
@@ -61,7 +61,6 @@ test("Create observable", t => {
 	const dsame = m.makeObservable(data);
 	t.equals(d, dsame);
 	m.$$.observables.get.restore();
-
 	sinon.spy(m.$$.observables, "get");
 	m.makeObservable(d);
 	t.comment("│    dont search object in cache if it's already observable");
@@ -81,7 +80,7 @@ test("Create observable", t => {
 });
 
 test("Create computed property", t => {
-	const m = new Manager();
+	const m = new Manager({immediateReaction: true});
 	const d = m.makeObservable(createTestData());
 	Object.assign(d, {
 		x: "x",
@@ -93,14 +92,15 @@ test("Create computed property", t => {
 	d.y = "y1";
 	d.comp1;
 
-	const comp2 = sinon.spy(self => self.arr.filter(i => !i));
-	const comp3 = sinon.spy(self => self.arr.filter(i => !i));
+	const comp2 = sinon.spy(self => d.arr.filter(i => !i));
+	const comp3 = sinon.spy(self => d.arr.filter(i => !i));
 	m.makeComputed(d, "comp2", comp2);
 	m.makeComputed(d, "comp3", comp3);
 	d.comp2;
 	d.comp3;
 	t.equal(comp2.callCount, 1);
 	d.arr = d.arr.concat([true, false, false]);
+	d.arr.push(true);
 	d.comp2;
 	t.equal(comp2.callCount, 2);
 	d.arr.push(true);
@@ -461,5 +461,16 @@ test("mapProperties all", t => {
 	b.t = "heh";
 	t.equal(reactionFn.callCount, 5);
 	t.equal(reactionFn2.callCount, 4);
+	t.end();
+});
+
+test("Array methods", t => {
+	const {observable, reaction, mapProperties} = new Manager({immediateReaction: true});
+	const a = observable(sqnc(1, 10).toArray(10));
+	const reactionFn = sinon.spy(() => a.map(i => `item${i}`));
+	reaction(reactionFn);
+	t.equal(reactionFn.callCount, 1);
+	a.splice(2, 1);
+	t.equal(reactionFn.callCount, 2);
 	t.end();
 });

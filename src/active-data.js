@@ -15,6 +15,7 @@ export class Manager {
 		const manager = this;
 		initPrivate(manager);
 		const $$ = $(manager);
+		$$.gen = 0;
 		$$.intentToRun = 0;
 		$$.dataSourceKey = Symbol("dataSource");
 		$$.observables = new WeakMap();
@@ -44,7 +45,7 @@ export class Manager {
 		manager.computed = manager.makeComputed;
 		manager.updatable = manager.makeUpdatable;
 		/* istanbul ignore next */
-		if (process && process.env.NODE_ENV === "test") {
+		if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
 			manager.$$ = $$;
 		}
 	}
@@ -94,7 +95,7 @@ export class Manager {
 	 * @param {(Object|Array)} dataSource data source
 	 * @return {Observable} observable object
 	 */
-	makeObservable (dataSource) {
+	makeObservable (dataSource, observableOptions = {}) {
 		const manager = this;
 		const $$ = $(manager);
 		if (!dataSource) {
@@ -102,7 +103,8 @@ export class Manager {
 		}
 		if (
 			dataSource.constructor !== Object &&
-			dataSource.constructor !== Array
+			dataSource.constructor !== Array &&
+			typeof dataSource !== "function"
 		) {
 			return dataSource;
 		}
@@ -110,6 +112,7 @@ export class Manager {
 		if (manager.isObservable(dataSource)) {
 			return dataSource;
 		}
+		const isArray = Array.isArray(dataSource);
 		let observable = $$.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
@@ -149,11 +152,13 @@ export class Manager {
 				}
 				if (currentKey === $$.options.watchKey) {
 					Object.keys(dataSource).forEach(key => {
-						const propertyDescriptor = Object.getOwnPropertyDescriptor(dataSource, key);
-						if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
-							manager
-								.makeUpdatable(propertyDescriptor.get)
-								.call(observable);
+						if (typeof dataSource[key] === "object") {
+							const propertyDescriptor = Object.getOwnPropertyDescriptor(dataSource, key);
+							if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
+								manager
+									.makeUpdatable(propertyDescriptor.get)
+									.call(observable);
+							}
 						}
 					});
 				}
@@ -172,14 +177,18 @@ export class Manager {
 
 			const ctrl = {toUpdate, dataSource, registerRead};
 
-			const updateProperty = propertyKey => {
+			const updateProperty = (propertyKey) => {
 				const invalidatorFn = updatableState => invalidateDeps(updatableState);
-
-				const updatableStates = ctrl.toUpdate.get(propertyKey);
-				const updatableStatesWatch = ctrl.toUpdate.get($$.options.watchKey);
-
-				updatableStates && updatableStates.forEach(invalidatorFn);
-				updatableStatesWatch && updatableStatesWatch.forEach(invalidatorFn);
+				if (propertyKey == null) {
+					[...ctrl.toUpdate.values()]
+						.forEach(updatableStates => updatableStates.forEach(invalidatorFn));
+				}
+				else {
+					const updatableStates = ctrl.toUpdate.get(propertyKey);
+					updatableStates && updatableStates.forEach(invalidatorFn);
+					const updatableStatesWatch = ctrl.toUpdate.get($$.options.watchKey);
+					updatableStatesWatch && updatableStatesWatch.forEach(invalidatorFn);
+				}
 
 				if (!$$.inRunSection && $$.intentToRun === 1) {
 					if ($$.options.immediateReaction) {
@@ -193,7 +202,6 @@ export class Manager {
 
 			observable = new Proxy(dataSource, {
 				get: (target, propertyKey, context) => {
-					const $$ = $(manager);
 					if (propertyKey === $$.dataSourceKey) {
 						return dataSource;
 					}
@@ -204,9 +212,8 @@ export class Manager {
 						propertyDescriptor &&
 						typeof propertyDescriptor.get === "function"
 					) {
-						return manager
-							.makeUpdatable(propertyDescriptor.get)
-							.call(target);
+						const computed = manager.makeUpdatable(propertyDescriptor.get);
+						return computed.call(target);
 					}
 
 					if ($$.callStack.length) {
@@ -224,6 +231,33 @@ export class Manager {
 					}
 
 					const value = Reflect.get(target, propertyKey, context);
+					if (isArray && typeof value === "function" && propertyKey !== "constructor") {
+						return new Proxy(value, {
+							apply: (target, thisArg, argumentsList) => {
+								const updatableState = $$.callStack && $$.callStack.length && $$.callStack[$$.callStack.length - 1];
+
+								if (updatableState) {
+									registerRead(
+										updatableState,
+										$$.options.watchKey,
+									);
+								}
+								if (["copyWithin", "fill", "pop", "push", "reverse", "shift", "sort", "splice", "unshift"].includes(propertyKey)) {
+									$$.intentToRun++;
+									try {
+										updateProperty();
+									}
+									finally {
+										$$.intentToRun--;
+									}
+								}
+								const result = target.apply(dataSource, argumentsList);
+								return result;
+								// return manager.makeObservable(result);
+							},
+						});
+					}
+
 					if (typeof value === "object" && propertyDescriptor && propertyDescriptor.enumerable) {
 						return manager.makeObservable(value);
 					}
@@ -282,6 +316,7 @@ export class Manager {
 		const $$ = $(manager);
 
 		const updatableState = {
+			id: ++$$.gen,
 			active: true,
 			valid: false,
 			onInvalidate,

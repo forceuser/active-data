@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+	<head>
+		<title>active-data demo</title>
+	</head>
+	<body></body>
+		<script type="module">
+			import sinon from "./node_modules/sinon/pkg/sinon-esm.js";
+			import {Manager, observable, computed, reaction, updatable} from "../src/active-data.js";
+			const t = {
+				equal (a, b) {
+					console.assert(a === b, "expected: %s; actual: %s", b, a);
+				},
+				comment (...args) {
+					console.log(...args);
+				}
+			};
+
+
+			const m = new Manager({immediateReaction: true});
+			const d = m.makeObservable({arr: []});
+			const comp2 = sinon.spy(self => {
+				console.log("calc");
+				const res = d.arr.filter(i => !i);
+				return res;
+			});
+			m.makeComputed(d, "comp2", comp2);
+			d.comp2;
+			t.equal(comp2.callCount, 1);
+			d.arr = d.arr.concat([true, false, false]);
+			console.log("aaaaa");
+			const bbbb = d.comp2;
+			console.log("bbbbbb");
+			t.equal(comp2.callCount, 2);
+			d.arr.push("edwedw");
+			d.comp2;
+			d.comp2;
+			t.equal(comp2.callCount, 3);
+			console.log("d.comp2", d.comp2);
+			// t.comment("d.arr", JSON.stringify(d.arr), d.arr);
+			// d.arr.push(true);
+			// d.comp2;
+			// t.equal(comp2.callCount, 2);
+			// d.arr.push(true);
+			// d.comp2;
+			// t.equal(comp2.callCount, 3);
+			// d.comp2;
+			// t.equal(comp2.callCount, 3);
+			// t.equal(d.comp2.length, 2);
+		</script>
+	</body>
+</html>
+
