@@ -1,9 +1,9 @@
 {
 	"name": "active-data",
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"description": "Reactive data manager, inspired by MobX. Automatically detects associated data and perform updates to your views or everything dependent on that data when it changes. Implemented with js Proxy objects",
 	"main": "dist/active-data.js",
-	"module": "src/active-data.js",
+	"module": "dist/active-data.esm.mjs",
 	"engines": {
 		"node": ">=6.0.0"
 	},
@@ -25,6 +25,7 @@
 		"fix": "eslint --fix .",
 		"coverage": "codecov",
 		"build": "run-p build:*",
+		"build:esm": "terser ./src/active-data.js --compress --mangle --source-map includeSources -o ./dist/active-data.esm.mjs",
 		"build:legacy": "cross-env BROWSERSLIST_ENV=legacy NODE_ENV=production BABEL_ENV=production webpack --config ./webpack/production.config.js",
 		"build:modern": "cross-env BROWSERSLIST_ENV=modern NODE_ENV=production BABEL_ENV=production webpack --config ./webpack/production.config.js",
 		"documentation-old": "documentation build src/active-data.js -f md > DOCUMENTATION.md",
@@ -113,6 +114,7 @@
 		"sinon": "^7.2.4",
 		"sqnc": "^3.0.3",
 		"tape": "^4.6.3",
+		"terser": "^4.0.0",
 		"terser-webpack-plugin": "^1.2.2",
 		"uglifyjs-webpack-plugin": "^2.0.1",
 		"universal-url": "^2.0.0",

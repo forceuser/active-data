@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data)
 [![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data)
 [![Known Vulnerabilities](https://snyk.io/test/github/forceuser/active-data/badge.svg)](https://snyk.io/test/github/forceuser/active-data)
+[![Bundle size](https://badgen.net/bundlephobia/minzip/active-data)](https://bundlephobia.com/result?p=active-data)
 
 Tiny and convenient reactive data manager, inspired by MobX. Automatically detects associated data and performs updates to your views or everything dependent on that data when it changes. Implemented with javascript Proxy objects
 
@@ -17,21 +18,23 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@2.0.3](https://github.com/forceuser/active-data/releases/download/2.0.3/active-data.js)
+[active-data.js@2.0.4](https://github.com/forceuser/active-data/releases/download/2.0.4/active-data.js)
 
-[active-data.modern.js@2.0.3](https://github.com/forceuser/active-data/releases/download/2.0.3/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@2.0.4](https://github.com/forceuser/active-data/releases/download/2.0.4/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+
+[active-data.esm.js@2.0.4](https://github.com/forceuser/active-data/releases/download/2.0.4/active-data.esm.js) *import as esm module*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.3/dist/active-data.js" integrity="sha512-8IP/TmMcvLmddR7nYXV3lgWo1bE6wkGyxAipocQZtsY7bZvFqElnEEk+58SQZsnN9s9DDwnFXjgQea1l8MJRpA==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.4/dist/active-data.js" integrity="sha512-+AMSIfx43N6XcUrFXYyR+N4OiTbcbY5yhKesJqneFuH8LCznc36BuwolCkT6b/SZr/BJgW1/hyVtrpswsutiNQ==" crossorigin="anonymous">
 </script>
 ```
 
 *if you need only modern browsers then use script below:*
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.3/dist/active-data.modern.js" integrity="sha512-3sLTdVbel0O07wZutszRjrKFGxS1VJo8E/2VCVPmgEiReM63TCFJ0WloBaNHhVDipF/ZU0HmmINoRIjS7+mK0A==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.4/dist/active-data.modern.js" integrity="sha512-we+scNmK8I2rWuKEBBEKWUDIHGtaxrHYV/6BgKzGnAdgoPeznFOqx/kRxb0nWkRfIKTJfh2VPrrDMBjNZNsYTw==" crossorigin="anonymous">
 </script>
 ```
 
@@ -44,6 +47,20 @@ And then use **activeData** as global variable
 	});
 </script>
 ```
+
+*or if you want to import it as esm module*
+
+```html
+<script type="module">
+import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@2.0.4/dist/active-data.esm.js";
+
+data = observable({c: 1});
+reaction(() => {
+	document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
+});
+</script>
+```
+
 ## [Documentation](./DOCUMENTATION.md)
 
 ## Example

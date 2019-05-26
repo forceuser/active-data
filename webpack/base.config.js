@@ -6,10 +6,7 @@ const pkg = require("../package.json");
 const ma = pkg._moduleAliases || {};
 const alias = Object.keys(ma).reduce((acc, key) => (acc[key] = path.resolve(__dirname, "../", ma[key])  , acc), {});
 
-
-
 module.exports = (env = {}) => {
-	console.log("env", env);
 	return ({
 		entry: "./src/active-data.js",
 		output: {

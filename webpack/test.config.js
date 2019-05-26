@@ -11,6 +11,7 @@ module.exports = (env = {}) => {
 		mode: "development",
 	});
 	result.target = "node";
+	result.plugins = result.plugins || [];
 	result.entry = [
 		"@babel/polyfill",
 		path.resolve(__dirname, "../test/index.js")

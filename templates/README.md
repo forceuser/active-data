@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.org/forceuser/active-data.svg?branch=master)](https://travis-ci.org/forceuser/active-data)
 [![Coverage Status](https://img.shields.io/codecov/c/github/forceuser/active-data/master.svg)](https://codecov.io/gh/forceuser/active-data)
 [![Known Vulnerabilities](https://snyk.io/test/github/forceuser/active-data/badge.svg)](https://snyk.io/test/github/forceuser/active-data)
+[![Bundle size](https://badgen.net/bundlephobia/minzip/active-data)](https://bundlephobia.com/result?p=active-data)
 
 Tiny and convenient reactive data manager, inspired by MobX. Automatically detects associated data and performs updates to your views or everything dependent on that data when it changes. Implemented with javascript Proxy objects
 
@@ -20,6 +21,8 @@ npm i active-data --save
 [active-data.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.js)
 
 [active-data.modern.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+
+[active-data.esm.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.esm.js) *import as esm module*
 
 #### Or just load from CDN
 
@@ -44,6 +47,20 @@ And then use **activeData** as global variable
 	});
 </script>
 ```
+
+*or if you want to import it as esm module*
+
+```html
+<script type="module">
+import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.esm.js";
+
+data = observable({c: 1});
+reaction(() => {
+	document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
+});
+</script>
+```
+
 ## [Documentation](./DOCUMENTATION.md)
 
 ## Example

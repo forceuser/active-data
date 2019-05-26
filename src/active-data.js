@@ -26,6 +26,8 @@ export class Manager {
 			watchKey: "$$watch",
 			watchDeepKey: "$$watchDeep",
 			afterRun: null,
+			timeLimit: 50,
+			getTime: typeof performance !== "undefined" ? () => performance.now() : () => Date.now(),
 		};
 		$$.callStack = [];
 		$$.reactionsToUpdate = new Set();
@@ -95,16 +97,16 @@ export class Manager {
 	 * @param {(Object|Array)} dataSource data source
 	 * @return {Observable} observable object
 	 */
-	makeObservable (dataSource, observableOptions = {}) {
+	makeObservable (dataSource) {
 		const manager = this;
 		const $$ = $(manager);
 		if (!dataSource) {
 			return dataSource;
 		}
 		if (
-			dataSource.constructor !== Object &&
-			dataSource.constructor !== Array &&
-			typeof dataSource !== "function"
+			dataSource.constructor !== Object
+			&&	dataSource.constructor !== Array
+			&&	typeof dataSource !== "function"
 		) {
 			return dataSource;
 		}
@@ -116,6 +118,14 @@ export class Manager {
 		let observable = $$.observables.get(dataSource);
 		if (!observable) {
 			const toUpdate = new Map();
+			const computedProperties = {};
+
+			Object.keys(dataSource).forEach(propertyKey => {
+				const propertyDescriptor = Object.getOwnPropertyDescriptor(dataSource, propertyKey);
+				if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
+					computedProperties[propertyKey] = manager.makeUpdatable(propertyDescriptor.get);
+				}
+			});
 
 			const invalidateDeps = updatableState => {
 				updatableState.invalidIteration = true;
@@ -151,15 +161,8 @@ export class Manager {
 					watchDeepSection = false;
 				}
 				if (currentKey === $$.options.watchKey) {
-					Object.keys(dataSource).forEach(key => {
-						if (typeof dataSource[key] === "object") {
-							const propertyDescriptor = Object.getOwnPropertyDescriptor(dataSource, key);
-							if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
-								manager
-									.makeUpdatable(propertyDescriptor.get)
-									.call(observable);
-							}
-						}
+					Object.keys(computedProperties).forEach(key => {
+						computedProperties[key].call(observable);
 					});
 				}
 
@@ -206,21 +209,10 @@ export class Manager {
 						return dataSource;
 					}
 
-					const propertyDescriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
-
-					if (
-						propertyDescriptor &&
-						typeof propertyDescriptor.get === "function"
-					) {
-						const computed = manager.makeUpdatable(propertyDescriptor.get);
-						return computed.call(target);
-					}
-
+					let updatableState;
 					if ($$.callStack.length) {
-						registerRead(
-							$$.callStack[$$.callStack.length - 1],
-							propertyKey
-						);
+						updatableState = $$.callStack[$$.callStack.length - 1];
+						registerRead(updatableState, propertyKey);
 					}
 
 					if (
@@ -234,13 +226,9 @@ export class Manager {
 					if (isArray && typeof value === "function" && propertyKey !== "constructor") {
 						return new Proxy(value, {
 							apply: (target, thisArg, argumentsList) => {
-								const updatableState = $$.callStack && $$.callStack.length && $$.callStack[$$.callStack.length - 1];
-
+								const updatableState = $$.callStack.length ? $$.callStack[$$.callStack.length - 1] : null;
 								if (updatableState) {
-									registerRead(
-										updatableState,
-										$$.options.watchKey,
-									);
+									registerRead(updatableState, $$.options.watchKey);
 								}
 								if (["copyWithin", "fill", "pop", "push", "reverse", "shift", "sort", "splice", "unshift"].includes(propertyKey)) {
 									$$.intentToRun++;
@@ -251,14 +239,12 @@ export class Manager {
 										$$.intentToRun--;
 									}
 								}
-								const result = target.apply(dataSource, argumentsList);
-								return result;
-								// return manager.makeObservable(result);
+								return target.apply(dataSource, argumentsList);
 							},
 						});
 					}
 
-					if (typeof value === "object" && propertyDescriptor && propertyDescriptor.enumerable) {
+					if (typeof value === "object") {
 						return manager.makeObservable(value);
 					}
 					return value;
@@ -281,15 +267,24 @@ export class Manager {
 					}
 					return true;
 				},
+				defineProperty: (target, propertyKey, propertyDescriptor) => {
+					if (propertyDescriptor && typeof propertyDescriptor.get === "function") {
+						computedProperties[propertyKey] = manager.makeUpdatable(propertyDescriptor.get);
+					}
+					return Reflect.defineProperty(target, propertyKey, propertyDescriptor);
+				},
 				deleteProperty: (target, propertyKey) => {
 					$$.intentToRun++;
 					try {
+						if (propertyKey in computedProperties) {
+							delete computedProperties[propertyKey];
+						}
 						updateProperty(propertyKey);
 					}
 					finally {
 						$$.intentToRun--;
 					}
-					return true;
+					return Reflect.deleteProperty(target, propertyKey);
 				},
 			});
 			$$.observables.set(dataSource, observable);
@@ -342,9 +337,7 @@ export class Manager {
 				return undefined;
 			}
 			if ($$.callStack.length) {
-				updatableState.deps.add(
-					$$.callStack[$$.callStack.length - 1]
-				);
+				updatableState.deps.add($$.callStack[$$.callStack.length - 1]);
 			}
 
 			if (updatableState.valid) {
@@ -388,6 +381,7 @@ export class Manager {
 	makeComputed (target, propertyKey, getter, setter) {
 		Object.defineProperty(target, propertyKey, {
 			enumerable: true,
+			configurable: true,
 			get: this.makeUpdatable(getter),
 			set: setter,
 		});
@@ -473,10 +467,18 @@ export class Manager {
 					throw new Error("Max iterations exceeded!");
 				}
 				iterations++;
-				[...$$.reactionsToUpdate.values()].forEach(updatable => {
+				const startTime = $$.options.getTime();
+				const reactions = [...$$.reactionsToUpdate.values()];
+				for (const updatable of reactions) {
 					$$.reactionsToUpdate.delete(updatable);
 					updatable();
-				});
+					if ($$.options.getTime() - startTime >= $$.options.timeLimit) {
+						break;
+					}
+				}
+				if ($$.reactionsToUpdate.size) {
+					manager.runDeferred();
+				}
 			}
 			typeof $$.options.afterRun === "function" && $$.options.afterRun();
 		}

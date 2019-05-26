@@ -23,6 +23,5 @@ module.exports = function (api) {
 			"exclude": ["test/**/*", "build-utils/**/*"],
 		}]);
 	}
-	console.log("babel config", config);
 	return config;
 };

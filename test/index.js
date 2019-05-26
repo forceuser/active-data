@@ -92,8 +92,8 @@ test("Create computed property", t => {
 	d.y = "y1";
 	d.comp1;
 
-	const comp2 = sinon.spy(self => d.arr.filter(i => !i));
-	const comp3 = sinon.spy(self => d.arr.filter(i => !i));
+	const comp2 = sinon.spy(() => d.arr.filter(i => !i));
+	const comp3 = sinon.spy(() => d.arr.filter(i => !i));
 	m.makeComputed(d, "comp2", comp2);
 	m.makeComputed(d, "comp3", comp3);
 	d.comp2;
@@ -109,6 +109,7 @@ test("Create computed property", t => {
 	d.comp2;
 	t.equal(comp2.callCount, 3);
 	t.equal(d.comp2.length, 2);
+	delete d.comp1;
 	t.end();
 });
 
@@ -465,12 +466,45 @@ test("mapProperties all", t => {
 });
 
 test("Array methods", t => {
-	const {observable, reaction, mapProperties} = new Manager({immediateReaction: true});
+	const {observable, reaction} = new Manager({immediateReaction: true});
 	const a = observable(sqnc(1, 10).toArray(10));
 	const reactionFn = sinon.spy(() => a.map(i => `item${i}`));
 	reaction(reactionFn);
 	t.equal(reactionFn.callCount, 1);
 	a.splice(2, 1);
+	t.equal(reactionFn.callCount, 2);
+	a.length = 3;
+	t.equal(reactionFn.callCount, 3);
+	a.length = 3;
+	t.equal(a.join(","), "1,2,4");
+	t.end();
+});
+
+test("timeLimit", t => {
+	const manager = new Manager({immediateReaction: true, timeLimit: 0});
+	const {observable, reaction} = manager;
+	const a = observable({x: 1});
+	const reactionFn = sinon.spy(() => a.x);
+	reaction(reactionFn);
+	t.equal(reactionFn.callCount, 1);
+	a.x = 2;
+	t.equal(reactionFn.callCount, 2);
+	a.x = 2;
+	t.equal(reactionFn.callCount, 2);
+	t.end();
+});
+
+test("timeLimit perf_hooks.performance", async t => {
+	global.performance = (await import("perf_hooks")).performance;
+	const manager = new Manager({immediateReaction: true, timeLimit: 0});
+	const {observable, reaction} = manager;
+	const a = observable({x: 1});
+	const reactionFn = sinon.spy(() => a.x);
+	reaction(reactionFn);
+	t.equal(reactionFn.callCount, 1);
+	a.x = 2;
+	t.equal(reactionFn.callCount, 2);
+	a.x = 2;
 	t.equal(reactionFn.callCount, 2);
 	t.end();
 });
