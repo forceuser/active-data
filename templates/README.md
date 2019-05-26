@@ -22,7 +22,7 @@ npm i active-data --save
 
 [active-data.modern.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
-[active-data.esm.js@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.esm.js) *import as esm module*
+[active-data.esm.mjs@{{version}}](https://github.com/forceuser/active-data/releases/download/{{version}}/active-data.esm.mjs) *import as esm module*
 
 #### Or just load from CDN
 
@@ -52,9 +52,9 @@ And then use **activeData** as global variable
 
 ```html
 <script type="module">
-import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.esm.js";
+import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@{{version}}/dist/active-data.esm.mjs";
 
-data = observable({c: 1});
+window.data = observable({c: 1});
 reaction(() => {
 	document.body.innerHTML = `<button onclick="data.c++">${data.c}</button>`;
 });
