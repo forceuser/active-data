@@ -226,10 +226,6 @@ export class Manager {
 					if (isArray && typeof value === "function" && propertyKey !== "constructor") {
 						return new Proxy(value, {
 							apply: (target, thisArg, argumentsList) => {
-								const updatableState = $$.callStack.length ? $$.callStack[$$.callStack.length - 1] : null;
-								if (updatableState) {
-									registerRead(updatableState, $$.options.watchKey);
-								}
 								if (["copyWithin", "fill", "pop", "push", "reverse", "shift", "sort", "splice", "unshift"].includes(propertyKey)) {
 									$$.intentToRun++;
 									try {
@@ -238,8 +234,9 @@ export class Manager {
 									finally {
 										$$.intentToRun--;
 									}
+									return target.apply(dataSource, argumentsList);
 								}
-								return target.apply(dataSource, argumentsList);
+								return target.apply(thisArg, argumentsList);
 							},
 						});
 					}
