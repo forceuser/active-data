@@ -363,6 +363,9 @@ export class Manager {
 			updatableState.active = false;
 			onUninit && onUninit();
 		};
+		updatableFunction.invalidate = () => {
+			updatableState.valid = false;
+		};
 		updatableFunction.originalFn = fn;
 		return updatableFunction;
 	}

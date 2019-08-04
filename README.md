@@ -18,23 +18,23 @@ npm i active-data --save
 
 #### Or simply download \*.js file
 
-[active-data.js@2.0.9](https://github.com/forceuser/active-data/releases/download/2.0.9/active-data.js)
+[active-data.js@2.0.10](https://github.com/forceuser/active-data/releases/download/2.0.10/active-data.js)
 
-[active-data.modern.js@2.0.9](https://github.com/forceuser/active-data/releases/download/2.0.9/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
+[active-data.modern.js@2.0.10](https://github.com/forceuser/active-data/releases/download/2.0.10/active-data.modern.js) *for modern browsers only (see [.browserlistrc](https://github.com/forceuser/active-data/blob/master/.browserslistrc))*
 
-[active-data.esm.mjs@2.0.9](https://github.com/forceuser/active-data/releases/download/2.0.9/active-data.esm.mjs) *import as esm module*
+[active-data.esm.mjs@2.0.10](https://github.com/forceuser/active-data/releases/download/2.0.10/active-data.esm.mjs) *import as esm module*
 
 #### Or just load from CDN
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.9/dist/active-data.js" integrity="sha512-RJ/dpHGWQAb6xzM18sKhvSCRevr2n/JvcVr//I5+WkMdRiWPpZq7OyqcocszAJkTADodrNtVTaGqZXsui5errQ==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.10/dist/active-data.js" integrity="sha512-0fQ8PrMb8ndNXlnM/h8+6a0+WArgy6BT2kHi7aKJ19RgE1FPnNxrU0/xp/SFok6DDtyJIKz2GLyNr9+3vF5xqg==" crossorigin="anonymous">
 </script>
 ```
 
 *if you need only modern browsers then use script below:*
 
 ```html
-<script src="//cdn.jsdelivr.net/npm/active-data@2.0.9/dist/active-data.modern.js" integrity="sha512-uqDQ12AxHikxyR5Ly7SLYankqs46S4vL6VKeg2Q/yrMS+GNOh75TXQkvzNpDr+Is5BGhsCcmTb5VDvUkPeVLWg==" crossorigin="anonymous">
+<script src="//cdn.jsdelivr.net/npm/active-data@2.0.10/dist/active-data.modern.js" integrity="sha512-oui6N+Ib9SHIK4w4/vSa7qACemjg5uY0fPSLDIGIZcqBwFqZdGbSWQsgGqaBnjEP7inI3Vxp700gj1ddwAkoBw==" crossorigin="anonymous">
 </script>
 ```
 
@@ -52,7 +52,7 @@ And then use **activeData** as global variable
 
 ```html
 <script type="module">
-import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@2.0.9/dist/active-data.esm.mjs";
+import {default as activeData, observable, reaction} from "//cdn.jsdelivr.net/npm/active-data@2.0.10/dist/active-data.esm.mjs";
 
 window.data = observable({c: 1});
 reaction(() => {
